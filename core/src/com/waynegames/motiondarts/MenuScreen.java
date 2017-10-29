@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-public class MainScreen extends ApplicationAdapter {
+public class MenuScreen extends ApplicationAdapter {
 	SpriteBatch batch;
 	Texture img;
 	
@@ -23,6 +23,7 @@ public class MainScreen extends ApplicationAdapter {
 		batch.begin();
 		batch.draw(img, 0, 0);
 		batch.end();
+		// Test comment
 	}
 	
 	@Override

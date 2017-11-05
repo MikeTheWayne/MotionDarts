@@ -3,13 +3,17 @@ package com.waynegames.motiondarts;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
+/**
+ * Handles all of the touch input and graphics output specifically for the game
+ *
+ * @author Michael Wayne
+ * @version v0.1.0
+ */
 public class GameScreen extends ApplicationAdapter {
+    MotionDarts game;
 
-    @Override
-    public void create () {
+    public GameScreen (MotionDarts game) {
 
     }
 

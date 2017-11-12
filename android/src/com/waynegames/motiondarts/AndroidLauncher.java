@@ -10,6 +10,12 @@ public class AndroidLauncher extends AndroidApplication {
 	protected void onCreate (Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
+
+        // Allow the use of the phone's accelerometer and gyroscope
+        config.useAccelerometer = true;
+        config.useGyroscope = true;
+
+        // Begins the application
 		initialize(new MotionDarts(), config);
 	}
 }

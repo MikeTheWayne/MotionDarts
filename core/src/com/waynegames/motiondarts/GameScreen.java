@@ -1,6 +1,7 @@
 package com.waynegames.motiondarts;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.assets.AssetManager;
@@ -15,6 +16,8 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.utils.Array;
+
+import sun.rmi.runtime.Log;
 
 /**
  * Handles all of the touch input and graphics output specifically for the game
@@ -62,7 +65,7 @@ public class GameScreen extends ScreenAdapter {
         /* Viewpoint Setup */
         // PerspectiveCamera setup: Field of Vision, viewpoint width, viewpoint height
         perspectiveCamera = new PerspectiveCamera(70, screenWidth, screenHeight);
-        perspectiveCamera.position.set(0.0f, 20.0f, -2000.0f);
+        perspectiveCamera.position.set(0.0f, 20.0f, -2500.0f);
         perspectiveCamera.lookAt(0.0f, 0.0f, 1.0f);
         perspectiveCamera.near = 1f;
         perspectiveCamera.far = 100000.0f;
@@ -119,10 +122,23 @@ public class GameScreen extends ScreenAdapter {
         // InputMultiplexer for handling multiple input sources
         InputMultiplexer inputMultiplexer = new InputMultiplexer();
 
-        // Temporary built-in input handler, allows camera to be rotated around centre. To be replaced after v0.1
-        cameraInputController = new CameraInputController(perspectiveCamera);
-        cameraInputController.pinchZoomFactor = 10000.0f;
-        inputMultiplexer.addProcessor(cameraInputController);
+        // InputAdapter, receives touch input from phone screen
+        inputMultiplexer.addProcessor(new InputAdapter() {
+
+            @Override
+            public boolean touchDown(int touchX, int touchY, int pointer, int button) {
+                // Dart aiming
+
+                return true;
+            }
+
+            public boolean touchUp(int touchX, int touchY, int pointer, int button) {
+                // Dart throwing
+                dartThrow();
+                return true;
+            }
+
+        });
 
         Gdx.input.setInputProcessor(inputMultiplexer);
 
@@ -130,8 +146,6 @@ public class GameScreen extends ScreenAdapter {
 
     @Override
     public void render (float delta) {
-
-        cameraInputController.update();
 
         // Sets Viewport
         Gdx.gl.glViewport(0, 0, screenWidth, screenHeight);
@@ -161,5 +175,29 @@ public class GameScreen extends ScreenAdapter {
         perspectiveCamera.viewportWidth = width;
         perspectiveCamera.viewportHeight = height;
         perspectiveCamera.update();
+    }
+
+    /**
+     * Receives accelerometer input, which gets translated into landing coordinates.
+     */
+    private void dartThrow() {
+
+        // Accelerometer data
+        float accelX = Gdx.input.getAccelerometerX();   // Left / Right
+        float accelY = Gdx.input.getAccelerometerY();   // Up / Down
+        float accelZ = Gdx.input.getAccelerometerZ();   // Forward / Back
+
+        // Rotation Data
+        float rotX = Gdx.input.getPitch();
+        float rotY = Gdx.input.getRoll();
+        float rotZ = Gdx.input.getAzimuth();
+
+        // Gyroscope (rotational acceleration) data
+        float gyroX = Gdx.input.getGyroscopeX();
+        float gyroY = Gdx.input.getGyroscopeY();
+        float gyroZ = Gdx.input.getGyroscopeZ();
+
+        System.out.println("Accelerometer: X - " + accelX + " Y - " + accelY + " Z - " + accelZ + " | Rotation: X - " + rotX + " Y - " + rotY + " Z - " + rotZ + " | Gyroscope: X - " + gyroX + " Y - " + gyroY + " Z - " + gyroZ);
+
     }
 }

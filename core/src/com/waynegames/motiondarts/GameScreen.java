@@ -46,7 +46,7 @@ public class GameScreen extends ScreenAdapter {
 
     /**
      * Game screen setup constructor<br>
-     * Sets up:<br>
+     * Handles:<br>
      * <ul>
      *     <li>Viewpoint Setup</li>
      *     <li>3D Models Loading & Positioning</li>
@@ -196,6 +196,11 @@ public class GameScreen extends ScreenAdapter {
         float gyroX = Gdx.input.getGyroscopeX();
         float gyroY = Gdx.input.getGyroscopeY();
         float gyroZ = Gdx.input.getGyroscopeZ();
+
+        // Gravity elimination
+        accelX = accelX + (float) (9.80665 * Math.sin(Math.toRadians(rotY)) * Math.cos(Math.toRadians(rotX)));
+        accelY = accelY + (float) (9.80665 * Math.sin(Math.toRadians(rotX)));
+        accelZ = accelZ - (float) (9.80665 * Math.cos(Math.toRadians(rotX)) * Math.cos(Math.toRadians(rotY)));
 
         System.out.println("Accelerometer: X - " + accelX + " Y - " + accelY + " Z - " + accelZ + " | Rotation: X - " + rotX + " Y - " + rotY + " Z - " + rotZ + " | Gyroscope: X - " + gyroX + " Y - " + gyroY + " Z - " + gyroZ);
 

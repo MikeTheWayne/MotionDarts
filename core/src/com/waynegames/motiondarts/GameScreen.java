@@ -7,6 +7,8 @@ import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
@@ -28,6 +30,9 @@ import sun.rmi.runtime.Log;
 public class GameScreen extends ScreenAdapter {
     MotionDarts game;
 
+    private SpriteBatch spriteBatch;
+    private BitmapFont bitmapFont;
+
     private ModelBatch modelBatch;
     private PerspectiveCamera perspectiveCamera;
     private Environment environment;
@@ -43,6 +48,8 @@ public class GameScreen extends ScreenAdapter {
 
     private int screenWidth;
     private int screenHeight;
+
+    private String[] textOut = new String[9];
 
     /**
      * Game screen setup constructor<br>
@@ -61,6 +68,10 @@ public class GameScreen extends ScreenAdapter {
         screenHeight = Gdx.graphics.getHeight();
 
         modelBatch = new ModelBatch();
+        spriteBatch = new SpriteBatch();
+
+        bitmapFont = new BitmapFont(Gdx.files.internal("consolas.fnt"), Gdx.files.internal("consolas.png"), false);
+
 
         /* Viewpoint Setup */
         // PerspectiveCamera setup: Field of Vision, viewpoint width, viewpoint height
@@ -129,6 +140,10 @@ public class GameScreen extends ScreenAdapter {
             public boolean touchDown(int touchX, int touchY, int pointer, int button) {
                 // Dart aiming
 
+                // Revert dart to throwing position -- temporary
+                dartModelInst1.transform.setToTranslation(0.0f, 0.0f, -500.0f);
+                dartModelInst1.transform.rotate(1.0f, 0.0f, 0.0f, 90);
+                dartModelInst1.transform.rotate(0.0f, 1.0f, 0.0f, 45);
                 return true;
             }
 
@@ -157,12 +172,25 @@ public class GameScreen extends ScreenAdapter {
         modelBatch.render(instances, environment);
         modelBatch.end();
 
+        // Draw 2D Graphics to screen
+        spriteBatch.begin();
+
+        // Diagnostic text output
+        for(int i = 0; i < textOut.length; i++) {
+            if(textOut[i] != null) {
+                bitmapFont.draw(spriteBatch, textOut[i], 10, screenHeight - 20 * (i + 1));
+            }
+        }
+
+        spriteBatch.end();
+
     }
 
     @Override
     public void dispose () {
         // Prevents memory leaks
         modelBatch.dispose();
+        spriteBatch.dispose();
         instances.clear();
         assetManager.dispose();
     }
@@ -200,9 +228,32 @@ public class GameScreen extends ScreenAdapter {
         // Gravity elimination
         accelX = accelX + (float) (9.80665 * Math.sin(Math.toRadians(rotY)) * Math.cos(Math.toRadians(rotX)));
         accelY = accelY + (float) (9.80665 * Math.sin(Math.toRadians(rotX)));
-        accelZ = accelZ - (float) (9.80665 * Math.cos(Math.toRadians(rotX)) * Math.cos(Math.toRadians(rotY)));
+        accelZ = -(accelZ - (float) (9.80665 * Math.cos(Math.toRadians(rotX)) * Math.cos(Math.toRadians(rotY))));
 
-        System.out.println("Accelerometer: X - " + accelX + " Y - " + accelY + " Z - " + accelZ + " | Rotation: X - " + rotX + " Y - " + rotY + " Z - " + rotZ + " | Gyroscope: X - " + gyroX + " Y - " + gyroY + " Z - " + gyroZ);
+        // Time
+        float time = (float) 2.37 / accelZ; // Time = Distance / Speed
 
+        // Landing Site x, y
+        float landX = accelX * time;   // Distance = Speed * time
+        float landY = (accelY * time) + (-4.905f * time * time); // Vertical Distance = Speed * Time + 0.5 * Acceleration * time * time
+
+        // Temporary test output to screen
+        textOut[0] = String.valueOf(accelX);
+        textOut[1] = String.valueOf(accelY);
+        textOut[2] = String.valueOf(accelZ);
+
+        textOut[3] = String.valueOf(rotX);
+        textOut[4] = String.valueOf(rotY);
+        textOut[5] = String.valueOf(rotZ);
+
+        textOut[6] = String.valueOf(time);
+
+        textOut[7] = String.valueOf(landX);
+        textOut[8] = String.valueOf(landY);
+
+        // Translation to dartboard, to be replaced later with smooth animation
+        dartModelInst1.transform.setToTranslation(landX * 10000.0f, landY * 10000.0f, 23000.0f);
+        dartModelInst1.transform.rotate(1.0f, 0.0f, 0.0f, 90);
+        dartModelInst1.transform.rotate(0.0f, 1.0f, 0.0f, 45);
     }
 }

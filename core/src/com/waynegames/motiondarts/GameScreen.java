@@ -228,7 +228,20 @@ public class GameScreen extends ScreenAdapter {
         // Gravity elimination
         accelX = accelX + (float) (9.80665 * Math.sin(Math.toRadians(rotY)) * Math.cos(Math.toRadians(rotX)));
         accelY = accelY + (float) (9.80665 * Math.sin(Math.toRadians(rotX)));
-        accelZ = -(accelZ - (float) (9.80665 * Math.cos(Math.toRadians(rotX)) * Math.cos(Math.toRadians(rotY))));
+        accelZ = -(accelZ - (float) (9.80665 * Math.cos(Math.toRadians(rotX)) * Math.cos(Math.toRadians(rotY)))) * 3;
+
+        // Damping
+        if(accelX < 11.5 && accelX >= 0) {
+            accelX = (float) Math.pow(2, (accelX - 8));
+        } else if(accelX > -11.5) {
+            accelX = (float) -Math.pow(2, (accelX - 8));
+        }
+
+        if(accelY < 11.5 && accelY >= 0) {
+            accelY = (float) Math.pow(2, (accelY - 8));
+        } else if(accelY > -11.5) {
+            accelY = (float) Math.pow(2, (accelY - 8));
+        }
 
         // Time
         float time = (float) 2.37 / accelZ; // Time = Distance / Speed

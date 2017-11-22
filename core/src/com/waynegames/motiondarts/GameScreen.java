@@ -51,6 +51,12 @@ public class GameScreen extends ScreenAdapter {
 
     private String[] textOut = new String[9];
 
+    private float dampenerY = 10.0f;
+    private float multiplierZ = 3.5f;
+
+    private float aimX = 0.0f;
+    private float aimY = 0.0f;
+
     /**
      * Game screen setup constructor<br>
      * Handles:<br>
@@ -138,12 +144,15 @@ public class GameScreen extends ScreenAdapter {
 
             @Override
             public boolean touchDown(int touchX, int touchY, int pointer, int button) {
-                // Dart aiming
 
                 // Revert dart to throwing position -- temporary
                 dartModelInst1.transform.setToTranslation(0.0f, 0.0f, -500.0f);
                 dartModelInst1.transform.rotate(1.0f, 0.0f, 0.0f, 90);
                 dartModelInst1.transform.rotate(0.0f, 1.0f, 0.0f, 45);
+
+                perspectiveCamera.position.set(0.0f, 20.0f, -2500.0f);
+                perspectiveCamera.lookAt(0.0f, 0.0f, 1.0f);
+                perspectiveCamera.update();
                 return true;
             }
 
@@ -183,6 +192,22 @@ public class GameScreen extends ScreenAdapter {
         }
 
         spriteBatch.end();
+
+        // Dart aiming
+        if(Gdx.input.isTouched()) {
+
+            float aimSensitivity = 4.2f;
+
+            aimX = -(Gdx.input.getX() - (screenWidth / 2f)) * aimSensitivity;
+            aimY = -(Gdx.input.getY() - (screenHeight / 2f)) * aimSensitivity;
+
+            dartModelInst1.transform.setToTranslation(aimX, aimY, -500.0f);
+            dartModelInst1.transform.rotate(1.0f, 0.0f, 0.0f, 90);
+            dartModelInst1.transform.rotate(0.0f, 1.0f, 0.0f, 45);
+            perspectiveCamera.position.set(aimX, aimY + 20.0f, -2500.0f);
+            perspectiveCamera.update();
+
+        }
 
     }
 
@@ -228,7 +253,7 @@ public class GameScreen extends ScreenAdapter {
         // Gravity elimination
         accelX = accelX + (float) (9.80665 * Math.sin(Math.toRadians(rotY)) * Math.cos(Math.toRadians(rotX)));
         accelY = accelY + (float) (9.80665 * Math.sin(Math.toRadians(rotX)));
-        accelZ = -(accelZ - (float) (9.80665 * Math.cos(Math.toRadians(rotX)) * Math.cos(Math.toRadians(rotY)))) * 3;
+        accelZ = -(accelZ - (float) (9.80665 * Math.cos(Math.toRadians(rotX)) * Math.cos(Math.toRadians(rotY)))) * multiplierZ;
 
         // Damping
         if(accelX < 11.5 && accelX >= 0) {
@@ -237,18 +262,16 @@ public class GameScreen extends ScreenAdapter {
             accelX = (float) -Math.pow(2, (accelX - 8));
         }
 
-        if(accelY < 11.5 && accelY >= 0) {
-            accelY = (float) Math.pow(2, (accelY - 8));
-        } else if(accelY > -11.5) {
-            accelY = (float) Math.pow(2, (accelY - 8));
+        if(accelY >= -dampenerY && accelY <= dampenerY) {
+            accelY = (accelY * accelY) / dampenerY;
         }
 
         // Time
         float time = (float) 2.37 / accelZ; // Time = Distance / Speed
 
         // Landing Site x, y
-        float landX = accelX * time;   // Distance = Speed * time
-        float landY = (accelY * time) + (-4.905f * time * time); // Vertical Distance = Speed * Time + 0.5 * Acceleration * time * time
+        float landX = (aimX / 10000.0f) + accelX * time;   // Distance = Speed * time
+        float landY = (aimY / 10000.0f) + (accelY * time) + (-4.905f * time * time); // Vertical Distance = Speed * Time + 0.5 * Acceleration * time * time
 
         // Temporary test output to screen
         textOut[0] = String.valueOf(accelX);

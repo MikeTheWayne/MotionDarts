@@ -60,6 +60,8 @@ public class GameScreen extends ScreenAdapter {
     private float velX, velY, velZ;
     private float rotX, rotY;
 
+    private boolean inFlight = false;
+
     /**
      * Game screen setup constructor<br>
      * Handles:<br>
@@ -150,60 +152,68 @@ public class GameScreen extends ScreenAdapter {
             @Override
             public boolean touchDown(int touchX, int touchY, int pointer, int button) {
 
-                // Revert dart to throwing position -- temporary
-                dartModelInst1.transform.setToTranslation(0.0f, 0.0f, -500.0f);
-                dartModelInst1.transform.rotate(1.0f, 0.0f, 0.0f, 90);
-                dartModelInst1.transform.rotate(0.0f, 1.0f, 0.0f, 45);
+                if(!inFlight) {
+                    // Revert dart to throwing position -- temporary
+                    dartModelInst1.transform.setToTranslation(0.0f, 0.0f, -500.0f);
+                    dartModelInst1.transform.rotate(1.0f, 0.0f, 0.0f, 90);
+                    dartModelInst1.transform.rotate(0.0f, 1.0f, 0.0f, 45);
 
-                perspectiveCamera.position.set(0.0f, 20.0f, -2500.0f);
-                perspectiveCamera.lookAt(0.0f, 0.0f, 1.0f);
-                perspectiveCamera.update();
+                    perspectiveCamera.position.set(0.0f, 20.0f, -2500.0f);
+                    perspectiveCamera.lookAt(0.0f, 0.0f, 1.0f);
+                    perspectiveCamera.update();
 
-                /* Velocity Calculation */
-                // Reset velocity
-                velX = 0;
-                velY = 0;
-                velZ = 0;
+                    /* Velocity Calculation */
+                    // Reset velocity
+                    velX = 0;
+                    velY = 0;
+                    velZ = 0;
 
-                t = new Timer();
+                    t = new Timer();
 
-                // Timer to receive acceleration readings 50 times a second
-                t.scheduleAtFixedRate(new TimerTask() {
-                    @Override
-                    public void run() {
+                    // Timer to receive acceleration readings 50 times a second
+                    t.scheduleAtFixedRate(new TimerTask() {
+                        @Override
+                        public void run() {
 
-                        // Accelerometer data
-                        accelX = Gdx.input.getAccelerometerX();
-                        accelY = Gdx.input.getAccelerometerY();
-                        accelZ = Gdx.input.getAccelerometerZ();
+                            // Accelerometer data
+                            accelX = Gdx.input.getAccelerometerX();
+                            accelY = Gdx.input.getAccelerometerY();
+                            accelZ = Gdx.input.getAccelerometerZ();
 
-                        // Rotation Data
-                        rotX = Gdx.input.getPitch();
-                        rotY = Gdx.input.getRoll();
+                            // Rotation Data
+                            rotX = Gdx.input.getPitch();
+                            rotY = Gdx.input.getRoll();
 
-                        // Gravity elimination
-                        accelX = -(accelX + (float) (9.80665 * Math.sin(Math.toRadians(rotY)) * Math.cos(Math.toRadians(rotX))));
-                        accelY = accelY + (float) (9.80665 * Math.sin(Math.toRadians(rotX)));
-                        accelZ = -(accelZ - (float) (9.80665 * Math.cos(Math.toRadians(rotX)) * Math.cos(Math.toRadians(rotY))));
+                            // Rotation Error Solution; If Rotation sensors spontaneously stop working, put in a most likely rotation
+                            rotX = (rotX == 0f) ? -70 : rotX;
+                            rotY = (rotY == 0f) ? -90 : rotY;
 
-                        // Velocity calculation
-                        velX += accelX / 50;
-                        velY += accelY / 50;
-                        velZ += accelZ / 50;
+                            // Gravity elimination
+                            accelX = -(accelX + (float) (9.80665 * Math.sin(Math.toRadians(rotY)) * Math.cos(Math.toRadians(rotX))));
+                            accelY = accelY + (float) (9.80665 * Math.sin(Math.toRadians(rotX)));
+                            accelZ = -(accelZ - (float) (9.80665 * Math.cos(Math.toRadians(rotX)) * Math.cos(Math.toRadians(rotY))));
 
-                    }
-                }, 0, 20);
+                            // Velocity calculation
+                            velX += accelX / 50;
+                            velY += accelY / 50;
+                            velZ += accelZ / 50;
+
+                        }
+                    }, 0, 20);
+                }
 
                 return true;
             }
 
             public boolean touchUp(int touchX, int touchY, int pointer, int button) {
-                // Dart throwing
-                dartThrow();
+                if(!inFlight) {
+                    // Dart throwing
+                    dartThrow();
 
-                // Stop velocity calculation
-                t.cancel();
-                t.purge();
+                    // Stop velocity calculation
+                    t.cancel();
+                    t.purge();
+                }
                 return true;
             }
 
@@ -242,16 +252,18 @@ public class GameScreen extends ScreenAdapter {
         if(Gdx.input.isTouched()) {
 
             // Dart aiming
-            float aimSensitivity = 5.6f;
+            if(!inFlight) {
+                float aimSensitivity = 5.6f;
 
-            aimX = -(Gdx.input.getX() - (screenWidth / 2f)) * aimSensitivity;
-            aimY = -(Gdx.input.getY() - (screenHeight / 2f)) * aimSensitivity;
+                aimX = -(Gdx.input.getX() - (screenWidth / 2f)) * aimSensitivity;
+                aimY = -(Gdx.input.getY() - (screenHeight / 2f)) * aimSensitivity;
 
-            dartModelInst1.transform.setToTranslation(aimX, aimY, -500.0f);
-            dartModelInst1.transform.rotate(1.0f, 0.0f, 0.0f, 90);
-            dartModelInst1.transform.rotate(0.0f, 1.0f, 0.0f, 45);
-            perspectiveCamera.position.set(aimX, aimY + 20.0f, -2500.0f);
-            perspectiveCamera.update();
+                dartModelInst1.transform.setToTranslation(aimX, aimY, -500.0f);
+                dartModelInst1.transform.rotate(1.0f, 0.0f, 0.0f, 90);
+                dartModelInst1.transform.rotate(0.0f, 1.0f, 0.0f, 45);
+                perspectiveCamera.position.set(aimX, aimY + 20.0f, -2500.0f);
+                perspectiveCamera.update();
+            }
 
         }
 
@@ -296,11 +308,11 @@ public class GameScreen extends ScreenAdapter {
         }
 
         // Time
-        float time = (distanceToBoard / 10000.0f) / velZ; // Time = Distance / Speed
+        final float time = (distanceToBoard / 10000.0f) / velZ; // Time = Distance / Speed
 
         // Landing Site x, y
-        float landX = (aimX / 10000.0f) + velX * time;   // Distance = Speed * time
-        float landY = (aimY / 10000.0f) + (velY * time) + (-4.905f * time * time); // Vertical Distance = Speed * Time + 0.5 * Acceleration * time * time
+        final float landX = (aimX / 10000.0f) + velX * time;   // Distance = Speed * time
+        final float landY = (aimY / 10000.0f) + (velY * time) + (-4.905f * time * time); // Vertical Distance = Speed * Time + 0.5 * Acceleration * time * time
 
         // Temporary test output to screen
         textOut[0] = String.valueOf(accelX);
@@ -319,9 +331,47 @@ public class GameScreen extends ScreenAdapter {
         textOut[9] = String.valueOf(velY);
         textOut[10] = String.valueOf(velZ);
 
-        // Translation to dartboard, to be replaced later with smooth animation
-        dartModelInst1.transform.setToTranslation(landX * 10000.0f, landY * 10000.0f, distanceToBoard - 700.0f);
-        dartModelInst1.transform.rotate(1.0f, 0.0f, 0.0f, 90);
-        dartModelInst1.transform.rotate(0.0f, 1.0f, 0.0f, 45);
+        // Animating dart flight to dartboard
+        final Timer t = new Timer();
+
+        // Stops other methods resetting or changing the dart while in flight
+        inFlight = true;
+
+        final float THROW_FPS = 30;     // Frames per second drawn to screen for dart throw
+
+        t.scheduleAtFixedRate(new TimerTask() {
+
+            int translations = (int) Math.ceil(time * THROW_FPS);
+            int translationCount = 1;
+
+            @Override
+            public void run() {
+
+                // Calculate the vertical position of the dart at its current point during in its flight
+                float yPos = (velY * (THROW_FPS / 1000) * translationCount) + (-4.905f * ((THROW_FPS / 1000) * translationCount) * ((THROW_FPS / 1000) * translationCount));
+
+                if(translationCount < translations) {
+                    // Translate the dart to the calculate position where it would be at that point in flight
+                    dartModelInst1.transform.setToTranslation((landX * 10000.0f) / translations * translationCount, (yPos * 10000.0f), (distanceToBoard - 700.0f) / translations * translationCount);
+                } else{
+                    // Translate the dart to the exact position that it was calculated to land
+                    dartModelInst1.transform.setToTranslation((landX * 10000.0f) / translations * translationCount, (landY * 10000.0f), (distanceToBoard - 700.0f) / translations * translationCount);
+                }
+
+                // Correct the rotation
+                dartModelInst1.transform.rotate(1.0f, 0.0f, 0.0f, 90);
+                dartModelInst1.transform.rotate(0.0f, 1.0f, 0.0f, 45);
+
+                // Check whether the animation should be ended
+                if(translationCount == translations  || yPos <= -1.73f) {
+                    t.cancel();
+                    t.purge();
+                    inFlight = false;
+                }
+
+                translationCount++;
+
+            }
+        }, 0, 1000 / (int) THROW_FPS);
     }
 }

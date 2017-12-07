@@ -38,11 +38,13 @@ public class GameScreen extends ScreenAdapter {
 
     private AssetManager assetManager;
 
-    private ModelInstance dartModelInst1;
+    private ModelInstance[] dartModelInstances = new ModelInstance[3];
     private ModelInstance dartboardModelInst1;
     private ModelInstance environmentModelInst1;
 
     private Array<ModelInstance> instances = new Array<ModelInstance>();
+
+    private int dartsThrown = 0;
 
     private int screenWidth;
     private int screenHeight;
@@ -108,20 +110,32 @@ public class GameScreen extends ScreenAdapter {
         Model dartboardModel1 = assetManager.get("dartboard_01.g3db", Model.class);
         Model environmentModel1 = assetManager.get("environment_01.g3db", Model.class);
 
-        dartModelInst1 = new ModelInstance(dartModel1);
+        dartModelInstances[0] = new ModelInstance(dartModel1);
+        dartModelInstances[1] = new ModelInstance(dartModel1);
+        dartModelInstances[2] = new ModelInstance(dartModel1);
         dartboardModelInst1 = new ModelInstance(dartboardModel1);
         environmentModelInst1 = new ModelInstance(environmentModel1);
 
-        instances.add(dartModelInst1);
+        instances.add(dartModelInstances[0]);
+        instances.add(dartModelInstances[1]);
+        instances.add(dartModelInstances[2]);
         instances.add(dartboardModelInst1);
         instances.add(environmentModelInst1);
 
         // Moving everything into the right place for setup
         // 100.0f = 1 cm
         // Game plays in the positive z axis (forwards)
-        dartModelInst1.transform.setToTranslation(0.0f, 0.0f, -500.0f);
-        dartModelInst1.transform.rotate(1.0f, 0.0f, 0.0f, 90);
-        dartModelInst1.transform.rotate(0.0f, 1.0f, 0.0f, 45);
+        dartModelInstances[0].transform.setToTranslation(0.0f, 0.0f, -500.0f);
+        dartModelInstances[0].transform.rotate(1.0f, 0.0f, 0.0f, 90);
+        dartModelInstances[0].transform.rotate(0.0f, 1.0f, 0.0f, 45);
+
+        dartModelInstances[1].transform.setToTranslation(4100.0f, -10000.0f, -1000.0f);
+        dartModelInstances[1].transform.rotate(1.0f, 0.0f, 0.0f, 225);
+        dartModelInstances[1].transform.rotate(0.0f, 1.0f, 0.0f, 45);
+
+        dartModelInstances[2].transform.setToTranslation(4200.0f, -10000.0f, -1000.0f);
+        dartModelInstances[2].transform.rotate(1.0f, 0.0f, 0.0f, 225);
+        dartModelInstances[2].transform.rotate(0.0f, 1.0f, 0.0f, 45);
 
         dartboardModelInst1.transform.setToTranslation(0.0f, 0.0f, distanceToBoard);
         dartboardModelInst1.transform.rotate(0.0f, 1.0f, 0.0f, 90);
@@ -153,10 +167,21 @@ public class GameScreen extends ScreenAdapter {
             public boolean touchDown(int touchX, int touchY, int pointer, int button) {
 
                 if(!inFlight) {
-                    // Revert dart to throwing position -- temporary
-                    dartModelInst1.transform.setToTranslation(0.0f, 0.0f, -500.0f);
-                    dartModelInst1.transform.rotate(1.0f, 0.0f, 0.0f, 90);
-                    dartModelInst1.transform.rotate(0.0f, 1.0f, 0.0f, 45);
+                    // Revert darts to be in hand
+                    if(dartsThrown == 3) {
+                        dartsThrown = 0;
+
+                        for(int i = 0; i < 3; i++) {
+                            dartModelInstances[i].transform.setToTranslation(4000.0f + 100.0f * i, -10000.0f, -1000.0f);
+                            dartModelInstances[i].transform.rotate(1.0f, 0.0f, 0.0f, 90);
+                            dartModelInstances[i].transform.rotate(0.0f, 1.0f, 0.0f, 45);
+                        }
+                    }
+
+                    // Places dart in right hand from left hand (avoids annoying graphical flash of the dart not being centred)
+                    dartModelInstances[dartsThrown].transform.setToTranslation(0.0f, 0.0f, -500.0f);
+                    dartModelInstances[dartsThrown].transform.rotate(1.0f, 0.0f, 0.0f, 90);
+                    dartModelInstances[dartsThrown].transform.rotate(0.0f, 1.0f, 0.0f, 45);
 
                     perspectiveCamera.position.set(0.0f, 20.0f, -2500.0f);
                     perspectiveCamera.lookAt(0.0f, 0.0f, 1.0f);
@@ -255,14 +280,18 @@ public class GameScreen extends ScreenAdapter {
             if(!inFlight) {
                 float aimSensitivity = 5.6f;
 
-                aimX = -(Gdx.input.getX() - (screenWidth / 2f)) * aimSensitivity;
-                aimY = -(Gdx.input.getY() - (screenHeight / 2f)) * aimSensitivity;
+                // isTouched() is called before InputAdapter, this avoids crashes
+                if(dartsThrown < 3) {
+                    aimX = -(Gdx.input.getX() - (screenWidth / 2f)) * aimSensitivity;
+                    aimY = -(Gdx.input.getY() - (screenHeight / 2f)) * aimSensitivity;
 
-                dartModelInst1.transform.setToTranslation(aimX, aimY, -500.0f);
-                dartModelInst1.transform.rotate(1.0f, 0.0f, 0.0f, 90);
-                dartModelInst1.transform.rotate(0.0f, 1.0f, 0.0f, 45);
-                perspectiveCamera.position.set(aimX, aimY + 20.0f, -2500.0f);
-                perspectiveCamera.update();
+                    dartModelInstances[dartsThrown].transform.setToTranslation(aimX, aimY, -500.0f);
+                    dartModelInstances[dartsThrown].transform.rotate(1.0f, 0.0f, 0.0f, 90);
+                    dartModelInstances[dartsThrown].transform.rotate(0.0f, 1.0f, 0.0f, 45);
+
+                    perspectiveCamera.position.set(aimX, aimY + 20.0f, -2500.0f);
+                    perspectiveCamera.update();
+                }
             }
 
         }
@@ -350,23 +379,30 @@ public class GameScreen extends ScreenAdapter {
                 // Calculate the vertical position of the dart at its current point during in its flight
                 float yPos = (velY * (THROW_FPS / 1000) * translationCount) + (-4.905f * ((THROW_FPS / 1000) * translationCount) * ((THROW_FPS / 1000) * translationCount));
 
-                if(translationCount < translations) {
-                    // Translate the dart to the calculate position where it would be at that point in flight
-                    dartModelInst1.transform.setToTranslation((landX * 10000.0f) / translations * translationCount, (yPos * 10000.0f), (distanceToBoard - 700.0f) / translations * translationCount);
-                } else{
-                    // Translate the dart to the exact position that it was calculated to land
-                    dartModelInst1.transform.setToTranslation((landX * 10000.0f) / translations * translationCount, (landY * 10000.0f), (distanceToBoard - 700.0f) / translations * translationCount);
-                }
+                if(dartsThrown < 3) {   // This avoids crash caused by misbehaving gopnik timer, occasionally running once more, even though it's been cancelled
 
-                // Correct the rotation
-                dartModelInst1.transform.rotate(1.0f, 0.0f, 0.0f, 90);
-                dartModelInst1.transform.rotate(0.0f, 1.0f, 0.0f, 45);
+                    if (translationCount < translations) {
+                        // Translate the dart to the calculate position where it would be at that point in flight
+                        dartModelInstances[dartsThrown].transform.setToTranslation(aimX + (landX * 10000.0f) / translations * translationCount, aimY + (yPos * 10000.0f), (distanceToBoard - 700.0f) / translations * translationCount);
+                    } else {
+                        // Translate the dart to the exact position that it was calculated to land
+                        dartModelInstances[dartsThrown].transform.setToTranslation((landX * 10000.0f) / translations * translationCount, (landY * 10000.0f), (distanceToBoard - 700.0f) / translations * translationCount);
+                    }
+
+                    // Correct the rotation
+                    dartModelInstances[dartsThrown].transform.rotate(1.0f, 0.0f, 0.0f, 90);
+                    dartModelInstances[dartsThrown].transform.rotate(0.0f, 1.0f, 0.0f, 45);
+
+                }
 
                 // Check whether the animation should be ended
                 if(translationCount == translations  || yPos <= -1.73f) {
                     t.cancel();
                     t.purge();
                     inFlight = false;
+                    if(dartsThrown < 3) {
+                        dartsThrown++;
+                    }
                 }
 
                 translationCount++;

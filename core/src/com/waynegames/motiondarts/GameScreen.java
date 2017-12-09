@@ -17,6 +17,7 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.utils.Array;
 
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -63,6 +64,7 @@ public class GameScreen extends ScreenAdapter {
     private float rotX, rotY;
 
     private boolean inFlight = false;
+    private boolean viewLock = false;
 
     /**
      * Game screen setup constructor<br>
@@ -89,11 +91,9 @@ public class GameScreen extends ScreenAdapter {
         /* Viewpoint Setup */
         // PerspectiveCamera setup: Field of Vision, viewpoint width, viewpoint height
         perspectiveCamera = new PerspectiveCamera(70, screenWidth, screenHeight);
-        perspectiveCamera.position.set(0.0f, 20.0f, -2500.0f);
-        perspectiveCamera.lookAt(0.0f, 0.0f, 1.0f);
         perspectiveCamera.near = 1f;
         perspectiveCamera.far = 100000.0f;
-        perspectiveCamera.update();
+        setViewPosition(1);
 
 
         /* Model Loading */
@@ -166,7 +166,7 @@ public class GameScreen extends ScreenAdapter {
             @Override
             public boolean touchDown(int touchX, int touchY, int pointer, int button) {
 
-                if(!inFlight) {
+                if(!inFlight && !viewLock) {
                     // Revert darts to be in hand
                     if(dartsThrown == 3) {
                         dartsThrown = 0;
@@ -183,9 +183,7 @@ public class GameScreen extends ScreenAdapter {
                     dartModelInstances[dartsThrown].transform.rotate(1.0f, 0.0f, 0.0f, 90);
                     dartModelInstances[dartsThrown].transform.rotate(0.0f, 1.0f, 0.0f, 45);
 
-                    perspectiveCamera.position.set(0.0f, 20.0f, -2500.0f);
-                    perspectiveCamera.lookAt(0.0f, 0.0f, 1.0f);
-                    perspectiveCamera.update();
+                    setViewPosition(1);
 
                     /* Velocity Calculation */
                     // Reset velocity
@@ -231,9 +229,11 @@ public class GameScreen extends ScreenAdapter {
             }
 
             public boolean touchUp(int touchX, int touchY, int pointer, int button) {
-                if(!inFlight) {
+                if(!inFlight && !viewLock) {
                     // Dart throwing
-                    dartThrow();
+                    if(dartsThrown < 3) { // This avoids crash caused by misbehaving gopnik timer, occasionally running once more, even though it's been cancelled
+                        dartThrow();
+                    }
 
                     // Stop velocity calculation
                     t.cancel();
@@ -277,7 +277,7 @@ public class GameScreen extends ScreenAdapter {
         if(Gdx.input.isTouched()) {
 
             // Dart aiming
-            if(!inFlight) {
+            if(!inFlight && !viewLock) {
                 float aimSensitivity = 5.6f;
 
                 // isTouched() is called before InputAdapter, this avoids crashes
@@ -318,7 +318,8 @@ public class GameScreen extends ScreenAdapter {
     }
 
     /**
-     * Receives accelerometer input, which gets translated into landing coordinates.
+     * Converts velocity data into landing coordinates. The dart is then
+     * smoothly animated as it flies through the air towards those coordinates.
      */
     private void dartThrow() {
 
@@ -379,29 +380,43 @@ public class GameScreen extends ScreenAdapter {
                 // Calculate the vertical position of the dart at its current point during in its flight
                 float yPos = (velY * (THROW_FPS / 1000) * translationCount) + (-4.905f * ((THROW_FPS / 1000) * translationCount) * ((THROW_FPS / 1000) * translationCount));
 
-                if(dartsThrown < 3) {   // This avoids crash caused by misbehaving gopnik timer, occasionally running once more, even though it's been cancelled
-
-                    if (translationCount < translations) {
-                        // Translate the dart to the calculate position where it would be at that point in flight
-                        dartModelInstances[dartsThrown].transform.setToTranslation(aimX + (landX * 10000.0f) / translations * translationCount, aimY + (yPos * 10000.0f), (distanceToBoard - 700.0f) / translations * translationCount);
-                    } else {
-                        // Translate the dart to the exact position that it was calculated to land
-                        dartModelInstances[dartsThrown].transform.setToTranslation((landX * 10000.0f) / translations * translationCount, (landY * 10000.0f), (distanceToBoard - 700.0f) / translations * translationCount);
-                    }
-
-                    // Correct the rotation
-                    dartModelInstances[dartsThrown].transform.rotate(1.0f, 0.0f, 0.0f, 90);
-                    dartModelInstances[dartsThrown].transform.rotate(0.0f, 1.0f, 0.0f, 45);
-
+                if (translationCount < translations) {
+                    // Translate the dart to the calculate position where it would be at that point in flight
+                    dartModelInstances[dartsThrown].transform.setToTranslation(aimX + ((landX - aimX / 10000.0f) * 10000.0f) / translations * translationCount, aimY + (yPos * 10000.0f), (distanceToBoard - 500.0f) / translations * translationCount);
+                } else {
+                    // Translate the dart to the exact position that it was calculated to land
+                    dartModelInstances[dartsThrown].transform.setToTranslation((landX * 10000.0f), (landY * 10000.0f), (distanceToBoard - 500.0f) / translations * translationCount);
                 }
+
+                // Correct the rotation
+                dartModelInstances[dartsThrown].transform.rotate(1.0f, 0.0f, 0.0f, 90);
+                dartModelInstances[dartsThrown].transform.rotate(0.0f, 1.0f, 0.0f, 45);
 
                 // Check whether the animation should be ended
                 if(translationCount == translations  || yPos <= -1.73f) {
+
                     t.cancel();
                     t.purge();
+
                     inFlight = false;
-                    if(dartsThrown < 3) {
-                        dartsThrown++;
+
+                    dartsThrown++;
+
+                    // Camera zoom in on dartboard
+                    if(dartsThrown == 3) {
+
+                        viewLock = true;
+
+                        setViewPosition(new Random().nextInt(3) + 3);
+
+                        new Timer().schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                setViewPosition(1);
+                                viewLock = false;
+                            }
+                        }, 2000);
+
                     }
                 }
 
@@ -409,5 +424,51 @@ public class GameScreen extends ScreenAdapter {
 
             }
         }, 0, 1000 / (int) THROW_FPS);
+    }
+
+    /**
+     * Sets the position of the viewpoint to a different predefined location.
+     * Positions:
+     * 1 - Thrower position, behind dart
+     * 2 - Observer position, to the side of the thrower
+     * 3, 4, 5 - Close ups of dartboard
+     * @param position
+     */
+    private void setViewPosition(int position) {
+
+        switch(position) {
+            case 1:
+                // Normal viewport position, as though looking directly at dartboard
+                perspectiveCamera.position.set(0.0f, 20.0f, -2500.0f);
+                perspectiveCamera.up.set(0.0f, 1.0f, 0.0f);
+                perspectiveCamera.lookAt(0.0f, 0.0f, 18700.0f);
+                break;
+            case 2:
+                // Side on standing view, waiting for turn view
+                perspectiveCamera.position.set(-10000.0f, 20.0f, -5000.0f);
+                perspectiveCamera.lookAt(2000.0f, 0.0f, 18700.0f);
+                break;
+            case 3:
+                // Close up view of dartboard #1
+                perspectiveCamera.position.set(-3000.0f, 0.0f, 14700.0f);
+                perspectiveCamera.lookAt(0.0f, 0.0f, 18700.0f);
+                break;
+            case 4:
+                // Close up view of dartboard #2
+                perspectiveCamera.position.set(3000.0f, -1000.0f, 12700.0f);
+                perspectiveCamera.lookAt(0.0f, 0.0f, 18700.0f);
+                break;
+            case 5:
+                // Close up view of dartboard #3
+                perspectiveCamera.position.set(0.0f, 3000.0f, 14700.0f);
+                perspectiveCamera.lookAt(0.0f, 0.0f, 18700.0f);
+                break;
+            default:
+                // Prints error message
+                System.out.println("ERROR: In setViewPosition(int position) method call - position parameter invalid");
+                break;
+        }
+
+        perspectiveCamera.update();
     }
 }

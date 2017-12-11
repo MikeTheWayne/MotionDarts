@@ -40,12 +40,10 @@ public class GameScreen extends ScreenAdapter {
     private AssetManager assetManager;
 
     private ModelInstance[] dartModelInstances = new ModelInstance[3];
-    private ModelInstance dartboardModelInst1;
+    static ModelInstance dartboardModelInst1;
     private ModelInstance environmentModelInst1;
 
     private Array<ModelInstance> instances = new Array<ModelInstance>();
-
-    private int dartsThrown = 0;
 
     private int screenWidth;
     private int screenHeight;
@@ -65,6 +63,8 @@ public class GameScreen extends ScreenAdapter {
 
     private boolean inFlight = false;
     private boolean viewLock = false;
+
+    static GameClass gameClass;
 
     /**
      * Game screen setup constructor<br>
@@ -168,9 +168,7 @@ public class GameScreen extends ScreenAdapter {
 
                 if(!inFlight && !viewLock) {
                     // Revert darts to be in hand
-                    if(dartsThrown == 3) {
-                        dartsThrown = 0;
-
+                    if(gameClass.scoreSystem.dartsThrown == 0) {
                         for(int i = 0; i < 3; i++) {
                             dartModelInstances[i].transform.setToTranslation(4000.0f + 100.0f * i, -10000.0f, -1000.0f);
                             dartModelInstances[i].transform.rotate(1.0f, 0.0f, 0.0f, 90);
@@ -179,9 +177,9 @@ public class GameScreen extends ScreenAdapter {
                     }
 
                     // Places dart in right hand from left hand (avoids annoying graphical flash of the dart not being centred)
-                    dartModelInstances[dartsThrown].transform.setToTranslation(0.0f, 0.0f, -500.0f);
-                    dartModelInstances[dartsThrown].transform.rotate(1.0f, 0.0f, 0.0f, 90);
-                    dartModelInstances[dartsThrown].transform.rotate(0.0f, 1.0f, 0.0f, 45);
+                    dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.setToTranslation(0.0f, 0.0f, -500.0f);
+                    dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.rotate(1.0f, 0.0f, 0.0f, 90);
+                    dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.rotate(0.0f, 1.0f, 0.0f, 45);
 
                     setViewPosition(1);
 
@@ -231,7 +229,7 @@ public class GameScreen extends ScreenAdapter {
             public boolean touchUp(int touchX, int touchY, int pointer, int button) {
                 if(!inFlight && !viewLock) {
                     // Dart throwing
-                    if(dartsThrown < 3) { // This avoids crash caused by misbehaving gopnik timer, occasionally running once more, even though it's been cancelled
+                    if(gameClass.scoreSystem.dartsThrown < 3) { // This avoids crash caused by misbehaving gopnik timer, occasionally running once more, even though it's been cancelled
                         dartThrow();
                     }
 
@@ -271,6 +269,20 @@ public class GameScreen extends ScreenAdapter {
             }
         }
 
+        // Score text output -- temporary, to be updated with UI
+        for(int i = 0; i < 3; i++) {
+            if(gameClass.scoreSystem.dartsThrown == 0 && gameClass.scoreSystem.turn > 0 && gameClass.scoreSystem.currentPlayer == 0) {
+                bitmapFont.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[gameClass.scoreSystem.turn-1][0][i], 10, 20 + (i * 20));
+                bitmapFont.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[gameClass.scoreSystem.turn-1][1][i], screenWidth - 50, 20 + (i * 20));
+            } else {
+                bitmapFont.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[gameClass.scoreSystem.turn][0][i], 10, 20 + (i * 20));
+                bitmapFont.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[gameClass.scoreSystem.turn][1][i], screenWidth - 50, 20 + (i * 20));
+            }
+        }
+
+        bitmapFont.draw(spriteBatch, "" + gameClass.scoreSystem.getScore()[0], 10, 80);
+        bitmapFont.draw(spriteBatch, "" + gameClass.scoreSystem.getScore()[1], screenWidth - 50, 80);
+
         spriteBatch.end();
 
         // Touch Down
@@ -281,13 +293,13 @@ public class GameScreen extends ScreenAdapter {
                 float aimSensitivity = 5.6f;
 
                 // isTouched() is called before InputAdapter, this avoids crashes
-                if(dartsThrown < 3) {
+                if(gameClass.scoreSystem.dartsThrown < 3) {
                     aimX = -(Gdx.input.getX() - (screenWidth / 2f)) * aimSensitivity;
                     aimY = -(Gdx.input.getY() - (screenHeight / 2f)) * aimSensitivity;
 
-                    dartModelInstances[dartsThrown].transform.setToTranslation(aimX, aimY, -500.0f);
-                    dartModelInstances[dartsThrown].transform.rotate(1.0f, 0.0f, 0.0f, 90);
-                    dartModelInstances[dartsThrown].transform.rotate(0.0f, 1.0f, 0.0f, 45);
+                    dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.setToTranslation(aimX, aimY, -500.0f);
+                    dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.rotate(1.0f, 0.0f, 0.0f, 90);
+                    dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.rotate(0.0f, 1.0f, 0.0f, 45);
 
                     perspectiveCamera.position.set(aimX, aimY + 20.0f, -2500.0f);
                     perspectiveCamera.update();
@@ -382,15 +394,15 @@ public class GameScreen extends ScreenAdapter {
 
                 if (translationCount < translations) {
                     // Translate the dart to the calculate position where it would be at that point in flight
-                    dartModelInstances[dartsThrown].transform.setToTranslation(aimX + ((landX - aimX / 10000.0f) * 10000.0f) / translations * translationCount, aimY + (yPos * 10000.0f), (distanceToBoard - 500.0f) / translations * translationCount);
+                    dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.setToTranslation(aimX + ((landX - aimX / 10000.0f) * 10000.0f) / translations * translationCount, aimY + (yPos * 10000.0f), (distanceToBoard - 500.0f) / translations * translationCount);
                 } else {
                     // Translate the dart to the exact position that it was calculated to land
-                    dartModelInstances[dartsThrown].transform.setToTranslation((landX * 10000.0f), (landY * 10000.0f), (distanceToBoard - 500.0f) / translations * translationCount);
+                    dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.setToTranslation((landX * 10000.0f), (landY * 10000.0f), (distanceToBoard - 500.0f) / translations * translationCount);
                 }
 
                 // Correct the rotation
-                dartModelInstances[dartsThrown].transform.rotate(1.0f, 0.0f, 0.0f, 90);
-                dartModelInstances[dartsThrown].transform.rotate(0.0f, 1.0f, 0.0f, 45);
+                dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.rotate(1.0f, 0.0f, 0.0f, 90);
+                dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.rotate(0.0f, 1.0f, 0.0f, 45);
 
                 // Check whether the animation should be ended
                 if(translationCount == translations  || yPos <= -1.73f) {
@@ -400,10 +412,10 @@ public class GameScreen extends ScreenAdapter {
 
                     inFlight = false;
 
-                    dartsThrown++;
+                    gameClass.newThrow(landX, landY);
 
                     // Camera zoom in on dartboard
-                    if(dartsThrown == 3) {
+                    if(gameClass.scoreSystem.dartsThrown == 0) {
 
                         viewLock = true;
 
@@ -432,7 +444,8 @@ public class GameScreen extends ScreenAdapter {
      * 1 - Thrower position, behind dart
      * 2 - Observer position, to the side of the thrower
      * 3, 4, 5 - Close ups of dartboard
-     * @param position
+     *
+     * @param position receives an integer, which sets the predefined position to be
      */
     private void setViewPosition(int position) {
 

@@ -49,6 +49,7 @@ public class GameClass {
 
             // Reset darts thrown
             scoreSystem.dartsThrown = 0;
+            GameScreen.dartsReset = false;
 
             if(competitionType > 0) {
                 // Advance turn (primarily for scoring)

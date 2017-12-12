@@ -64,6 +64,8 @@ public class GameScreen extends ScreenAdapter {
     private boolean inFlight = false;
     private boolean viewLock = false;
 
+    static boolean dartsReset = false;
+
     static GameClass gameClass;
 
     /**
@@ -168,12 +170,13 @@ public class GameScreen extends ScreenAdapter {
 
                 if(!inFlight && !viewLock) {
                     // Revert darts to be in hand
-                    if(gameClass.scoreSystem.dartsThrown == 0) {
+                    if(gameClass.scoreSystem.dartsThrown == 0 && !dartsReset) {
                         for(int i = 0; i < 3; i++) {
                             dartModelInstances[i].transform.setToTranslation(4000.0f + 100.0f * i, -10000.0f, -1000.0f);
                             dartModelInstances[i].transform.rotate(1.0f, 0.0f, 0.0f, 90);
                             dartModelInstances[i].transform.rotate(0.0f, 1.0f, 0.0f, 45);
                         }
+                        dartsReset = true;
                     }
 
                     // Places dart in right hand from left hand (avoids annoying graphical flash of the dart not being centred)
@@ -290,6 +293,17 @@ public class GameScreen extends ScreenAdapter {
 
             // Dart aiming
             if(!inFlight && !viewLock) {
+
+                // If player holds down finger during camera closeup, touchDown doesn't get called, but this does
+                if(gameClass.scoreSystem.dartsThrown == 0 && !dartsReset) {
+                    for(int i = 0; i < 3; i++) {
+                        dartModelInstances[i].transform.setToTranslation(4000.0f + 100.0f * i, -10000.0f, -1000.0f);
+                        dartModelInstances[i].transform.rotate(1.0f, 0.0f, 0.0f, 90);
+                        dartModelInstances[i].transform.rotate(0.0f, 1.0f, 0.0f, 45);
+                        dartsReset = true;
+                    }
+                }
+
                 float aimSensitivity = 5.6f;
 
                 // isTouched() is called before InputAdapter, this avoids crashes

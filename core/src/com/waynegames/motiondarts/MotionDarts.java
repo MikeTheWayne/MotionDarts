@@ -25,8 +25,8 @@ public class MotionDarts extends Game {
         hitZones = loadHitZones();
 
         // Start game
-        GameScreen.gameClass = new GameClass(1, 4);
         setScreen(new GameScreen(this));
+        GameScreen.gameClass = new GameClass(1, 4);
     }
 
     @Override
@@ -62,6 +62,9 @@ public class MotionDarts extends Game {
                 if(r == 255) {
                     // Miss
                     hitZonesOut[i][j] = 0;
+                } else if(r == 128 && g == 128 && b == 128) {
+                    // Wire hit
+                    hitZonesOut[i][j] = 83;
                 } else if(r == g && g == b) {
                     // Normal scoring area: Zones 1 - 40
                     hitZonesOut[i][j] = 40 - (r - 55) / 5;

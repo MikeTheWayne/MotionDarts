@@ -3,6 +3,8 @@ package com.waynegames.motiondarts;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.math.collision.BoundingBox;
 
+import java.util.Random;
+
 /**
  * Parent class for the score classes, features all default score keeping variables and keeps track
  * of the turn, darts thrown per turn, and the current player.
@@ -19,6 +21,14 @@ public class ScoreSystem {
     int[][][] dartScore = new int[100][2][3]; // [turn][player][throw] Integer value of each dart's score
     int[][][] dartNature = new int[100][2][3]; // [turn][player][throw] Nature of throw (miss, normal, double, triple, bull, etc.)
 
+    private BoundingBox dartboardBox;
+
+    ScoreSystem() {
+        // Get dartboard measurements
+        dartboardBox = new BoundingBox();
+        GameScreen.dartboardModelInst1.calculateBoundingBox(dartboardBox);
+    }
+
     /**
      * Converts the landing position into coordinates on the dartboard, inputs coordinates into hitZones array,
      * then outputs the contents of the memory location of that array. Bottom left of the dartboard is (0, 0),
@@ -30,20 +40,22 @@ public class ScoreSystem {
      */
     int landZone(float landX, float landY) {
 
-        // Get dartboard measurements
-        BoundingBox dartboardBox = new BoundingBox();
-        GameScreen.dartboardModelInst1.calculateBoundingBox(dartboardBox);
-
         // Convert values into coordinates
         int xCoord = (int) (-landX * 10000 * (1000 / dartboardBox.getDepth())) + 500;
         int yCoord = (int) (landY * 10000 * (1000 / dartboardBox.getHeight())) + 500;
 
+        int zone;
+
         // If dart lands on the dartboard's bounding box then it will be within the array bounds, otherwise it's definitely missed
         try {
-            return MotionDarts.hitZones[xCoord][yCoord];
+            zone = MotionDarts.hitZones[xCoord][yCoord];
         } catch (ArrayIndexOutOfBoundsException e) {
-            return 0;
+            zone = 0;
         }
+
+        zone = (zone == 83) ? wireHit(xCoord, yCoord, 1) : zone;
+
+        return zone;
 
     }
 
@@ -91,6 +103,35 @@ public class ScoreSystem {
      */
     void endGame() {
         // End of game
+    }
+
+    /**
+     * If the dart hits a wire, this recursive method will find the nearest scoring area
+     *
+     * @param xPix X coordinate of dart landing
+     * @param yPix Y coordinate of dart landing
+     * @param searchRadius How far to search away from centre, increases with each recursion
+     * @return Randomly selected nearby scoring zone
+     */
+    private int wireHit(int xPix, int yPix, int searchRadius) {
+
+        int[] hitArray = new int[(searchRadius * 2 + 1) * (searchRadius * 2 + 1)];
+        int hits = 0;
+
+        for(int i = xPix - searchRadius; i < xPix + searchRadius; i++) {
+            for(int j = yPix - searchRadius; j < yPix + searchRadius; j++) {
+                if(MotionDarts.hitZones[i][j] != 83) {
+                    hitArray[hits] = MotionDarts.hitZones[i][j];
+                    hits++;
+                }
+            }
+        }
+
+        if(hits > 0) {
+            return hitArray[new Random().nextInt(hits)];
+        } else{
+            return wireHit(xPix, yPix, searchRadius + 1);
+        }
     }
 
 }

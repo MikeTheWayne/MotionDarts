@@ -2,8 +2,11 @@ package com.waynegames.motiondarts;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g3d.Model;
 
 /**
  * The base LibGdx class, begins as soon as the application is opened.
@@ -15,6 +18,8 @@ public class MotionDarts extends Game {
 
     static int[][] hitZones = new int[1000][1000];
 
+    static AssetManager assetManager;
+
     /**
      * LibGdx default class, called when application is opened.
      * Immediately sets the screen to MenuScreen.
@@ -23,16 +28,19 @@ public class MotionDarts extends Game {
     public void create () {
         // Loading
         hitZones = loadHitZones();
+        loadAssets();
 
         // Start game
-        setScreen(new GameScreen(this));
-        GameScreen.gameClass = new GameClass(1, 4);
+        setScreen(new MenuScreen(this));
     }
 
     @Override
     public void render () {
         super.render();
     }
+
+    @Override
+    public void dispose() {assetManager.dispose();}
 
 
     /**
@@ -83,6 +91,29 @@ public class MotionDarts extends Game {
         }
 
         return hitZonesOut;
+    }
+
+    /**
+     * Handles all of the loading for models and textures, any assets.
+     */
+    private void loadAssets() {
+
+        // Load assets from assets folder
+        assetManager = new AssetManager();
+
+        assetManager.load("dart_01.g3db", Model.class);
+        assetManager.load("dartboard_01.g3db", Model.class);
+        assetManager.load("environment_01.g3db", Model.class);
+        assetManager.load("menu_spacesurround.g3db", Model.class);
+
+        assetManager.load("defaultButton.png", Texture.class);
+        assetManager.load("settingsButton.png", Texture.class);
+        assetManager.load("languageButton.png", Texture.class);
+        assetManager.load("exitButton.png", Texture.class);
+        assetManager.load("title.png", Texture.class);
+
+        assetManager.finishLoading();
+
     }
 
 }

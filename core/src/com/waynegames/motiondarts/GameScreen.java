@@ -37,13 +37,11 @@ public class GameScreen extends ScreenAdapter {
     private PerspectiveCamera perspectiveCamera;
     private Environment environment;
 
-    private AssetManager assetManager;
-
-    private ModelInstance[] dartModelInstances = new ModelInstance[3];
+    static ModelInstance[] dartModelInstances = new ModelInstance[3];
     static ModelInstance dartboardModelInst1;
-    private ModelInstance environmentModelInst1;
+    static ModelInstance environmentModelInst1;
 
-    private Array<ModelInstance> instances = new Array<ModelInstance>();
+    static Array<ModelInstance> instances = new Array<ModelInstance>();
 
     private int screenWidth;
     private int screenHeight;
@@ -98,26 +96,8 @@ public class GameScreen extends ScreenAdapter {
         setViewPosition(1);
 
 
-        /* Model Loading */
-        // Load assets into game, to be moved into separate load() method, called on startup for efficiency
-        assetManager = new AssetManager();
-
-        assetManager.load("dart_01.g3db", Model.class);
-        assetManager.load("dartboard_01.g3db", Model.class);
-        assetManager.load("environment_01.g3db", Model.class);
-        assetManager.finishLoading();
-
-        // Get the loaded models from the assetManager
-        Model dartModel1 = assetManager.get("dart_01.g3db", Model.class);
-        Model dartboardModel1 = assetManager.get("dartboard_01.g3db", Model.class);
-        Model environmentModel1 = assetManager.get("environment_01.g3db", Model.class);
-
-        dartModelInstances[0] = new ModelInstance(dartModel1);
-        dartModelInstances[1] = new ModelInstance(dartModel1);
-        dartModelInstances[2] = new ModelInstance(dartModel1);
-        dartboardModelInst1 = new ModelInstance(dartboardModel1);
-        environmentModelInst1 = new ModelInstance(environmentModel1);
-
+        /* Models Setup */
+        // Add ModelInstances to ModelInstance array
         instances.add(dartModelInstances[0]);
         instances.add(dartModelInstances[1]);
         instances.add(dartModelInstances[2]);
@@ -145,7 +125,6 @@ public class GameScreen extends ScreenAdapter {
 
         environmentModelInst1.transform.setToTranslation(0.0f, -4700.0f, distanceToBoard + 200.0f);
         environmentModelInst1.transform.rotate(0.0f, 1.0f, 0.0f, 90);
-
 
         /* Game Environment */
         environment = new Environment();
@@ -330,7 +309,7 @@ public class GameScreen extends ScreenAdapter {
         modelBatch.dispose();
         spriteBatch.dispose();
         instances.clear();
-        assetManager.dispose();
+        MotionDarts.assetManager.dispose();
     }
 
     @Override

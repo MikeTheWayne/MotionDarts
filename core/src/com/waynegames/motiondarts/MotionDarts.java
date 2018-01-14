@@ -101,16 +101,37 @@ public class MotionDarts extends Game {
         // Load assets from assets folder
         assetManager = new AssetManager();
 
+        // Models
         assetManager.load("dart_01.g3db", Model.class);
         assetManager.load("dartboard_01.g3db", Model.class);
         assetManager.load("environment_01.g3db", Model.class);
         assetManager.load("menu_spacesurround.g3db", Model.class);
 
+        // Textures
         assetManager.load("defaultButton.png", Texture.class);
         assetManager.load("settingsButton.png", Texture.class);
         assetManager.load("languageButton.png", Texture.class);
+        assetManager.load("backButton.png", Texture.class);
         assetManager.load("exitButton.png", Texture.class);
         assetManager.load("title.png", Texture.class);
+        assetManager.load("submenu_background.png", Texture.class);
+        assetManager.load("tickButton.png", Texture.class);
+        assetManager.load("connectButton.png", Texture.class);
+        assetManager.load("helpButton.png", Texture.class);
+        assetManager.load("selectedLanguage.png", Texture.class);
+        assetManager.load("selectedButton.png", Texture.class);
+        assetManager.load("selectedSmallButton.png", Texture.class);
+
+        assetManager.load("flag1.png", Texture.class);
+        assetManager.load("flag2.png", Texture.class);
+        assetManager.load("flag3.png", Texture.class);
+        assetManager.load("flag4.png", Texture.class);
+        assetManager.load("flag5.png", Texture.class);
+        assetManager.load("flag6.png", Texture.class);
+        assetManager.load("flag7.png", Texture.class);
+        assetManager.load("flag8.png", Texture.class);
+        assetManager.load("flag9.png", Texture.class);
+        assetManager.load("flag10.png", Texture.class);
 
         assetManager.finishLoading();
 

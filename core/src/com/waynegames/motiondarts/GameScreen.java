@@ -64,6 +64,8 @@ public class GameScreen extends ScreenAdapter {
 
     static boolean dartsReset = false;
 
+    private int resetTimer = 0;
+
     static GameClass gameClass;
 
     /**
@@ -192,14 +194,34 @@ public class GameScreen extends ScreenAdapter {
                             rotY = (rotY == 0f) ? -90 : rotY;
 
                             // Gravity elimination
-                            accelX = -(accelX + (float) (9.80665 * Math.sin(Math.toRadians(rotY)) * Math.cos(Math.toRadians(rotX))));
-                            accelY = accelY + (float) (9.80665 * Math.sin(Math.toRadians(rotX)));
-                            accelZ = -(accelZ - (float) (9.80665 * Math.cos(Math.toRadians(rotX)) * Math.cos(Math.toRadians(rotY))));
+                            accelX = (int) -(accelX + (float) (9.80665 * Math.sin(Math.toRadians(rotY)) * Math.cos(Math.toRadians(rotX))));
+                            accelY = (int) accelY + (float) (9.80665 * Math.sin(Math.toRadians(rotX)));
+                            accelZ = (int) -(accelZ - (float) (9.80665 * Math.cos(Math.toRadians(rotX)) * Math.cos(Math.toRadians(rotY))));
 
                             // Velocity calculation
                             velX += accelX / 50;
                             velY += accelY / 50;
                             velZ += accelZ / 50;
+
+                            // Resets
+                            // Reset Timer (resets if the player shakes phone, then holds for a bit and releases)
+                            if(resetTimer > 10) {
+                                velX = 0;
+                                velY = 0;
+                                velZ = 0;
+                                resetTimer = 0;
+                            } else if(Math.sqrt(accelX * accelX + accelY * accelY + accelZ * accelZ) > 0) {
+                                resetTimer = 0;
+                            } else{
+                                resetTimer++;
+                            }
+
+                            // Ensures the player can't shake the device to spoof the velocity calculator into going faster than they are
+                            if(velZ > 4) {
+                                velX = 0;
+                                velY = 0;
+                                velZ = 0;
+                            }
 
                         }
                     }, 0, 20);

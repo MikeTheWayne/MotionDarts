@@ -1,0 +1,47 @@
+﻿SINGLE PLAYER
+MULTI-PLAYER
+CUSTOMISE
+GAME SETUP
+OPPONENT DIFFICULTY
+GAME MODE
+PLAY
+EASY
+MEDIUM
+PRO
+501
+AROUND
+THE CLOCK
+CRICKET
+UK\n CRICKET
+PRACTICE MODE
+MULTI-PLAYER
+MULTI-PLAYER TYPE
+SAME DEVICE
+GLOBAL SERVER
+PASS THE PHONE BETWEEN 2 PLAYERS
+PLAY AGAINST A RANDOM PLAYER (WI-FI)
+CONNECT
+CONNECT TO PLAYER
+CONNECT TO A SPECIFIC PLAYER WORLDWIDE (WI-FI)
+TEMPORARY USERNAME
+OPPONENT PLAYER USERNAME
+Temporary Username
+Enter a username
+Opponent Username
+Enter Opponent's Username
+Username is available
+Someone else is using this username, choose another
+Opponent username exists
+Opponent doesn't exist
+1. Create a username and type it into the top username\\n box
+2. Type in your friend's user name into the lower text box
+3. Your friend must also type your username into their\n text box
+4. Both of you must then press 'connect' to start the\n game
+CONNECTING...
+CUSTOMISATION
+DARTS
+LOCATION
+SETTINGS
+LANGUAGES
+HOW TO PLAY
+GAME MODES

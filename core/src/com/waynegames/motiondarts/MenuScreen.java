@@ -1,6 +1,5 @@
 package com.waynegames.motiondarts;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
@@ -23,8 +22,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.Array;
 
 import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Handles all of the touch input and graphics output for the menu interface.
@@ -78,25 +75,17 @@ public class MenuScreen extends ScreenAdapter {
     private Sprite selectedButton;
     private Sprite selectedButtonSmall;
     private Sprite selectedLanguage;
+    private Sprite langImage;
 
     private static Array<ModelInstance> instances = new Array<ModelInstance>();
 
     private int screenWidth;
     private int screenHeight;
 
-    private int language = 1;
-    private String[][] menuText = {{"English", "български", "Русский", "Español", "Deutsche", "Français", "中文", "日本語", "हिन्दी भाषा", "Português"},
-            {"SINGLE PLAYER", "MULTI-PLAYER", "CUSTOMISE", "GAME SETUP", "OPPONENT DIFFICULTY", "GAME MODE",
-            "PLAY", "EASY", "MEDIUM", "PRO", "501", "AROUND", "THE CLOCK", "CRICKET", "UK CRICKET", "PRACTICE MODE", "MULTI-PLAYER",
-            "MULTI-PLAYER TYPE", "SAME DEVICE", "GLOBAL SERVER", "PASS THE PHONE BETWEEN 2 PLAYERS", "PLAY AGAINST A RANDOM PLAYER (WI-FI)",
-            "CONNECT", "CONNECT TO PLAYER", "CONNECT TO A SPECIFIC PLAYER WORLDWIDE (WI-FI)", "TEMPORARY USERNAME", "OPPONENT PLAYER USERNAME",
-            "Temporary Username", "Enter a username", "Opponent Username", "Enter Opponent's Username", "Username is available",
-            "Someone else is using this username, choose another", "Opponent username exists", "Opponent doesn't exist",
-            "1. Create a username and type it into the top username\n box", "2. Type in your friend's user name into the lower text box",
-            "3. Your friend must also type your username into their\n text box", "4. Both of you must then press 'connect' to start the\n game",
-            "CONNECTING...", "CUSTOMISATION", "DARTS", "LOCATION", "SETTINGS", "LANGUAGES", "HOW TO PLAY","GAME MODES"}, {}};
-    private int[][] menuTextIndent = {{}, {12, 20, 46, 140, 0, 0, 102, 62, 33, 70, 0, 0, 0, 0, 0, 0, 102, 0, 0, 0, 0, 0, 58, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 75, 0, 0, 195, 156, 130, 140}};
+    private int language = 0;
+
+    static String[] menuText;
+    static int[] menuTextIndent;
 
     // 1 = Main Menu, 2 = Game Setup Screen, 3 = Multiplayer Setup Screen, 4 = Customisation Menu, 5 = Settings Menu, 6 = Language Menu, 7 = Tutorial Screen, 8 = Summary Screen, 9 = Server Connection Screen, 10 = Game Mode Info Screen
     private int menuScreen = 1;
@@ -144,49 +133,7 @@ public class MenuScreen extends ScreenAdapter {
         shapeRenderer = new ShapeRenderer();
         shapeRenderer.setAutoShapeType(true);
 
-        /* Fonts Setup*/
-        freeTypeFontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("agencyfb.ttf"));
-        freeTypeFontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-
-        freeTypeFontParameter.characters = charAnalysis();
-        freeTypeFontParameter.color = new Color(255, 255, 255, 255);
-        freeTypeFontParameter.borderColor = new Color(0, 0, 132, 255);
-        freeTypeFontParameter.borderWidth = 2;
-
-        // Button and Subheading Font
-        freeTypeFontParameter.size = 55 * scaleConstant;
-        menuButtonFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
-
-        // Description Font
-        freeTypeFontParameter.size = 30 * scaleConstant;
-        menuDescriptionFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
-
-        // Status Font (red)
-        freeTypeFontParameter.color = new Color(255, 0, 0, 255);
-        freeTypeFontParameter.size = 25 * scaleConstant;
-        freeTypeFontParameter.borderWidth = 0;
-        menuStatusFontRed = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
-
-        // Status Font (green)
-        freeTypeFontParameter.color = new Color(0, 255, 0, 255);
-        menuStatusFontGreen = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
-
-        // Input Text (for text input boxes)
-        freeTypeFontParameter.color = new Color(0, 0, 0, 255);
-        freeTypeFontParameter.size = 55 * scaleConstant;
-        menuInputFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
-
-        freeTypeFontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("agencyfbbold.ttf"));
-
-        // Button Font (Bold)
-        freeTypeFontParameter.color = new Color(255, 255, 255, 255);
-        freeTypeFontParameter.size = 55 * scaleConstant;
-        freeTypeFontParameter.borderWidth = 2;
-        menuButtonFontBold = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
-
-        // Title Font
-        freeTypeFontParameter.size = 100 * scaleConstant;
-        menuTitleFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+        setupFonts();
 
         /* Viewpoint Setup */
         // PerspectiveCamera setup: Field of Vision, viewpoint width, viewpoint height
@@ -257,6 +204,7 @@ public class MenuScreen extends ScreenAdapter {
         Texture selectedButtonTexture = MotionDarts.assetManager.get("selectedButton.png", Texture.class);
         Texture selectedButtonSmallTexture = MotionDarts.assetManager.get("selectedSmallButton.png", Texture.class);
         Texture selectedLanguageTexture = MotionDarts.assetManager.get("selectedLanguage.png", Texture.class);
+        Texture langImageTexture = MotionDarts.assetManager.get("langImage.png", Texture.class);
 
         defaultButton = new Sprite(defaultButtonTexture);
         settingsButton = new Sprite(settingsButtonTexture);
@@ -281,6 +229,7 @@ public class MenuScreen extends ScreenAdapter {
         selectedButton = new Sprite(selectedButtonTexture);
         selectedButtonSmall = new Sprite(selectedButtonSmallTexture);
         selectedLanguage = new Sprite(selectedLanguageTexture);
+        langImage = new Sprite(langImageTexture);
 
         /* Game Environment */
         environment = new Environment();
@@ -359,27 +308,47 @@ public class MenuScreen extends ScreenAdapter {
                     case 6:
                         if(touchX > 120 * scaleConstant && touchX < 320 * scaleConstant) {
                             if(touchY < (screenHeight - 950 * scaleConstant) && touchY > (screenHeight - 1075 * scaleConstant)) {
-                                language = 1;
+                                language = 0;
+                                setupFonts();
+                                MotionDarts.loadLanguage(language);
                             } else if(touchY < (screenHeight - 750 * scaleConstant) && touchY > (screenHeight - 875 * scaleConstant)) {
-                                language = 3;
+                                language = 2;
+                                setupFonts();
+                                MotionDarts.loadLanguage(language);
                             } else if(touchY < (screenHeight - 550 * scaleConstant) && touchY > (screenHeight - 675 * scaleConstant)) {
-                                language = 5;
+                                language = 4;
+                                setupFonts();
+                                MotionDarts.loadLanguage(language);
                             } else if(touchY < (screenHeight - 350 * scaleConstant) && touchY > (screenHeight - 475 * scaleConstant)) {
-                                language = 7;
+                                language = 6;
+                                setupFonts();
+                                MotionDarts.loadLanguage(language);
                             } else if(touchY < (screenHeight - 150 * scaleConstant) && touchY > (screenHeight - 275 * scaleConstant)) {
-                                language = 9;
+                                language = 8;
+                                setupFonts();
+                                MotionDarts.loadLanguage(language);
                             }
                         } else if(touchX > 400 * scaleConstant && touchX < 600 * scaleConstant) {
                             if(touchY < (screenHeight - 950 * scaleConstant) && touchY > (screenHeight - 1075 * scaleConstant)) {
-                                language = 2;
+                                language = 1;
+                                setupFonts();
+                                MotionDarts.loadLanguage(language);
                             } else if(touchY < (screenHeight - 750 * scaleConstant) && touchY > (screenHeight - 875 * scaleConstant)) {
-                                language = 4;
+                                language = 3;
+                                setupFonts();
+                                MotionDarts.loadLanguage(language);
                             } else if(touchY < (screenHeight - 550 * scaleConstant) && touchY > (screenHeight - 675 * scaleConstant)) {
-                                language = 6;
+                                language = 5;
+                                setupFonts();
+                                MotionDarts.loadLanguage(language);
                             } else if(touchY < (screenHeight - 350 * scaleConstant) && touchY > (screenHeight - 475 * scaleConstant)) {
-                                language = 8;
+                                language = 7;
+                                setupFonts();
+                                MotionDarts.loadLanguage(language);
                             } else if(touchY < (screenHeight - 150 * scaleConstant) && touchY > (screenHeight - 275 * scaleConstant)) {
-                                language = 10;
+                                language = 9;
+                                setupFonts();
+                                MotionDarts.loadLanguage(language);
                             }
                         }
                         break;
@@ -554,7 +523,7 @@ public class MenuScreen extends ScreenAdapter {
                                     public void canceled() {
 
                                     }
-                                }, menuText[language][27], tempUsername, menuText[language][28]);
+                                }, menuText[27], tempUsername, menuText[28]);
 
                             } else if(touchY < (screenHeight - 735 * scaleConstant) && touchY > (screenHeight - 815 * scaleConstant)) {
 
@@ -581,7 +550,7 @@ public class MenuScreen extends ScreenAdapter {
                                     public void canceled() {
 
                                     }
-                                }, menuText[language][29], opponentUsername, menuText[language][30]);
+                                }, menuText[29], opponentUsername, menuText[30]);
 
                             }
                         }
@@ -695,43 +664,99 @@ public class MenuScreen extends ScreenAdapter {
         perspectiveCamera.update();
     }
 
-    /**
-     * Iterates through the menuText array, building up a list of all the unique characters in the
-     * array. This will be used to specify every character that the freetype font will need to use.
-     *
-     * @return A String of all of the characters that will be used by the menus
-     */
-    private String charAnalysis() {
+    private void setupFonts() {
+        switch(language) {
+            case 0:
+                /* Fonts Setup*/
+                freeTypeFontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/agencyfb.ttf"));
+                freeTypeFontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
 
-        char[] chars = new char[400];
-        int charsIndex = 0;
+                freeTypeFontParameter.color = new Color(255, 255, 255, 255);
+                freeTypeFontParameter.borderColor = new Color(0, 0, 132, 255);
+                freeTypeFontParameter.borderWidth = 2;
 
-        // Iterate through all of the menuText values
-        for(int i = 0; i < menuText[language].length; i++) {
-            for(int j = 0; j < menuText[language][i].length(); j++) {
+                // Button and Subheading Font
+                freeTypeFontParameter.size = 55 * scaleConstant;
+                menuButtonFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
 
-                // Get the current character
-                char currentChar = menuText[language][i].charAt(j);
-                boolean found = false;
+                // Description Font
+                freeTypeFontParameter.size = 30 * scaleConstant;
+                menuDescriptionFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
 
-                // Iterate through the char array, to check whether the current character is already in the array
-                for (int k : chars) {
-                    if(chars[k] == currentChar) {
-                        found = true;
-                        break;
-                    }
-                }
+                // Status Font (red)
+                freeTypeFontParameter.color = new Color(255, 0, 0, 255);
+                freeTypeFontParameter.size = 25 * scaleConstant;
+                freeTypeFontParameter.borderWidth = 0;
+                menuStatusFontRed = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
 
-                // If it hasn't been found, add it to the array
-                if(!found) {
-                    chars[charsIndex] = currentChar;
-                    charsIndex++;
-                }
+                // Status Font (green)
+                freeTypeFontParameter.color = new Color(0, 255, 0, 255);
+                menuStatusFontGreen = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
 
-            }
+                // Input Text (for text input boxes)
+                freeTypeFontParameter.color = new Color(0, 0, 0, 255);
+                freeTypeFontParameter.size = 55 * scaleConstant;
+                menuInputFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+
+                freeTypeFontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/agencyfbbold.ttf"));
+
+                // Button Font (Bold)
+                freeTypeFontParameter.color = new Color(255, 255, 255, 255);
+                freeTypeFontParameter.size = 55 * scaleConstant;
+                freeTypeFontParameter.borderWidth = 2;
+                menuButtonFontBold = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+
+                // Title Font
+                freeTypeFontParameter.size = 100 * scaleConstant;
+                menuTitleFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+
+                break;
+            case 1:
+            case 2:
+                /* Fonts Setup*/
+                freeTypeFontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/agencyfbcyrillic.ttf"));
+                freeTypeFontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+
+                freeTypeFontParameter.characters = "ЁЪЯШЕДСАЗХЦВФРТГБНЧЫУЙМКИОЛПЬЮЖЩЭёъяшедсазхцвфртгбнчыуймкиолпьюжщэ501234.()";
+                freeTypeFontParameter.color = new Color(255, 255, 255, 255);
+                freeTypeFontParameter.borderColor = new Color(0, 0, 132, 255);
+                freeTypeFontParameter.borderWidth = 2;
+
+                // Button and Subheading Font
+                freeTypeFontParameter.size = 55 * scaleConstant;
+                menuButtonFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+
+                // Description Font
+                freeTypeFontParameter.size = 30 * scaleConstant;
+                menuDescriptionFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+
+                // Status Font (red)
+                freeTypeFontParameter.color = new Color(255, 0, 0, 255);
+                freeTypeFontParameter.size = 25 * scaleConstant;
+                freeTypeFontParameter.borderWidth = 0;
+                menuStatusFontRed = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+
+                // Status Font (green)
+                freeTypeFontParameter.color = new Color(0, 255, 0, 255);
+                menuStatusFontGreen = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+
+                // Input Text (for text input boxes)
+                freeTypeFontParameter.color = new Color(0, 0, 0, 255);
+                freeTypeFontParameter.size = 55 * scaleConstant;
+                menuInputFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+
+                // Button Font (Bold)
+                freeTypeFontParameter.color = new Color(255, 255, 255, 255);
+                freeTypeFontParameter.size = 55 * scaleConstant;
+                freeTypeFontParameter.borderWidth = 2;
+                menuButtonFontBold = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+
+                // Title Font
+                freeTypeFontParameter.size = 100 * scaleConstant;
+                menuTitleFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+
+                break;
         }
-
-        return String.valueOf(chars);
     }
 
     private void backgroundAnimation() {
@@ -803,9 +828,9 @@ public class MenuScreen extends ScreenAdapter {
         spriteBatch.draw(exitButton, screenWidth - 90 * scaleConstant, 10 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
 
         // Main Button Text
-        menuButtonFont.draw(spriteBatch, menuText[language][0], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[language][0] * scaleConstant, screenHeight / 16 * 7 + 96 * scaleConstant);
-        menuButtonFont.draw(spriteBatch, menuText[language][1], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[language][1] * scaleConstant, screenHeight / 16 * 7 - 200 * scaleConstant + 96 * scaleConstant);
-        menuButtonFont.draw(spriteBatch, menuText[language][2], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[language][2] * scaleConstant, screenHeight / 16 * 7 - 400 * scaleConstant + 96 * scaleConstant);
+        menuButtonFont.draw(spriteBatch, menuText[0], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[0] * scaleConstant, screenHeight / 16 * 7 + 96 * scaleConstant);
+        menuButtonFont.draw(spriteBatch, menuText[1], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[1] * scaleConstant, screenHeight / 16 * 7 - 200 * scaleConstant + 96 * scaleConstant);
+        menuButtonFont.draw(spriteBatch, menuText[2], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[2] * scaleConstant, screenHeight / 16 * 7 - 400 * scaleConstant + 96 * scaleConstant);
 
         spriteBatch.end();
     }
@@ -823,26 +848,26 @@ public class MenuScreen extends ScreenAdapter {
         spriteBatch.draw(helpButton, 620 * scaleConstant, 830 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
 
         // Title text
-        menuTitleFont.draw(spriteBatch, menuText[language][3], menuTextIndent[language][3] * scaleConstant, screenHeight / 32 * 31);
+        menuTitleFont.draw(spriteBatch, menuText[3], menuTextIndent[3] * scaleConstant, screenHeight / 32 * 31);
         // Button text
-        menuButtonFontBold.draw(spriteBatch, menuText[language][6], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[language][6] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, menuText[6], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[6] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
 
         // Sub heading text
-        menuButtonFont.draw(spriteBatch, menuText[language][4], 30 * scaleConstant, screenHeight / 32 * 28);
-        menuButtonFont.draw(spriteBatch, menuText[language][5], 30 * scaleConstant, screenHeight / 32 * 22);
-        menuButtonFont.draw(spriteBatch, menuText[language][15], 125 * scaleConstant, screenHeight / 32 * 9);
+        menuButtonFont.draw(spriteBatch, menuText[4], 30 * scaleConstant, screenHeight / 32 * 28);
+        menuButtonFont.draw(spriteBatch, menuText[5], 30 * scaleConstant, screenHeight / 32 * 22);
+        menuButtonFont.draw(spriteBatch, menuText[15], 125 * scaleConstant, screenHeight / 32 * 9);
 
         // Difficulty Selection text
-        menuButtonFontBold.draw(spriteBatch, menuText[language][7], (30 + menuTextIndent[language][7]) * scaleConstant, 1038 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[language][8], (250 + menuTextIndent[language][8]) * scaleConstant, 1038 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[language][9], (470 + menuTextIndent[language][9]) * scaleConstant, 1038 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, menuText[7], (30 + menuTextIndent[7]) * scaleConstant, 1038 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, menuText[8], (250 + menuTextIndent[8]) * scaleConstant, 1038 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, menuText[9], (470 + menuTextIndent[9]) * scaleConstant, 1038 * scaleConstant);
 
         // Game Mode Selection text
-        menuButtonFontBold.draw(spriteBatch, menuText[language][10], 40 * scaleConstant, 664 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[language][11], 365 * scaleConstant, 714 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[language][12], 365 * scaleConstant, 664 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[language][13], 40 * scaleConstant, 459 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[language][14], 365 * scaleConstant, 459 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, menuText[10], 40 * scaleConstant, 664 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, menuText[11], 365 * scaleConstant, 714 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, menuText[12], 365 * scaleConstant, 664 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, menuText[13], 40 * scaleConstant, 459 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, menuText[14], 365 * scaleConstant, 459 * scaleConstant);
 
         spriteBatch.end();
 
@@ -901,36 +926,36 @@ public class MenuScreen extends ScreenAdapter {
         spriteBatch.draw(helpButton, 620 * scaleConstant, 650 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
 
         // Title text
-        menuTitleFont.draw(spriteBatch, menuText[language][16], menuTextIndent[language][16] * scaleConstant, screenHeight / 32 * 31);
+        menuTitleFont.draw(spriteBatch, menuText[16], menuTextIndent[16] * scaleConstant, screenHeight / 32 * 31);
         // Button text
         if(selectedOpposition == 5) {
             if(showConnecting) {
-                menuButtonFont.draw(spriteBatch, menuText[language][39], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[language][39] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
+                menuButtonFont.draw(spriteBatch, menuText[39], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[39] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
             } else{
-                menuButtonFontBold.draw(spriteBatch, menuText[language][22], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[language][22] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
+                menuButtonFontBold.draw(spriteBatch, menuText[22], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[22] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
             }
         } else{
-            menuButtonFontBold.draw(spriteBatch, menuText[language][6], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[language][6] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
+            menuButtonFontBold.draw(spriteBatch, menuText[6], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[6] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
         }
         // Sub heading text
-        menuButtonFont.draw(spriteBatch, menuText[language][17], 30 * scaleConstant, screenHeight / 32 * 28);
-        menuButtonFont.draw(spriteBatch, menuText[language][5], 30 * scaleConstant, screenHeight / 32 * 18 - 20 * scaleConstant);
+        menuButtonFont.draw(spriteBatch, menuText[17], 30 * scaleConstant, screenHeight / 32 * 28);
+        menuButtonFont.draw(spriteBatch, menuText[5], 30 * scaleConstant, screenHeight / 32 * 18 - 20 * scaleConstant);
 
         // Multiplayer Type Selector text
-        menuButtonFontBold.draw(spriteBatch, menuText[language][18], 40 * scaleConstant, 1045 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[language][19], 40 * scaleConstant, 945 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[language][23], 40 * scaleConstant, 845 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, menuText[18], 40 * scaleConstant, 1045 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, menuText[19], 40 * scaleConstant, 945 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, menuText[23], 40 * scaleConstant, 845 * scaleConstant);
         // Multiplayer Type Selector description text
-        menuDescriptionFont.draw(spriteBatch, menuText[language][20], 40 * scaleConstant, 990 * scaleConstant);
-        menuDescriptionFont.draw(spriteBatch, menuText[language][21], 40 * scaleConstant, 890 * scaleConstant);
-        menuDescriptionFont.draw(spriteBatch, menuText[language][24], 40 * scaleConstant, 790 * scaleConstant);
+        menuDescriptionFont.draw(spriteBatch, menuText[20], 40 * scaleConstant, 990 * scaleConstant);
+        menuDescriptionFont.draw(spriteBatch, menuText[21], 40 * scaleConstant, 890 * scaleConstant);
+        menuDescriptionFont.draw(spriteBatch, menuText[24], 40 * scaleConstant, 790 * scaleConstant);
 
         // Game Mode Selection text
-        menuButtonFontBold.draw(spriteBatch, menuText[language][10], 40 * scaleConstant, 484 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[language][11], 365 * scaleConstant, 534 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[language][12], 365 * scaleConstant, 484 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[language][13], 40 * scaleConstant, 279 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[language][14], 365 * scaleConstant, 279 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, menuText[10], 40 * scaleConstant, 484 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, menuText[11], 365 * scaleConstant, 534 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, menuText[12], 365 * scaleConstant, 484 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, menuText[13], 40 * scaleConstant, 279 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, menuText[14], 365 * scaleConstant, 279 * scaleConstant);
 
         spriteBatch.end();
 
@@ -978,11 +1003,11 @@ public class MenuScreen extends ScreenAdapter {
         spriteBatch.draw(backButton, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
 
         // Title text
-        menuTitleFont.draw(spriteBatch, menuText[language][40], menuTextIndent[language][40] * scaleConstant, screenHeight / 32 * 31);
+        menuTitleFont.draw(spriteBatch, menuText[40], menuTextIndent[40] * scaleConstant, screenHeight / 32 * 31);
 
         // Sub heading text
-        menuButtonFont.draw(spriteBatch, menuText[language][41], 30 * scaleConstant, screenHeight / 32 * 28);
-        menuButtonFont.draw(spriteBatch, menuText[language][42], 30 * scaleConstant, screenHeight / 32 * 18);
+        menuButtonFont.draw(spriteBatch, menuText[41], 30 * scaleConstant, screenHeight / 32 * 28);
+        menuButtonFont.draw(spriteBatch, menuText[42], 30 * scaleConstant, screenHeight / 32 * 18);
 
         spriteBatch.end();
     }
@@ -996,7 +1021,7 @@ public class MenuScreen extends ScreenAdapter {
         spriteBatch.draw(backButton, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
 
         // Title text
-        menuTitleFont.draw(spriteBatch, menuText[language][43], menuTextIndent[language][43] * scaleConstant, screenHeight / 32 * 31);
+        menuTitleFont.draw(spriteBatch, menuText[43], menuTextIndent[43] * scaleConstant, screenHeight / 32 * 31);
 
         spriteBatch.end();
     }
@@ -1022,22 +1047,13 @@ public class MenuScreen extends ScreenAdapter {
         spriteBatch.draw(flag10, 400 * scaleConstant, 150 * scaleConstant, 200 * scaleConstant, 125 * scaleConstant);
 
         // Title text
-        menuTitleFont.draw(spriteBatch, menuText[language][44], menuTextIndent[language][44] * scaleConstant, screenHeight / 32 * 31);
+        menuTitleFont.draw(spriteBatch, menuText[44], menuTextIndent[44] * scaleConstant, screenHeight / 32 * 31);
 
         // Language text
-        menuButtonFont.draw(spriteBatch, menuText[0][0], 120 * scaleConstant, 1130);
-        menuButtonFont.draw(spriteBatch, menuText[0][1], 400 * scaleConstant, 1130);
-        menuButtonFont.draw(spriteBatch, menuText[0][2], 120 * scaleConstant, 930);
-        menuButtonFont.draw(spriteBatch, menuText[0][3], 400 * scaleConstant, 930);
-        menuButtonFont.draw(spriteBatch, menuText[0][4], 120 * scaleConstant, 730);
-        menuButtonFont.draw(spriteBatch, menuText[0][5], 400 * scaleConstant, 730);
-        menuButtonFont.draw(spriteBatch, menuText[0][6], 120 * scaleConstant, 530);
-        menuButtonFont.draw(spriteBatch, menuText[0][7], 400 * scaleConstant, 530);
-        menuButtonFont.draw(spriteBatch, menuText[0][8], 120 * scaleConstant, 330);
-        menuButtonFont.draw(spriteBatch, menuText[0][9], 400 * scaleConstant, 330);
+        spriteBatch.draw(langImage, 0, 0, 720 * scaleConstant, 1280 * scaleConstant);
 
         // Selection Overlay
-        spriteBatch.draw(selectedLanguage, (120 + 280 * ((language - 1) % 2)) * scaleConstant, (950 - 200 * ((language - 1) / 2)) * scaleConstant, 200 * scaleConstant, 125 * scaleConstant);
+        spriteBatch.draw(selectedLanguage, (120 + 280 * ((language) % 2)) * scaleConstant, (950 - 200 * ((language) / 2)) * scaleConstant, 200 * scaleConstant, 125 * scaleConstant);
 
         spriteBatch.end();
     }
@@ -1051,7 +1067,7 @@ public class MenuScreen extends ScreenAdapter {
         spriteBatch.draw(backButton, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
 
         // Title text
-        menuTitleFont.draw(spriteBatch, menuText[language][45], menuTextIndent[language][45] * scaleConstant, screenHeight / 32 * 31);
+        menuTitleFont.draw(spriteBatch, menuText[45], menuTextIndent[45] * scaleConstant, screenHeight / 32 * 31);
 
         spriteBatch.end();
     }
@@ -1072,40 +1088,40 @@ public class MenuScreen extends ScreenAdapter {
 
 
         // Title text
-        menuTitleFont.draw(spriteBatch, menuText[language][16], menuTextIndent[language][16] * scaleConstant, screenHeight / 32 * 31);
+        menuTitleFont.draw(spriteBatch, menuText[16], menuTextIndent[16] * scaleConstant, screenHeight / 32 * 31);
         // Button text
         if(showConnecting) {
-            menuButtonFont.draw(spriteBatch, menuText[language][39], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[language][39] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
+            menuButtonFont.draw(spriteBatch, menuText[39], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[39] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
         } else{
-            menuButtonFontBold.draw(spriteBatch, menuText[language][22], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[language][22] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
+            menuButtonFontBold.draw(spriteBatch, menuText[22], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[22] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
         }
         // Sub heading text
-        menuButtonFont.draw(spriteBatch, menuText[language][25], 30 * scaleConstant, screenHeight / 32 * 28);
-        menuButtonFont.draw(spriteBatch, menuText[language][26], 30 * scaleConstant, screenHeight / 32 * 22);
+        menuButtonFont.draw(spriteBatch, menuText[25], 30 * scaleConstant, screenHeight / 32 * 28);
+        menuButtonFont.draw(spriteBatch, menuText[26], 30 * scaleConstant, screenHeight / 32 * 22);
 
         // Status text (informs user whether username is taken or whether opponent exists)
         if(usernameChecked) {
             if(usernameAvailable) {
-                menuStatusFontGreen.draw(spriteBatch, menuText[language][31], 30 * scaleConstant, 970 * scaleConstant);
+                menuStatusFontGreen.draw(spriteBatch, menuText[31], 30 * scaleConstant, 970 * scaleConstant);
             } else{
-                menuStatusFontRed.draw(spriteBatch, menuText[language][32], 30 * scaleConstant, 970 * scaleConstant);
+                menuStatusFontRed.draw(spriteBatch, menuText[32], 30 * scaleConstant, 970 * scaleConstant);
             }
         }
 
         if(opponentChecked) {
             if(opponentAvailable) {
-                menuStatusFontGreen.draw(spriteBatch, menuText[language][33], 30 * scaleConstant, 730 * scaleConstant);
+                menuStatusFontGreen.draw(spriteBatch, menuText[33], 30 * scaleConstant, 730 * scaleConstant);
             } else{
-                menuStatusFontRed.draw(spriteBatch, menuText[language][34], 30 * scaleConstant, 730 * scaleConstant);
+                menuStatusFontRed.draw(spriteBatch, menuText[34], 30 * scaleConstant, 730 * scaleConstant);
             }
         }
 
         if(showHelpMultiplayer) {
             // Information text
-            menuDescriptionFont.draw(spriteBatch, menuText[language][35], 30 * scaleConstant, 650 * scaleConstant);
-            menuDescriptionFont.draw(spriteBatch, menuText[language][36], 30 * scaleConstant, 570 * scaleConstant);
-            menuDescriptionFont.draw(spriteBatch, menuText[language][37], 30 * scaleConstant, 490 * scaleConstant);
-            menuDescriptionFont.draw(spriteBatch, menuText[language][38], 30 * scaleConstant, 410 * scaleConstant);
+            menuDescriptionFont.draw(spriteBatch, menuText[35], 30 * scaleConstant, 650 * scaleConstant);
+            menuDescriptionFont.draw(spriteBatch, menuText[36], 30 * scaleConstant, 570 * scaleConstant);
+            menuDescriptionFont.draw(spriteBatch, menuText[37], 30 * scaleConstant, 490 * scaleConstant);
+            menuDescriptionFont.draw(spriteBatch, menuText[38], 30 * scaleConstant, 410 * scaleConstant);
         }
 
         spriteBatch.end();
@@ -1140,7 +1156,7 @@ public class MenuScreen extends ScreenAdapter {
         spriteBatch.draw(backButton, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
 
         // Title text
-        menuTitleFont.draw(spriteBatch, menuText[language][46], menuTextIndent[language][46] * scaleConstant, screenHeight / 32 * 31);
+        menuTitleFont.draw(spriteBatch, menuText[46], menuTextIndent[46] * scaleConstant, screenHeight / 32 * 31);
 
         spriteBatch.end();
     }

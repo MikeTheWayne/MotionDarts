@@ -3,10 +3,16 @@ package com.waynegames.motiondarts;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g3d.Model;
+
+import java.awt.Menu;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 
 /**
  * The base LibGdx class, begins as soon as the application is opened.
@@ -28,6 +34,7 @@ public class MotionDarts extends Game {
     public void create () {
         // Loading
         hitZones = loadHitZones();
+        loadLanguage(0);   // Later load in the previously selected language from file
         loadAssets();
 
         // Start game
@@ -121,6 +128,7 @@ public class MotionDarts extends Game {
         assetManager.load("selectedLanguage.png", Texture.class);
         assetManager.load("selectedButton.png", Texture.class);
         assetManager.load("selectedSmallButton.png", Texture.class);
+        assetManager.load("langImage.png", Texture.class);
 
         assetManager.load("flag1.png", Texture.class);
         assetManager.load("flag2.png", Texture.class);
@@ -134,6 +142,27 @@ public class MotionDarts extends Game {
         assetManager.load("flag10.png", Texture.class);
 
         assetManager.finishLoading();
+
+    }
+
+    /**
+     * Loads text and position values from language files
+     */
+    static void loadLanguage(int language) {
+        FileHandle[] langFiles = {Gdx.files.internal("languages/english.txt"), Gdx.files.internal("languages/bulgarian.txt"), Gdx.files.internal("languages/russian.txt")};
+        FileHandle[] indentFiles = {Gdx.files.internal("text_indent_values/englishTextIndents.txt"), Gdx.files.internal("text_indent_values/bulgarianTextIndents.txt"), Gdx.files.internal("text_indent_values/russianTextIndents.txt")};
+
+        MenuScreen.menuText = new String[100];
+        MenuScreen.menuTextIndent = new int[100];
+
+        String languageInput = langFiles[language].readString();
+        MenuScreen.menuText = languageInput.split("\n");
+
+        String indentInput = indentFiles[language].readString();
+        String[] indentStrArr = indentInput.split("\n");
+        for(int j = 0; j < indentStrArr.length; j++) {
+            MenuScreen.menuTextIndent[j] = Integer.parseInt(indentStrArr[j].trim());
+        }
 
     }
 

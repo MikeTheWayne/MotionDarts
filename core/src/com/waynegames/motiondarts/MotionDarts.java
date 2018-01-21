@@ -9,11 +9,6 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g3d.Model;
 
-import java.awt.Menu;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-
 /**
  * The base LibGdx class, begins as soon as the application is opened.
  *
@@ -109,37 +104,42 @@ public class MotionDarts extends Game {
         assetManager = new AssetManager();
 
         // Models
-        assetManager.load("dart_01.g3db", Model.class);
-        assetManager.load("dartboard_01.g3db", Model.class);
-        assetManager.load("environment_01.g3db", Model.class);
-        assetManager.load("menu_spacesurround.g3db", Model.class);
+        assetManager.load("models/dart_01.g3db", Model.class);
+        assetManager.load("models/dartboard_01.g3db", Model.class);
+        assetManager.load("models/environment_01.g3db", Model.class);
+        assetManager.load("models/menu_spacesurround.g3db", Model.class);
 
         // Textures
-        assetManager.load("defaultButton.png", Texture.class);
-        assetManager.load("settingsButton.png", Texture.class);
-        assetManager.load("languageButton.png", Texture.class);
-        assetManager.load("backButton.png", Texture.class);
-        assetManager.load("exitButton.png", Texture.class);
-        assetManager.load("title.png", Texture.class);
-        assetManager.load("submenu_background.png", Texture.class);
-        assetManager.load("tickButton.png", Texture.class);
-        assetManager.load("connectButton.png", Texture.class);
-        assetManager.load("helpButton.png", Texture.class);
-        assetManager.load("selectedLanguage.png", Texture.class);
-        assetManager.load("selectedButton.png", Texture.class);
-        assetManager.load("selectedSmallButton.png", Texture.class);
-        assetManager.load("langImage.png", Texture.class);
+        assetManager.load("textures/defaultButton.png", Texture.class);
+        assetManager.load("textures/settingsButton.png", Texture.class);
+        assetManager.load("textures/languageButton.png", Texture.class);
+        assetManager.load("textures/backButton.png", Texture.class);
+        assetManager.load("textures/exitButton.png", Texture.class);
+        assetManager.load("textures/title.png", Texture.class);
+        assetManager.load("textures/submenu_background.png", Texture.class);
+        assetManager.load("textures/tickButton.png", Texture.class);
+        assetManager.load("textures/connectButton.png", Texture.class);
+        assetManager.load("textures/helpButton.png", Texture.class);
+        assetManager.load("textures/selectedLanguage.png", Texture.class);
+        assetManager.load("textures/selectedButton.png", Texture.class);
+        assetManager.load("textures/selectedSmallButton.png", Texture.class);
+        assetManager.load("textures/langImage.png", Texture.class);
+        assetManager.load("textures/sliderBar.png", Texture.class);
+        assetManager.load("textures/sliderBit.png", Texture.class);
+        assetManager.load("textures/sliderBitSelected.png", Texture.class);
+        assetManager.load("textures/leftButton.png", Texture.class);
+        assetManager.load("textures/rightButton.png", Texture.class);
 
-        assetManager.load("flag1.png", Texture.class);
-        assetManager.load("flag2.png", Texture.class);
-        assetManager.load("flag3.png", Texture.class);
-        assetManager.load("flag4.png", Texture.class);
-        assetManager.load("flag5.png", Texture.class);
-        assetManager.load("flag6.png", Texture.class);
-        assetManager.load("flag7.png", Texture.class);
-        assetManager.load("flag8.png", Texture.class);
-        assetManager.load("flag9.png", Texture.class);
-        assetManager.load("flag10.png", Texture.class);
+        assetManager.load("textures/flag1.png", Texture.class);
+        assetManager.load("textures/flag2.png", Texture.class);
+        assetManager.load("textures/flag3.png", Texture.class);
+        assetManager.load("textures/flag4.png", Texture.class);
+        assetManager.load("textures/flag5.png", Texture.class);
+        assetManager.load("textures/flag6.png", Texture.class);
+        assetManager.load("textures/flag7.png", Texture.class);
+        assetManager.load("textures/flag8.png", Texture.class);
+        assetManager.load("textures/flag9.png", Texture.class);
+        assetManager.load("textures/flag10.png", Texture.class);
 
         assetManager.finishLoading();
 
@@ -152,16 +152,16 @@ public class MotionDarts extends Game {
         FileHandle[] langFiles = {Gdx.files.internal("languages/english.txt"), Gdx.files.internal("languages/bulgarian.txt"), Gdx.files.internal("languages/russian.txt")};
         FileHandle[] indentFiles = {Gdx.files.internal("text_indent_values/englishTextIndents.txt"), Gdx.files.internal("text_indent_values/bulgarianTextIndents.txt"), Gdx.files.internal("text_indent_values/russianTextIndents.txt")};
 
-        MenuScreen.menuText = new String[100];
-        MenuScreen.menuTextIndent = new int[100];
+        MenuScreen.menuText = new String[150];
+        MenuScreen.menuTextIndent = new int[150];
 
         String languageInput = langFiles[language].readString();
         MenuScreen.menuText = languageInput.split("\n");
 
         String indentInput = indentFiles[language].readString();
         String[] indentStrArr = indentInput.split("\n");
-        for(int j = 0; j < indentStrArr.length; j++) {
-            MenuScreen.menuTextIndent[j] = Integer.parseInt(indentStrArr[j].trim());
+        for(int i = 0; i < indentStrArr.length; i++) {
+            MenuScreen.menuTextIndent[i] = Integer.parseInt(indentStrArr[i].trim());
         }
 
     }

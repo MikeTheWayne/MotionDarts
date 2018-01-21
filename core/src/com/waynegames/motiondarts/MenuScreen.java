@@ -76,6 +76,11 @@ public class MenuScreen extends ScreenAdapter {
     private Sprite selectedButtonSmall;
     private Sprite selectedLanguage;
     private Sprite langImage;
+    private Sprite sliderBar;
+    private Sprite sliderBit;
+    private Sprite sliderBitSelected;
+    private Sprite leftButton;
+    private Sprite rightButton;
 
     private static Array<ModelInstance> instances = new Array<ModelInstance>();
 
@@ -90,6 +95,7 @@ public class MenuScreen extends ScreenAdapter {
     // 1 = Main Menu, 2 = Game Setup Screen, 3 = Multiplayer Setup Screen, 4 = Customisation Menu, 5 = Settings Menu, 6 = Language Menu, 7 = Tutorial Screen, 8 = Summary Screen, 9 = Server Connection Screen, 10 = Game Mode Info Screen
     private int menuScreen = 1;
     private int prevScreen = 0;
+    private int gameInfoScreen = 1;
 
     private int scaleConstant;
 
@@ -109,6 +115,8 @@ public class MenuScreen extends ScreenAdapter {
 
     private boolean showConnecting = false;
     private boolean showHelpMultiplayer = false;
+
+    private boolean[] buttonDown = new boolean[10];
 
     /* Animation Variables */
     private int timeCounter = 0;
@@ -148,10 +156,10 @@ public class MenuScreen extends ScreenAdapter {
         // Moving everything into the right place for setup
         // 100.0f = 1 cm
         // Get the loaded models from the assetManager
-        Model dartModel1 = MotionDarts.assetManager.get("dart_01.g3db", Model.class);
-        Model dartboardModel1 = MotionDarts.assetManager.get("dartboard_01.g3db", Model.class);
-        Model environmentModel1 = MotionDarts.assetManager.get("environment_01.g3db", Model.class);
-        Model spaceSurroundModel = MotionDarts.assetManager.get("menu_spacesurround.g3db", Model.class);
+        Model dartModel1 = MotionDarts.assetManager.get("models/dart_01.g3db", Model.class);
+        Model dartboardModel1 = MotionDarts.assetManager.get("models/dartboard_01.g3db", Model.class);
+        Model environmentModel1 = MotionDarts.assetManager.get("models/environment_01.g3db", Model.class);
+        Model spaceSurroundModel = MotionDarts.assetManager.get("models/menu_spacesurround.g3db", Model.class);
 
         // Assign Models to ModelInstances
         GameScreen.dartModelInstances[0] = new ModelInstance(dartModel1);
@@ -181,30 +189,35 @@ public class MenuScreen extends ScreenAdapter {
         spaceSurroundModelInst.transform.rotate(0.0f, 1.0f, 0.0f, 90);
 
         /* 2D Graphics Setup */
-        Texture defaultButtonTexture = MotionDarts.assetManager.get("defaultButton.png", Texture.class);
-        Texture settingsButtonTexture = MotionDarts.assetManager.get("settingsButton.png", Texture.class);
-        Texture languageButtonTexture = MotionDarts.assetManager.get("languageButton.png", Texture.class);
-        Texture exitButtonTexture = MotionDarts.assetManager.get("exitButton.png", Texture.class);
-        Texture titleTexture = MotionDarts.assetManager.get("title.png", Texture.class);
-        Texture submenuBackgroundTexture = MotionDarts.assetManager.get("submenu_background.png", Texture.class);
-        Texture backButtonTexture = MotionDarts.assetManager.get("backButton.png", Texture.class);
-        Texture tickButtonTexture = MotionDarts.assetManager.get("tickButton.png", Texture.class);
-        Texture connectButtonTexture = MotionDarts.assetManager.get("connectButton.png", Texture.class);
-        Texture helpButtonTexture = MotionDarts.assetManager.get("helpButton.png", Texture.class);
-        Texture flag1Texture = MotionDarts.assetManager.get("flag1.png", Texture.class);
-        Texture flag2Texture = MotionDarts.assetManager.get("flag2.png", Texture.class);
-        Texture flag3Texture = MotionDarts.assetManager.get("flag3.png", Texture.class);
-        Texture flag4Texture = MotionDarts.assetManager.get("flag4.png", Texture.class);
-        Texture flag5Texture = MotionDarts.assetManager.get("flag5.png", Texture.class);
-        Texture flag6Texture = MotionDarts.assetManager.get("flag6.png", Texture.class);
-        Texture flag7Texture = MotionDarts.assetManager.get("flag7.png", Texture.class);
-        Texture flag8Texture = MotionDarts.assetManager.get("flag8.png", Texture.class);
-        Texture flag9Texture = MotionDarts.assetManager.get("flag9.png", Texture.class);
-        Texture flag10Texture = MotionDarts.assetManager.get("flag10.png", Texture.class);
-        Texture selectedButtonTexture = MotionDarts.assetManager.get("selectedButton.png", Texture.class);
-        Texture selectedButtonSmallTexture = MotionDarts.assetManager.get("selectedSmallButton.png", Texture.class);
-        Texture selectedLanguageTexture = MotionDarts.assetManager.get("selectedLanguage.png", Texture.class);
-        Texture langImageTexture = MotionDarts.assetManager.get("langImage.png", Texture.class);
+        Texture defaultButtonTexture = MotionDarts.assetManager.get("textures/defaultButton.png", Texture.class);
+        Texture settingsButtonTexture = MotionDarts.assetManager.get("textures/settingsButton.png", Texture.class);
+        Texture languageButtonTexture = MotionDarts.assetManager.get("textures/languageButton.png", Texture.class);
+        Texture exitButtonTexture = MotionDarts.assetManager.get("textures/exitButton.png", Texture.class);
+        Texture titleTexture = MotionDarts.assetManager.get("textures/title.png", Texture.class);
+        Texture submenuBackgroundTexture = MotionDarts.assetManager.get("textures/submenu_background.png", Texture.class);
+        Texture backButtonTexture = MotionDarts.assetManager.get("textures/backButton.png", Texture.class);
+        Texture tickButtonTexture = MotionDarts.assetManager.get("textures/tickButton.png", Texture.class);
+        Texture connectButtonTexture = MotionDarts.assetManager.get("textures/connectButton.png", Texture.class);
+        Texture helpButtonTexture = MotionDarts.assetManager.get("textures/helpButton.png", Texture.class);
+        Texture flag1Texture = MotionDarts.assetManager.get("textures/flag1.png", Texture.class);
+        Texture flag2Texture = MotionDarts.assetManager.get("textures/flag2.png", Texture.class);
+        Texture flag3Texture = MotionDarts.assetManager.get("textures/flag3.png", Texture.class);
+        Texture flag4Texture = MotionDarts.assetManager.get("textures/flag4.png", Texture.class);
+        Texture flag5Texture = MotionDarts.assetManager.get("textures/flag5.png", Texture.class);
+        Texture flag6Texture = MotionDarts.assetManager.get("textures/flag6.png", Texture.class);
+        Texture flag7Texture = MotionDarts.assetManager.get("textures/flag7.png", Texture.class);
+        Texture flag8Texture = MotionDarts.assetManager.get("textures/flag8.png", Texture.class);
+        Texture flag9Texture = MotionDarts.assetManager.get("textures/flag9.png", Texture.class);
+        Texture flag10Texture = MotionDarts.assetManager.get("textures/flag10.png", Texture.class);
+        Texture selectedButtonTexture = MotionDarts.assetManager.get("textures/selectedButton.png", Texture.class);
+        Texture selectedButtonSmallTexture = MotionDarts.assetManager.get("textures/selectedSmallButton.png", Texture.class);
+        Texture selectedLanguageTexture = MotionDarts.assetManager.get("textures/selectedLanguage.png", Texture.class);
+        Texture langImageTexture = MotionDarts.assetManager.get("textures/langImage.png", Texture.class);
+        Texture sliderBarTexture = MotionDarts.assetManager.get("textures/sliderBar.png", Texture.class);
+        Texture sliderBitTexture = MotionDarts.assetManager.get("textures/sliderBit.png", Texture.class);
+        Texture sliderBitSelectedTexture = MotionDarts.assetManager.get("textures/sliderBitSelected.png", Texture.class);
+        Texture leftButtonTexture = MotionDarts.assetManager.get("textures/leftButton.png", Texture.class);
+        Texture rightButtonTexture = MotionDarts.assetManager.get("textures/rightButton.png", Texture.class);
 
         defaultButton = new Sprite(defaultButtonTexture);
         settingsButton = new Sprite(settingsButtonTexture);
@@ -230,6 +243,11 @@ public class MenuScreen extends ScreenAdapter {
         selectedButtonSmall = new Sprite(selectedButtonSmallTexture);
         selectedLanguage = new Sprite(selectedLanguageTexture);
         langImage = new Sprite(langImageTexture);
+        sliderBar = new Sprite(sliderBarTexture);
+        sliderBit = new Sprite(sliderBitTexture);
+        sliderBitSelected = new Sprite(sliderBitSelectedTexture);
+        leftButton = new Sprite(leftButtonTexture);
+        rightButton = new Sprite(rightButtonTexture);
 
         /* Game Environment */
         environment = new Environment();
@@ -290,15 +308,15 @@ public class MenuScreen extends ScreenAdapter {
                         }
 
                         if(touchX > 30 * scaleConstant && touchX < 360 * scaleConstant) {
-                            if(touchY < (screenHeight - 270 * scaleConstant) && touchY >= (screenHeight - 472 * scaleConstant)) {
+                            if(touchY < (screenHeight - 230 * scaleConstant) && touchY >= (screenHeight - 432 * scaleConstant)) {
                                 selectedGameMode = 3;
-                            } else if(touchY < (screenHeight - 472 * scaleConstant) && touchY > (screenHeight - 674) * scaleConstant) {
+                            } else if(touchY < (screenHeight - 432 * scaleConstant) && touchY > (screenHeight - 634) * scaleConstant) {
                                 selectedGameMode = 1;
                             }
                         } else if(touchX >= 360 * scaleConstant && touchX < 690 * scaleConstant) {
-                            if(touchY < (screenHeight - 270 * scaleConstant) && touchY >= (screenHeight - 472 * scaleConstant)) {
+                            if(touchY < (screenHeight - 230 * scaleConstant) && touchY >= (screenHeight - 432 * scaleConstant)) {
                                 selectedGameMode = 4;
-                            } else if(touchY < (screenHeight - 472 * scaleConstant) && touchY > (screenHeight - 674) * scaleConstant) {
+                            } else if(touchY < (screenHeight - 432 * scaleConstant) && touchY > (screenHeight - 634) * scaleConstant) {
                                 selectedGameMode = 2;
                             }
                         }
@@ -359,6 +377,11 @@ public class MenuScreen extends ScreenAdapter {
             }
 
             public boolean touchUp(int touchX, int touchY, int pointer, int button) {
+
+                /* Reset all buttons */
+                for(int i = 0; i < buttonDown.length; i++) {
+                    buttonDown[i] = false;
+                }
 
                 switch(menuScreen) {
 
@@ -445,6 +468,20 @@ public class MenuScreen extends ScreenAdapter {
 
                         if(touchX > 20 * scaleConstant && touchX < 100 * scaleConstant && touchY > screenHeight - 170 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant) {
                             menuScreen = 1;
+                        }
+
+                        if(touchY >= screenHeight - 1160 * scaleConstant && touchY <= screenHeight - 1080 * scaleConstant) {
+                            if(touchX >= 530 * scaleConstant && touchX <= 610 * scaleConstant) {
+
+                            } else if(touchX >= 620 * scaleConstant && touchX <= 700 * scaleConstant) {
+
+                            }
+                        } else if(touchY >= screenHeight - 740 * scaleConstant && touchY <= screenHeight - 660 * scaleConstant) {
+                            if(touchX >= 530 * scaleConstant && touchX <= 610 * scaleConstant) {
+
+                            } else if(touchX >= 620 * scaleConstant && touchX <= 700 * scaleConstant) {
+
+                            }
                         }
 
                         break;
@@ -550,7 +587,7 @@ public class MenuScreen extends ScreenAdapter {
                                     public void canceled() {
 
                                     }
-                                }, menuText[29], opponentUsername, menuText[30]);
+                                }, menuText[30], opponentUsername, menuText[31]);
 
                             }
                         }
@@ -572,6 +609,16 @@ public class MenuScreen extends ScreenAdapter {
 
                         if(touchX > 20 * scaleConstant && touchX < 100 * scaleConstant && touchY > screenHeight - 170 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant) {
                             menuScreen = prevScreen;
+                        } else if(touchX > 620 * scaleConstant && touchX < 700 * scaleConstant && touchY > screenHeight - 170 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant) {
+                            // Right Button
+                            if(gameInfoScreen < 4) {
+                                gameInfoScreen++;
+                            }
+                        } else if(touchX > 520 * scaleConstant && touchX < 600 * scaleConstant && touchY > screenHeight - 170 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant) {
+                            // Left Button
+                            if(gameInfoScreen > 1) {
+                                gameInfoScreen--;
+                            }
                         }
 
                         break;
@@ -601,15 +648,15 @@ public class MenuScreen extends ScreenAdapter {
         /* Draw 2D graphics over the 3D graphics */
         switch(menuScreen) {
 
-            case 1:     // Main Menu
+            case 1:
                 drawMainMenuScreen();
                 break;
 
-            case 2:     // Single Player Game Setup
+            case 2:
                 drawGameSetupScreen();
                 break;
 
-            case 3:     // Multiplayer menu
+            case 3:
                 drawMultiplayerSetupScreen();
                 break;
 
@@ -637,6 +684,75 @@ public class MenuScreen extends ScreenAdapter {
                 drawGamemodeInfoScreen();
                 break;
 
+        }
+
+        /* Button Down Detection */
+        if(Gdx.input.isTouched()) {
+
+            float touchX = Gdx.input.getX();
+            float touchY = Gdx.input.getY();
+
+            switch(menuScreen) {
+                case 1:
+                    buttonDown[0] = (touchY >= screenHeight / 16 * 7 && touchY <= screenHeight / 16 * 7 + 150 * scaleConstant) && (touchX >= screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 && touchX <= screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + 300 * scaleConstant);
+                    buttonDown[1] = (touchY >= screenHeight / 16 * 7 + 200 && touchY <= screenHeight / 16 * 7 + 350 * scaleConstant) && (touchX >= screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 && touchX <= screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + 300 * scaleConstant);
+                    buttonDown[2] = (touchY >= screenHeight / 16 * 7 + 400 && touchY <= screenHeight / 16 * 7 + 550 * scaleConstant) && (touchX >= screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 && touchX <= screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + 300 * scaleConstant);
+
+                    buttonDown[3] = (touchX >= 10 * scaleConstant && touchX <= 90 * scaleConstant) && (touchY >= screenHeight - 90 * scaleConstant && touchY <= screenHeight - 10 * scaleConstant);
+                    buttonDown[4] = (touchX >= 100 * scaleConstant && touchX <= 180 * scaleConstant) && (touchY >= screenHeight - 90 * scaleConstant && touchY <= screenHeight - 10 * scaleConstant);
+                    buttonDown[5] = (touchX >= 190 * scaleConstant && touchX <= 270 * scaleConstant) && (touchY >= screenHeight - 90 * scaleConstant && touchY <= screenHeight - 10 * scaleConstant);
+                    buttonDown[6] = (touchX >= screenWidth - 90 && touchX <= screenWidth - 10) && (touchY >= screenHeight - 90 * scaleConstant && touchY <= screenHeight - 10 * scaleConstant);
+                    break;
+
+                case 2:
+                    buttonDown[0] = (touchX >= 20 * scaleConstant && touchX <= 100 * scaleConstant) && (touchY >= screenHeight - 100 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
+                    buttonDown[1] = (touchX >= 620 * scaleConstant && touchX <= 700 * scaleConstant) && (touchY >= screenHeight - 910 * scaleConstant && touchY <= screenHeight - 830 * scaleConstant);
+                    buttonDown[2] = (touchX >= 210 * scaleConstant && touchX <= 510 * scaleConstant) && (touchY >= screenHeight - 170 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
+                    break;
+
+                case 3:
+                    buttonDown[0] = (touchX >= 20 * scaleConstant && touchX <= 100 * scaleConstant) && (touchY >= screenHeight - 100 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
+                    buttonDown[1] = (touchX >= 620 * scaleConstant && touchX <= 700 * scaleConstant) && (touchY >= screenHeight - 730 * scaleConstant && touchY <= screenHeight - 650 * scaleConstant);
+                    buttonDown[2] = (touchX >= 210 * scaleConstant && touchX <= 510 * scaleConstant) && (touchY >= screenHeight - 170 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
+                    break;
+
+                case 4:
+                    buttonDown[0] = (touchX >= 20 * scaleConstant && touchX <= 100 * scaleConstant) && (touchY >= screenHeight - 100 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
+                    buttonDown[1] = (touchX >= 530 * scaleConstant && touchX <= 610 * scaleConstant) && (touchY >= screenHeight - 1160 * scaleConstant && touchY <= screenHeight - 1080 * scaleConstant);
+                    buttonDown[2] = (touchX >= 620 * scaleConstant && touchX <= 700 * scaleConstant) && (touchY >= screenHeight - 1160 * scaleConstant && touchY <= screenHeight - 1080 * scaleConstant);
+                    buttonDown[3] = (touchX >= 530 * scaleConstant && touchX <= 610 * scaleConstant) && (touchY >= screenHeight - 740 * scaleConstant && touchY <= screenHeight - 660 * scaleConstant);
+                    buttonDown[4] = (touchX >= 620 * scaleConstant && touchX <= 700 * scaleConstant) && (touchY >= screenHeight - 740 * scaleConstant && touchY <= screenHeight - 660 * scaleConstant);
+                    break;
+
+                case 5:
+                    buttonDown[0] = (touchX >= 20 * scaleConstant && touchX <= 100 * scaleConstant) && (touchY >= screenHeight - 100 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
+                    buttonDown[1] = (touchY <= screenHeight - 928 * scaleConstant && touchY >= screenHeight - 1028 * scaleConstant) && (touchX >= 60 * scaleConstant && touchX <= 660 * scaleConstant);
+
+                    if(buttonDown[1]) {
+                        GameScreen.sensitivityZ = (touchX - 60) / 600 + 0.5f;
+                    }
+                    break;
+
+                case 6:
+                    buttonDown[0] = (touchX >= 20 * scaleConstant && touchX <= 100 * scaleConstant) && (touchY >= screenHeight - 100 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
+                    break;
+
+                case 7:
+                    buttonDown[0] = (touchX >= 20 * scaleConstant && touchX <= 100 * scaleConstant) && (touchY >= screenHeight - 100 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
+                    break;
+
+                case 9:
+                    buttonDown[0] = (touchX >= 20 * scaleConstant && touchX <= 100 * scaleConstant) && (touchY >= screenHeight - 100 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
+                    buttonDown[1] = (touchX >= 110 * scaleConstant && touchX <= 190 * scaleConstant) && (touchY >= screenHeight - 100 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
+                    buttonDown[2] = (touchX >= 210 * scaleConstant && touchX <= 510 * scaleConstant) && (touchY >= screenHeight - 170 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
+                    break;
+
+                case 10:
+                    buttonDown[0] = (touchX >= 20 * scaleConstant && touchX <= 100 * scaleConstant) && (touchY >= screenHeight - 100 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
+                    buttonDown[1] = (touchX >= 520 * scaleConstant && touchX <= 600 * scaleConstant) && (touchY >= screenHeight - 100 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
+                    buttonDown[2] = (touchX >= 620 * scaleConstant && touchX <= 700 * scaleConstant) && (touchY >= screenHeight - 100 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
+                    break;
+            }
         }
 
 	}
@@ -832,6 +948,17 @@ public class MenuScreen extends ScreenAdapter {
         menuButtonFont.draw(spriteBatch, menuText[1], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[1] * scaleConstant, screenHeight / 16 * 7 - 200 * scaleConstant + 96 * scaleConstant);
         menuButtonFont.draw(spriteBatch, menuText[2], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[2] * scaleConstant, screenHeight / 16 * 7 - 400 * scaleConstant + 96 * scaleConstant);
 
+        // Button Down Images
+        if(buttonDown[0]) { spriteBatch.draw(selectedButton, screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2, screenHeight / 16 * 7, 300 * scaleConstant, 150 * scaleConstant); }
+        if(buttonDown[1]) { spriteBatch.draw(selectedButton, screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2, screenHeight / 16 * 7 - 200 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant); }
+        if(buttonDown[2]) { spriteBatch.draw(selectedButton, screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2, screenHeight / 16 * 7 - 400 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant); }
+
+        if(buttonDown[3]) { spriteBatch.draw(selectedButtonSmall, 10 * scaleConstant, 10 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+        if(buttonDown[4]) { spriteBatch.draw(selectedButtonSmall, 100 * scaleConstant, 10 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+        if(buttonDown[5]) { spriteBatch.draw(selectedButtonSmall, 190 * scaleConstant, 10 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+
+        if(buttonDown[6]) { spriteBatch.draw(selectedButtonSmall, screenWidth - 90 * scaleConstant, 10 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+
         spriteBatch.end();
     }
 
@@ -855,7 +982,7 @@ public class MenuScreen extends ScreenAdapter {
         // Sub heading text
         menuButtonFont.draw(spriteBatch, menuText[4], 30 * scaleConstant, screenHeight / 32 * 28);
         menuButtonFont.draw(spriteBatch, menuText[5], 30 * scaleConstant, screenHeight / 32 * 22);
-        menuButtonFont.draw(spriteBatch, menuText[15], 125 * scaleConstant, screenHeight / 32 * 9);
+        menuButtonFont.draw(spriteBatch, menuText[16], 125 * scaleConstant, screenHeight / 32 * 9);
 
         // Difficulty Selection text
         menuButtonFontBold.draw(spriteBatch, menuText[7], (30 + menuTextIndent[7]) * scaleConstant, 1038 * scaleConstant);
@@ -867,7 +994,12 @@ public class MenuScreen extends ScreenAdapter {
         menuButtonFontBold.draw(spriteBatch, menuText[11], 365 * scaleConstant, 714 * scaleConstant);
         menuButtonFontBold.draw(spriteBatch, menuText[12], 365 * scaleConstant, 664 * scaleConstant);
         menuButtonFontBold.draw(spriteBatch, menuText[13], 40 * scaleConstant, 459 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[14], 365 * scaleConstant, 459 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, menuText[14], 365 * scaleConstant, 509 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, menuText[15], 365 * scaleConstant, 459 * scaleConstant);
+
+        if(buttonDown[0]) { spriteBatch.draw(selectedButtonSmall, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+        if(buttonDown[1]) { spriteBatch.draw(selectedButtonSmall, 620 * scaleConstant, 830 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+        if(buttonDown[2]) { spriteBatch.draw(selectedButton, 210 * scaleConstant, 20 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant); }
 
         spriteBatch.end();
 
@@ -926,36 +1058,42 @@ public class MenuScreen extends ScreenAdapter {
         spriteBatch.draw(helpButton, 620 * scaleConstant, 650 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
 
         // Title text
-        menuTitleFont.draw(spriteBatch, menuText[16], menuTextIndent[16] * scaleConstant, screenHeight / 32 * 31);
+        menuTitleFont.draw(spriteBatch, menuText[17], menuTextIndent[17] * scaleConstant, screenHeight / 32 * 31);
         // Button text
         if(selectedOpposition == 5) {
             if(showConnecting) {
-                menuButtonFont.draw(spriteBatch, menuText[39], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[39] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
+                menuButtonFont.draw(spriteBatch, menuText[44], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[44] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
             } else{
-                menuButtonFontBold.draw(spriteBatch, menuText[22], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[22] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
+                menuButtonFontBold.draw(spriteBatch, menuText[23], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[23] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
             }
         } else{
             menuButtonFontBold.draw(spriteBatch, menuText[6], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[6] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
         }
         // Sub heading text
-        menuButtonFont.draw(spriteBatch, menuText[17], 30 * scaleConstant, screenHeight / 32 * 28);
+        menuButtonFont.draw(spriteBatch, menuText[18], 30 * scaleConstant, screenHeight / 32 * 28);
         menuButtonFont.draw(spriteBatch, menuText[5], 30 * scaleConstant, screenHeight / 32 * 18 - 20 * scaleConstant);
 
         // Multiplayer Type Selector text
-        menuButtonFontBold.draw(spriteBatch, menuText[18], 40 * scaleConstant, 1045 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[19], 40 * scaleConstant, 945 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[23], 40 * scaleConstant, 845 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, menuText[19], 40 * scaleConstant, 1045 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, menuText[20], 40 * scaleConstant, 945 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, menuText[24], 40 * scaleConstant, 845 * scaleConstant);
         // Multiplayer Type Selector description text
-        menuDescriptionFont.draw(spriteBatch, menuText[20], 40 * scaleConstant, 990 * scaleConstant);
-        menuDescriptionFont.draw(spriteBatch, menuText[21], 40 * scaleConstant, 890 * scaleConstant);
-        menuDescriptionFont.draw(spriteBatch, menuText[24], 40 * scaleConstant, 790 * scaleConstant);
+        menuDescriptionFont.draw(spriteBatch, menuText[21], 40 * scaleConstant, 990 * scaleConstant);
+        menuDescriptionFont.draw(spriteBatch, menuText[22], 40 * scaleConstant, 890 * scaleConstant);
+        menuDescriptionFont.draw(spriteBatch, menuText[25], 40 * scaleConstant, 790 * scaleConstant);
 
         // Game Mode Selection text
         menuButtonFontBold.draw(spriteBatch, menuText[10], 40 * scaleConstant, 484 * scaleConstant);
         menuButtonFontBold.draw(spriteBatch, menuText[11], 365 * scaleConstant, 534 * scaleConstant);
         menuButtonFontBold.draw(spriteBatch, menuText[12], 365 * scaleConstant, 484 * scaleConstant);
         menuButtonFontBold.draw(spriteBatch, menuText[13], 40 * scaleConstant, 279 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[14], 365 * scaleConstant, 279 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, menuText[14], 365 * scaleConstant, 329 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, menuText[15], 365 * scaleConstant, 279 * scaleConstant);
+
+        // Button Down Highlighting
+        if(buttonDown[0]) { spriteBatch.draw(selectedButtonSmall, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+        if(buttonDown[1]) { spriteBatch.draw(selectedButtonSmall, 620 * scaleConstant, 650 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+        if(buttonDown[2]) { spriteBatch.draw(selectedButton, 210 * scaleConstant, 20 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant); }
 
         spriteBatch.end();
 
@@ -1002,12 +1140,26 @@ public class MenuScreen extends ScreenAdapter {
         // Back button
         spriteBatch.draw(backButton, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
 
+        // Navigation buttons
+        // Darts
+        spriteBatch.draw(leftButton, 530 * scaleConstant, 1060 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
+        spriteBatch.draw(rightButton, 620 * scaleConstant, 1060 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
+        // Location
+        spriteBatch.draw(leftButton, 530 * scaleConstant, 660 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
+        spriteBatch.draw(rightButton, 620 * scaleConstant, 660 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
+
         // Title text
-        menuTitleFont.draw(spriteBatch, menuText[40], menuTextIndent[40] * scaleConstant, screenHeight / 32 * 31);
+        menuTitleFont.draw(spriteBatch, menuText[45], menuTextIndent[45] * scaleConstant, screenHeight / 32 * 31);
 
         // Sub heading text
-        menuButtonFont.draw(spriteBatch, menuText[41], 30 * scaleConstant, screenHeight / 32 * 28);
-        menuButtonFont.draw(spriteBatch, menuText[42], 30 * scaleConstant, screenHeight / 32 * 18);
+        menuButtonFont.draw(spriteBatch, menuText[46], 30 * scaleConstant, screenHeight / 32 * 28);
+        menuButtonFont.draw(spriteBatch, menuText[47], 30 * scaleConstant, screenHeight / 32 * 18);
+
+        if(buttonDown[0]) { spriteBatch.draw(selectedButtonSmall, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+        if(buttonDown[1]) { spriteBatch.draw(selectedButtonSmall, 530 * scaleConstant, 1060 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+        if(buttonDown[2]) { spriteBatch.draw(selectedButtonSmall, 620 * scaleConstant, 1060 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+        if(buttonDown[3]) { spriteBatch.draw(selectedButtonSmall, 530 * scaleConstant, 660 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+        if(buttonDown[4]) { spriteBatch.draw(selectedButtonSmall, 620 * scaleConstant, 660 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
 
         spriteBatch.end();
     }
@@ -1021,7 +1173,16 @@ public class MenuScreen extends ScreenAdapter {
         spriteBatch.draw(backButton, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
 
         // Title text
-        menuTitleFont.draw(spriteBatch, menuText[43], menuTextIndent[43] * scaleConstant, screenHeight / 32 * 31);
+        menuTitleFont.draw(spriteBatch, menuText[48], menuTextIndent[48] * scaleConstant, screenHeight / 32 * 31);
+        // Sub heading text
+        menuButtonFont.draw(spriteBatch, menuText[52] + ": " + (int) ((GameScreen.sensitivityZ) * 100) + "%", 30 * scaleConstant, screenHeight / 32 * 28);
+
+        // Slider
+        spriteBatch.draw(sliderBar, 60 * scaleConstant, 960 * scaleConstant, 600 * scaleConstant, 75 * scaleConstant);
+        spriteBatch.draw(sliderBit, (40 + 6 * (GameScreen.sensitivityZ - 0.5f) * 100) * scaleConstant, 948 * scaleConstant, 40 * scaleConstant, 100 * scaleConstant);
+
+        if(buttonDown[0]) { spriteBatch.draw(selectedButtonSmall, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+        if(buttonDown[1]) { spriteBatch.draw(sliderBitSelected, (40 + 6 * (GameScreen.sensitivityZ - 0.5f) * 100) * scaleConstant, 948 * scaleConstant, 40 * scaleConstant, 100 * scaleConstant); }
 
         spriteBatch.end();
     }
@@ -1047,13 +1208,15 @@ public class MenuScreen extends ScreenAdapter {
         spriteBatch.draw(flag10, 400 * scaleConstant, 150 * scaleConstant, 200 * scaleConstant, 125 * scaleConstant);
 
         // Title text
-        menuTitleFont.draw(spriteBatch, menuText[44], menuTextIndent[44] * scaleConstant, screenHeight / 32 * 31);
+        menuTitleFont.draw(spriteBatch, menuText[49], menuTextIndent[49] * scaleConstant, screenHeight / 32 * 31);
 
         // Language text
         spriteBatch.draw(langImage, 0, 0, 720 * scaleConstant, 1280 * scaleConstant);
 
         // Selection Overlay
         spriteBatch.draw(selectedLanguage, (120 + 280 * ((language) % 2)) * scaleConstant, (950 - 200 * ((language) / 2)) * scaleConstant, 200 * scaleConstant, 125 * scaleConstant);
+
+        if(buttonDown[0]) { spriteBatch.draw(selectedButtonSmall, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
 
         spriteBatch.end();
     }
@@ -1067,7 +1230,14 @@ public class MenuScreen extends ScreenAdapter {
         spriteBatch.draw(backButton, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
 
         // Title text
-        menuTitleFont.draw(spriteBatch, menuText[45], menuTextIndent[45] * scaleConstant, screenHeight / 32 * 31);
+        menuTitleFont.draw(spriteBatch, menuText[50], menuTextIndent[50] * scaleConstant, screenHeight / 32 * 31);
+
+        // Info text
+        for(int i = 116; i < 136; i++) {
+            menuDescriptionFont.draw(spriteBatch, menuText[i], 30 * scaleConstant, (1120 - 30 * (i - 117)) * scaleConstant);
+        }
+
+        if(buttonDown[0]) { spriteBatch.draw(selectedButtonSmall, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
 
         spriteBatch.end();
     }
@@ -1088,23 +1258,23 @@ public class MenuScreen extends ScreenAdapter {
 
 
         // Title text
-        menuTitleFont.draw(spriteBatch, menuText[16], menuTextIndent[16] * scaleConstant, screenHeight / 32 * 31);
+        menuTitleFont.draw(spriteBatch, menuText[17], menuTextIndent[17] * scaleConstant, screenHeight / 32 * 31);
         // Button text
         if(showConnecting) {
-            menuButtonFont.draw(spriteBatch, menuText[39], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[39] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
+            menuButtonFont.draw(spriteBatch, menuText[44], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[44] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
         } else{
-            menuButtonFontBold.draw(spriteBatch, menuText[22], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[22] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
+            menuButtonFontBold.draw(spriteBatch, menuText[23], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[23] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
         }
         // Sub heading text
-        menuButtonFont.draw(spriteBatch, menuText[25], 30 * scaleConstant, screenHeight / 32 * 28);
-        menuButtonFont.draw(spriteBatch, menuText[26], 30 * scaleConstant, screenHeight / 32 * 22);
+        menuButtonFont.draw(spriteBatch, menuText[26], 30 * scaleConstant, screenHeight / 32 * 28);
+        menuButtonFont.draw(spriteBatch, menuText[27], 30 * scaleConstant, screenHeight / 32 * 22);
 
         // Status text (informs user whether username is taken or whether opponent exists)
         if(usernameChecked) {
             if(usernameAvailable) {
-                menuStatusFontGreen.draw(spriteBatch, menuText[31], 30 * scaleConstant, 970 * scaleConstant);
+                menuStatusFontGreen.draw(spriteBatch, menuText[32], 30 * scaleConstant, 970 * scaleConstant);
             } else{
-                menuStatusFontRed.draw(spriteBatch, menuText[32], 30 * scaleConstant, 970 * scaleConstant);
+                menuStatusFontRed.draw(spriteBatch, menuText[33], 30 * scaleConstant, 970 * scaleConstant);
             }
         }
 
@@ -1118,11 +1288,19 @@ public class MenuScreen extends ScreenAdapter {
 
         if(showHelpMultiplayer) {
             // Information text
-            menuDescriptionFont.draw(spriteBatch, menuText[35], 30 * scaleConstant, 650 * scaleConstant);
-            menuDescriptionFont.draw(spriteBatch, menuText[36], 30 * scaleConstant, 570 * scaleConstant);
-            menuDescriptionFont.draw(spriteBatch, menuText[37], 30 * scaleConstant, 490 * scaleConstant);
-            menuDescriptionFont.draw(spriteBatch, menuText[38], 30 * scaleConstant, 410 * scaleConstant);
+            menuDescriptionFont.draw(spriteBatch, menuText[36], 30 * scaleConstant, 650 * scaleConstant);
+            menuDescriptionFont.draw(spriteBatch, menuText[37], 30 * scaleConstant, 610 * scaleConstant);
+            menuDescriptionFont.draw(spriteBatch, menuText[38], 30 * scaleConstant, 570 * scaleConstant);
+            menuDescriptionFont.draw(spriteBatch, menuText[39], 30 * scaleConstant, 530 * scaleConstant);
+            menuDescriptionFont.draw(spriteBatch, menuText[40], 30 * scaleConstant, 490 * scaleConstant);
+            menuDescriptionFont.draw(spriteBatch, menuText[41], 30 * scaleConstant, 450 * scaleConstant);
+            menuDescriptionFont.draw(spriteBatch, menuText[42], 30 * scaleConstant, 410 * scaleConstant);
+            menuDescriptionFont.draw(spriteBatch, menuText[43], 30 * scaleConstant, 370 * scaleConstant);
         }
+
+        if(buttonDown[0]) { spriteBatch.draw(selectedButtonSmall, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+        if(buttonDown[1]) { spriteBatch.draw(selectedButtonSmall, 110 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+        if(buttonDown[2]) { spriteBatch.draw(selectedButton, 210 * scaleConstant, 20 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant); }
 
         spriteBatch.end();
 
@@ -1155,8 +1333,51 @@ public class MenuScreen extends ScreenAdapter {
         // Back button
         spriteBatch.draw(backButton, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
 
+        // Navigation Buttons
+        spriteBatch.draw(leftButton, 520 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
+        spriteBatch.draw(rightButton, 620 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
+
         // Title text
-        menuTitleFont.draw(spriteBatch, menuText[46], menuTextIndent[46] * scaleConstant, screenHeight / 32 * 31);
+        menuTitleFont.draw(spriteBatch, menuText[51], menuTextIndent[51] * scaleConstant, screenHeight / 32 * 31);
+
+        // Info text
+        int firstLine = 0;
+        int totalLines = 0;
+
+        switch(gameInfoScreen) {
+            case 1:
+                menuButtonFont.draw(spriteBatch, menuText[10], 30 * scaleConstant, screenHeight / 32 * 28);
+                firstLine = 53;
+                totalLines = 22;
+                break;
+
+            case 2:
+                menuButtonFont.draw(spriteBatch, menuText[11] + " " + menuText[12], 30 * scaleConstant, screenHeight / 32 * 28);
+                firstLine = 75;
+                totalLines = 9;
+                break;
+
+            case 3:
+                menuButtonFont.draw(spriteBatch, menuText[13], 30 * scaleConstant, screenHeight / 32 * 28);
+                firstLine = 84;
+                totalLines = 17;
+                break;
+
+            case 4:
+                menuButtonFont.draw(spriteBatch, menuText[14] + " " + menuText[15], 30 * scaleConstant, screenHeight / 32 * 28);
+                firstLine = 101;
+                totalLines = 15;
+                break;
+        }
+
+        // Draw text to screen
+        for(int i = firstLine; i < firstLine + totalLines; i++) {
+            menuDescriptionFont.draw(spriteBatch, menuText[i], 30 * scaleConstant, (1060 - 30 * (i - firstLine)) * scaleConstant);
+        }
+
+        if(buttonDown[0]) { spriteBatch.draw(selectedButtonSmall, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+        if(buttonDown[1]) { spriteBatch.draw(selectedButtonSmall, 520 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+        if(buttonDown[2]) { spriteBatch.draw(selectedButtonSmall, 620 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
 
         spriteBatch.end();
     }

@@ -48,7 +48,7 @@ public class GameScreen extends ScreenAdapter {
 
     private String[] textOut = new String[11];
 
-    private float sensitivityZ = 1.0f;
+    static float sensitivityZ = 1.0f;
 
     private float aimX = 0.0f;
     private float aimY = 0.0f;
@@ -351,7 +351,7 @@ public class GameScreen extends ScreenAdapter {
     private void dartThrow() {
 
         // Z Velocity exaggeration
-        velZ = (velZ * velZ) / (0.5f * sensitivityZ);
+        velZ = (velZ * velZ) / (0.5f) * sensitivityZ;
 
         // Damping
         if(velX < 11.5 && velX >= 0) {

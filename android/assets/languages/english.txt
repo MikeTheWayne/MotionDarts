@@ -12,7 +12,8 @@ PRO
 AROUND
 THE CLOCK
 CRICKET
-UK\n CRICKET
+BRITISH
+CRICKET
 PRACTICE MODE
 MULTI-PLAYER
 MULTI-PLAYER TYPE
@@ -33,10 +34,14 @@ Username is available
 Someone else is using this username, choose another
 Opponent username exists
 Opponent doesn't exist
-1. Create a username and type it into the top username\\n box
+1. Create a username and type it into the top username
+box
 2. Type in your friend's user name into the lower text box
-3. Your friend must also type your username into their\n text box
-4. Both of you must then press 'connect' to start the\n game
+
+3. Your friend must also type your username into their
+text box
+4. Both of you must then press 'connect' to start the
+game
 CONNECTING...
 CUSTOMISATION
 DARTS
@@ -45,3 +50,99 @@ SETTINGS
 LANGUAGES
 HOW TO PLAY
 GAME MODES
+SENSITIVITY OF SENSORS
+The standard game of darts.
+
+Points are scored based on where the dart lands. If it
+lands in the thin outer ring, the score of the dart is
+doubled. If it lands in the thin ring closer to the centre,
+the score of the dart is tripled. The centre of the
+dartboard, the bullseye, scores 50 points whereas the
+ring surrounding it, the outer bull, scores 25.
+
+Each player takes turns to throw 3 darts. At the end of
+their turn, the total score of those 3 darts is taken
+away from the player's overall score, which starts
+from 501. The objective of the game is to make your
+score equal to 0. This has to be done by hitting a
+double with the dart that you want to score 0. For
+example, if you were left with 20, you'd need to hit
+10 in the double's ring to win.
+
+
+
+
+
+Each player must land darts in every number on the board,
+from 1 to 20, in order. As soon as a player lands a dart
+in the target number, that player can then target the
+next number. The first player to finish wins.
+
+
+
+
+
+The objective of cricket is to 'own' certain numbers on the
+board, to achieve the highest score. To own a number, you
+must land 3 darts in that number (doubles count for 2
+darts, and triples count for 3). Once a number is owned,
+that number will earn you points every turn, until the
+other player lands 3 darts in that number. The player with
+the most points and who owns all the numbers first wins,
+or if both players are tied on points, the player who owns
+all the numbers first will win.
+
+The numbers involved are the 20, 19, 18, 17, 16, 15 and the
+bullseye.
+
+
+
+
+
+At the start of the game, one player is a 'batter' and the
+other is a 'bowler'. The batter earns points for each turn
+that they score over 40. For example, if the batter scores
+39, they will earn 0 points. if they score 50, they will
+earn 10 points. To stop the batter earning points, the
+bowler must earn 10 points, by hitting either the outer
+bull, which is worth 1 point, or the bullseye, which is
+worth 2 points. Once the bowler has earned 10 points, the
+players swap roles, and play again. The batter who earns
+the highest score wins.
+
+
+
+
+
+To aim a dart, hold your finger on the screen, and align
+it with your target on the dartboard. To throw the dart,
+move your phone rapidly away from you, as if you were
+throwing an actual dart, but WITHOUT RELEASING YOUR
+PHONE. Lift your finger from the screen before stopping
+the motion of your phone to get the maximum effect from
+your throw.
+
+To get used to these mechanics, try PRACTICE MODE. Go to
+SINGLE PLAYER, press on the white square named
+PRACTICE MODE, then press PLAY.
+
+If your darts seem to be flying unnaturally, your device
+might have sensor issues. Try restarting the device.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

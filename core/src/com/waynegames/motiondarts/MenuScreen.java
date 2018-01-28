@@ -1,5 +1,6 @@
 package com.waynegames.motiondarts;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
@@ -31,6 +32,7 @@ import java.util.Random;
  * @version v0.1.0
  */
 public class MenuScreen extends ScreenAdapter {
+    private MotionDarts game;
 
     private ModelBatch modelBatch;
     private SpriteBatch spriteBatch;
@@ -48,39 +50,21 @@ public class MenuScreen extends ScreenAdapter {
     private BitmapFont menuStatusFontRed;
     private BitmapFont menuStatusFontGreen;
 
+    private BitmapFont summaryFont;
+    private BitmapFont[] summaryFontColored;
+
     private FreeTypeFontGenerator freeTypeFontGenerator;
     private FreeTypeFontGenerator.FreeTypeFontParameter freeTypeFontParameter;
     private ShapeRenderer shapeRenderer;
 
-    private Sprite defaultButton;
-    private Sprite settingsButton;
-    private Sprite languageButton;
-    private Sprite exitButton;
-    private Sprite title;
-    private Sprite submenuBackground;
-    private Sprite backButton;
-    private Sprite tickButton;
-    private Sprite connectButton;
-    private Sprite helpButton;
-    private Sprite flag1;
-    private Sprite flag2;
-    private Sprite flag3;
-    private Sprite flag4;
-    private Sprite flag5;
-    private Sprite flag6;
-    private Sprite flag7;
-    private Sprite flag8;
-    private Sprite flag9;
-    private Sprite flag10;
-    private Sprite selectedButton;
-    private Sprite selectedButtonSmall;
-    private Sprite selectedLanguage;
-    private Sprite langImage;
-    private Sprite sliderBar;
-    private Sprite sliderBit;
-    private Sprite sliderBitSelected;
-    private Sprite leftButton;
-    private Sprite rightButton;
+    private ModelInstance[] dartModelInstances = new ModelInstance[3];
+    private ModelInstance dartboardModelInst1;
+    private ModelInstance environmentModelInst1;
+
+    private Sprite defaultButton, settingsButton, languageButton, exitButton, title, submenuBackground,
+            backButton, tickButton, connectButton, helpButton, flag1, flag2, flag3, flag4, flag5, flag6,
+            flag7, flag8, flag9, flag10, selectedButton, selectedButtonSmall, selectedLanguage, langImage,
+            sliderBar, sliderBit, sliderBitSelected, leftButton, rightButton, upButton, downButton;
 
     private static Array<ModelInstance> instances = new Array<ModelInstance>();
 
@@ -89,11 +73,11 @@ public class MenuScreen extends ScreenAdapter {
 
     private int language = 0;
 
-    static String[] menuText;
-    static int[] menuTextIndent;
+    static String[] text;
+    static int[] textIndent;
 
     // 1 = Main Menu, 2 = Game Setup Screen, 3 = Multiplayer Setup Screen, 4 = Customisation Menu, 5 = Settings Menu, 6 = Language Menu, 7 = Tutorial Screen, 8 = Summary Screen, 9 = Server Connection Screen, 10 = Game Mode Info Screen
-    private int menuScreen = 1;
+    static int menuScreen = 1;
     private int prevScreen = 0;
     private int gameInfoScreen = 1;
 
@@ -118,6 +102,8 @@ public class MenuScreen extends ScreenAdapter {
 
     private boolean[] buttonDown = new boolean[10];
 
+    private int summaryDisplayScore = 0;
+
     /* Animation Variables */
     private int timeCounter = 0;
     private int dart = 0;
@@ -129,6 +115,7 @@ public class MenuScreen extends ScreenAdapter {
     private int throwTime = 0;
 
     MenuScreen(final MotionDarts game) {
+        this.game = game;
 
         screenWidth = Gdx.graphics.getWidth();
         screenHeight = Gdx.graphics.getHeight();
@@ -162,28 +149,28 @@ public class MenuScreen extends ScreenAdapter {
         Model spaceSurroundModel = MotionDarts.assetManager.get("models/menu_spacesurround.g3db", Model.class);
 
         // Assign Models to ModelInstances
-        GameScreen.dartModelInstances[0] = new ModelInstance(dartModel1);
-        GameScreen.dartModelInstances[1] = new ModelInstance(dartModel1);
-        GameScreen.dartModelInstances[2] = new ModelInstance(dartModel1);
-        GameScreen.dartboardModelInst1 = new ModelInstance(dartboardModel1);
-        GameScreen.environmentModelInst1 = new ModelInstance(environmentModel1);
+        dartModelInstances[0] = new ModelInstance(dartModel1);
+        dartModelInstances[1] = new ModelInstance(dartModel1);
+        dartModelInstances[2] = new ModelInstance(dartModel1);
+        dartboardModelInst1 = new ModelInstance(dartboardModel1);
+        environmentModelInst1 = new ModelInstance(environmentModel1);
         spaceSurroundModelInst = new ModelInstance(spaceSurroundModel);
 
-        instances.add(GameScreen.dartModelInstances[0]);
-        instances.add(GameScreen.dartModelInstances[1]);
-        instances.add(GameScreen.dartModelInstances[2]);
-        instances.add(GameScreen.dartboardModelInst1);
+        instances.add(dartModelInstances[0]);
+        instances.add(dartModelInstances[1]);
+        instances.add(dartModelInstances[2]);
+        instances.add(dartboardModelInst1);
         instances.add(spaceSurroundModelInst);
 
         for(int i = 0; i < 3; i++) {
-            GameScreen.dartModelInstances[i].transform.setToTranslation(4100.0f, -10000.0f, -19000.0f);
-            GameScreen.dartModelInstances[i].transform.rotate(1.0f, 0.0f, 0.0f, 225);
-            GameScreen.dartModelInstances[i].transform.rotate(0.0f, 1.0f, 0.0f, 45);
+            dartModelInstances[i].transform.setToTranslation(4100.0f, -10000.0f, -19000.0f);
+            dartModelInstances[i].transform.rotate(1.0f, 0.0f, 0.0f, 225);
+            dartModelInstances[i].transform.rotate(0.0f, 1.0f, 0.0f, 45);
         }
 
-        GameScreen.dartboardModelInst1.transform.setToTranslation(0.0f, 0.0f, 0.0f);
-        GameScreen.dartboardModelInst1.transform.rotate(0.0f, 1.0f, 0.0f, 90);
-        GameScreen.dartboardModelInst1.transform.rotate(1.0f, 0.0f, 0.0f, 180);
+        dartboardModelInst1.transform.setToTranslation(0.0f, 0.0f, 0.0f);
+        dartboardModelInst1.transform.rotate(0.0f, 1.0f, 0.0f, 90);
+        dartboardModelInst1.transform.rotate(1.0f, 0.0f, 0.0f, 180);
 
         spaceSurroundModelInst.transform.setToTranslation(0.0f, 0.0f, -2000.0f);
         spaceSurroundModelInst.transform.rotate(0.0f, 1.0f, 0.0f, 90);
@@ -218,6 +205,8 @@ public class MenuScreen extends ScreenAdapter {
         Texture sliderBitSelectedTexture = MotionDarts.assetManager.get("textures/sliderBitSelected.png", Texture.class);
         Texture leftButtonTexture = MotionDarts.assetManager.get("textures/leftButton.png", Texture.class);
         Texture rightButtonTexture = MotionDarts.assetManager.get("textures/rightButton.png", Texture.class);
+        Texture upButtonTexture = MotionDarts.assetManager.get("textures/upButton.png", Texture.class);
+        Texture downButtonTexture = MotionDarts.assetManager.get("textures/downButton.png", Texture.class);
 
         defaultButton = new Sprite(defaultButtonTexture);
         settingsButton = new Sprite(settingsButtonTexture);
@@ -248,6 +237,8 @@ public class MenuScreen extends ScreenAdapter {
         sliderBitSelected = new Sprite(sliderBitSelectedTexture);
         leftButton = new Sprite(leftButtonTexture);
         rightButton = new Sprite(rightButtonTexture);
+        upButton = new Sprite(upButtonTexture);
+        downButton = new Sprite(downButtonTexture);
 
         /* Game Environment */
         environment = new Environment();
@@ -406,6 +397,7 @@ public class MenuScreen extends ScreenAdapter {
                             } else if (touchX >= 190 * scaleConstant && touchX <= 270 * scaleConstant) {
                                 menuScreen = 7;
                             } else if (touchX >= screenWidth - 90 * scaleConstant && touchX <= screenWidth - 10 * scaleConstant) {
+                                dispose();
                                 Gdx.app.exit();
                             }
                         }
@@ -413,8 +405,7 @@ public class MenuScreen extends ScreenAdapter {
 
                     case 2:     // Single player Game setup
                         if(touchX > screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 && touchX <  screenWidth / 2 + (defaultButton.getWidth() * scaleConstant) / 2 && touchY > screenHeight - 170 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant) {
-                            game.setScreen(new GameScreen(game));
-                            GameScreen.gameClass = new GameClass(selectedGameMode, selectedOpposition);
+                            loadGameScreen();
                         }
 
                         if(touchX > 20 * scaleConstant && touchX < 100 * scaleConstant && touchY > screenHeight - 170 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant) {
@@ -450,8 +441,7 @@ public class MenuScreen extends ScreenAdapter {
                                 }
                             } else {
                                 // Begin Game
-                                game.setScreen(new GameScreen(game));
-                                GameScreen.gameClass = new GameClass(selectedGameMode, selectedOpposition);
+                                loadGameScreen();
                             }
 
                         } else if(touchX > 20 * scaleConstant && touchX < 100 * scaleConstant && touchY > screenHeight - 170 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant) {
@@ -510,6 +500,31 @@ public class MenuScreen extends ScreenAdapter {
 
                         break;
 
+                    case 8:
+
+                        if(touchY > screenHeight - 170 * scaleConstant && touchY < screenHeight - 20 * scaleConstant) {
+                            if(touchX > 40 * scaleConstant && touchX < 340 * scaleConstant) {
+                                menuScreen = 1;
+                            } else if(touchX > 380 * scaleConstant && touchX < 680 * scaleConstant) {
+                                // Reload same game
+                                loadGameScreen();
+                            }
+                        }
+
+                        if(touchX > 620 * scaleConstant && touchX < 700 * scaleConstant) {
+                            if(touchY > screenHeight - 770 * scaleConstant && touchY < screenHeight - 690 * scaleConstant) {
+                                if(summaryDisplayScore > 0) {
+                                    summaryDisplayScore -= 10;
+                                }
+                            } else if(touchY > screenHeight - 680 * scaleConstant && touchY < screenHeight - 600 * scaleConstant) {
+                                if(summaryDisplayScore < 90) {
+                                    summaryDisplayScore += 10;
+                                }
+                            }
+                        }
+
+                        break;
+
                     case 9:     // MultiPlayer Server Connect Screen
 
                         if(touchY > screenHeight - 170 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant) {
@@ -560,7 +575,7 @@ public class MenuScreen extends ScreenAdapter {
                                     public void canceled() {
 
                                     }
-                                }, menuText[27], tempUsername, menuText[28]);
+                                }, text[27], tempUsername, text[28]);
 
                             } else if(touchY < (screenHeight - 735 * scaleConstant) && touchY > (screenHeight - 815 * scaleConstant)) {
 
@@ -587,7 +602,7 @@ public class MenuScreen extends ScreenAdapter {
                                     public void canceled() {
 
                                     }
-                                }, menuText[30], opponentUsername, menuText[31]);
+                                }, text[30], opponentUsername, text[31]);
 
                             }
                         }
@@ -676,6 +691,10 @@ public class MenuScreen extends ScreenAdapter {
                 drawTutorialScreen();
                 break;
 
+            case 8:
+                drawSummaryScreen();
+                break;
+
             case 9:
                 drawMultiplayerTargetedConnectScreen();
                 break;
@@ -741,6 +760,14 @@ public class MenuScreen extends ScreenAdapter {
                     buttonDown[0] = (touchX >= 20 * scaleConstant && touchX <= 100 * scaleConstant) && (touchY >= screenHeight - 100 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
                     break;
 
+                case 8:
+                    buttonDown[0] = (touchX >= 40 * scaleConstant && touchX <= 340 * scaleConstant) && (touchY >= screenHeight - 170 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
+                    buttonDown[1] = (touchX >= 380 * scaleConstant && touchX <= 680 * scaleConstant) && (touchY >= screenHeight - 170 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
+
+                    buttonDown[2] = (touchX >= 620 * scaleConstant && touchX <= 700 * scaleConstant) && (touchY >= screenHeight - 770 * scaleConstant && touchY <= screenHeight - 690 * scaleConstant);
+                    buttonDown[3] = (touchX >= 620 * scaleConstant && touchX <= 700 * scaleConstant) && (touchY >= screenHeight - 680 * scaleConstant && touchY <= screenHeight - 600 * scaleConstant);
+                    break;
+
                 case 9:
                     buttonDown[0] = (touchX >= 20 * scaleConstant && touchX <= 100 * scaleConstant) && (touchY >= screenHeight - 100 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
                     buttonDown[1] = (touchX >= 110 * scaleConstant && touchX <= 190 * scaleConstant) && (touchY >= screenHeight - 100 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
@@ -761,12 +788,16 @@ public class MenuScreen extends ScreenAdapter {
 	public void dispose () {
         modelBatch.dispose();
         spriteBatch.dispose();
-        GameScreen.instances.clear();
-        MotionDarts.assetManager.dispose();
+        instances.clear();
         freeTypeFontGenerator.dispose();
         menuButtonFont.dispose();
         menuButtonFontBold.dispose();
         menuTitleFont.dispose();
+        menuDescriptionFont.dispose();
+        summaryFont.dispose();
+        menuInputFont.dispose();
+        menuStatusFontGreen.dispose();
+        menuStatusFontRed.dispose();
         shapeRenderer.dispose();
 	}
 
@@ -781,14 +812,16 @@ public class MenuScreen extends ScreenAdapter {
     }
 
     private void setupFonts() {
+        summaryFontColored = new BitmapFont[8];
+
         switch(language) {
             case 0:
                 /* Fonts Setup*/
                 freeTypeFontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/agencyfb.ttf"));
                 freeTypeFontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
 
-                freeTypeFontParameter.color = new Color(255, 255, 255, 255);
-                freeTypeFontParameter.borderColor = new Color(0, 0, 132, 255);
+                freeTypeFontParameter.color = new Color(1.0f, 1.0f, 1.0f, 1.0f);
+                freeTypeFontParameter.borderColor = new Color(0, 0, 1.0f, 1.0f);
                 freeTypeFontParameter.borderWidth = 2;
 
                 // Button and Subheading Font
@@ -799,25 +832,44 @@ public class MenuScreen extends ScreenAdapter {
                 freeTypeFontParameter.size = 30 * scaleConstant;
                 menuDescriptionFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
 
+                // Summary screen font
+                freeTypeFontParameter.size = 30 * scaleConstant;
+                freeTypeFontParameter.color = new Color(1.0f, 1.0f, 1.0f, 1.0f);
+                summaryFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+                freeTypeFontParameter.borderWidth = 1;
+                summaryFontColored[1] = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+                freeTypeFontParameter.color = new Color(1.0f, 0, 0, 1.0f);
+                summaryFontColored[3] = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+                freeTypeFontParameter.color = new Color(0.0f, 1.0f, 0, 1.0f);
+                summaryFontColored[2] = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+                freeTypeFontParameter.color = new Color(1.0f, 0.5f, 0, 1.0f);
+                summaryFontColored[4] = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+                freeTypeFontParameter.color = new Color(1.0f, 1.0f, 0, 1.0f);
+                summaryFontColored[5] = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+                freeTypeFontParameter.color = new Color(0.7f, 0.7f, 0.7f, 1.0f);
+                summaryFontColored[7] = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+                freeTypeFontParameter.color = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+                summaryFontColored[6] = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+
                 // Status Font (red)
-                freeTypeFontParameter.color = new Color(255, 0, 0, 255);
+                freeTypeFontParameter.color = new Color(1.0f, 0, 0, 1.0f);
                 freeTypeFontParameter.size = 25 * scaleConstant;
                 freeTypeFontParameter.borderWidth = 0;
                 menuStatusFontRed = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
 
                 // Status Font (green)
-                freeTypeFontParameter.color = new Color(0, 255, 0, 255);
+                freeTypeFontParameter.color = new Color(0, 1.0f, 0, 1.0f);
                 menuStatusFontGreen = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
 
                 // Input Text (for text input boxes)
-                freeTypeFontParameter.color = new Color(0, 0, 0, 255);
+                freeTypeFontParameter.color = new Color(0, 0, 0, 1.0f);
                 freeTypeFontParameter.size = 55 * scaleConstant;
                 menuInputFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
 
                 freeTypeFontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/agencyfbbold.ttf"));
 
                 // Button Font (Bold)
-                freeTypeFontParameter.color = new Color(255, 255, 255, 255);
+                freeTypeFontParameter.color = new Color(1.0f, 1.0f, 1.0f, 1.0f);
                 freeTypeFontParameter.size = 55 * scaleConstant;
                 freeTypeFontParameter.borderWidth = 2;
                 menuButtonFontBold = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
@@ -827,15 +879,15 @@ public class MenuScreen extends ScreenAdapter {
                 menuTitleFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
 
                 break;
-            case 1:
-            case 2:
+            case 1:     // Bulgarian
+            case 2:     // Russian
                 /* Fonts Setup*/
                 freeTypeFontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/agencyfbcyrillic.ttf"));
                 freeTypeFontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
 
                 freeTypeFontParameter.characters = "ЁЪЯШЕДСАЗХЦВФРТГБНЧЫУЙМКИОЛПЬЮЖЩЭёъяшедсазхцвфртгбнчыуймкиолпьюжщэ501234.()";
-                freeTypeFontParameter.color = new Color(255, 255, 255, 255);
-                freeTypeFontParameter.borderColor = new Color(0, 0, 132, 255);
+                freeTypeFontParameter.color = new Color(1.0f, 1.0f, 1.0f, 1.0f);
+                freeTypeFontParameter.borderColor = new Color(0, 0, 1.0f, 1.0f);
                 freeTypeFontParameter.borderWidth = 2;
 
                 // Button and Subheading Font
@@ -847,22 +899,22 @@ public class MenuScreen extends ScreenAdapter {
                 menuDescriptionFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
 
                 // Status Font (red)
-                freeTypeFontParameter.color = new Color(255, 0, 0, 255);
+                freeTypeFontParameter.color = new Color(1.0f, 0, 0, 1.0f);
                 freeTypeFontParameter.size = 25 * scaleConstant;
                 freeTypeFontParameter.borderWidth = 0;
                 menuStatusFontRed = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
 
                 // Status Font (green)
-                freeTypeFontParameter.color = new Color(0, 255, 0, 255);
+                freeTypeFontParameter.color = new Color(0, 1.0f, 0, 1.0f);
                 menuStatusFontGreen = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
 
                 // Input Text (for text input boxes)
-                freeTypeFontParameter.color = new Color(0, 0, 0, 255);
+                freeTypeFontParameter.color = new Color(0, 0, 0, 1.0f);
                 freeTypeFontParameter.size = 55 * scaleConstant;
                 menuInputFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
 
-                // Button Font (Bold)
-                freeTypeFontParameter.color = new Color(255, 255, 255, 255);
+                // Button Font
+                freeTypeFontParameter.color = new Color(1.0f, 1.0f, 1.0f, 1.0f);
                 freeTypeFontParameter.size = 55 * scaleConstant;
                 freeTypeFontParameter.borderWidth = 2;
                 menuButtonFontBold = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
@@ -870,6 +922,25 @@ public class MenuScreen extends ScreenAdapter {
                 // Title Font
                 freeTypeFontParameter.size = 100 * scaleConstant;
                 menuTitleFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+
+                // Summary screen font
+                freeTypeFontParameter.size = 30 * scaleConstant;
+                freeTypeFontParameter.color = new Color(1.0f, 1.0f, 1.0f, 1.0f);
+                summaryFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+                freeTypeFontParameter.borderWidth = 1;
+                summaryFontColored[1] = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+                freeTypeFontParameter.color = new Color(1.0f, 0, 0, 1.0f);
+                summaryFontColored[3] = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+                freeTypeFontParameter.color = new Color(0.0f, 1.0f, 0, 1.0f);
+                summaryFontColored[2] = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+                freeTypeFontParameter.color = new Color(1.0f, 0.5f, 0, 1.0f);
+                summaryFontColored[4] = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+                freeTypeFontParameter.color = new Color(1.0f, 1.0f, 0, 1.0f);
+                summaryFontColored[5] = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+                freeTypeFontParameter.color = new Color(0.7f, 0.7f, 0.7f, 1.0f);
+                summaryFontColored[7] = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+                freeTypeFontParameter.color = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+                summaryFontColored[6] = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
 
                 break;
         }
@@ -879,16 +950,16 @@ public class MenuScreen extends ScreenAdapter {
         final int CURRENT_FPS = (Gdx.graphics.getFramesPerSecond() > 10) ? Gdx.graphics.getFramesPerSecond() : 30;
 
         // Constant dartboard rotation
-        GameScreen.dartboardModelInst1.transform.rotate(1.0f, 0.0f, 0.0f, -0.30f / (CURRENT_FPS / 30.0f));
+        dartboardModelInst1.transform.rotate(1.0f, 0.0f, 0.0f, -0.30f / (CURRENT_FPS / 30.0f));
         spaceSurroundModelInst.transform.rotate(1.0f, 0.0f, 0.0f, -0.10f / (CURRENT_FPS / 30.0f));
 
         // Makes darts rotate with the dartboard, by moving them at different rates, depending on distance from dartboard centre
         for(int i = 0; i < dart; i++) {
             rot[i] += 0.30f / (CURRENT_FPS / 30.0f);
-            GameScreen.dartModelInstances[i].transform.setToTranslation(0.0f - (float) Math.cos(Math.toRadians(-rot[i] + 90))
+            dartModelInstances[i].transform.setToTranslation(0.0f - (float) Math.cos(Math.toRadians(-rot[i] + 90))
                     * 2.0f * dartY[i], dartY[i] * (float) Math.sin(Math.toRadians(-rot[i] + 90)) * 2.0f, dartZ[i]);
-            GameScreen.dartModelInstances[i].transform.rotate(1.0f, 0.0f, 0.0f, 90);
-            GameScreen.dartModelInstances[i].transform.rotate(0.0f, 1.0f, 0.0f, 45);
+            dartModelInstances[i].transform.rotate(1.0f, 0.0f, 0.0f, 90);
+            dartModelInstances[i].transform.rotate(0.0f, 1.0f, 0.0f, 45);
         }
 
         if(dart < 3) {
@@ -927,6 +998,15 @@ public class MenuScreen extends ScreenAdapter {
         }
     }
 
+    /**
+     * Loads in the game screen, cleans up after the menus
+     */
+    private void loadGameScreen() {
+        game.setScreen(new GameScreen(game));
+        GameScreen.gameClass = new GameClass(selectedGameMode, selectedOpposition);
+        dispose();
+    }
+
     private void drawMainMenuScreen() {
         spriteBatch.begin();
 
@@ -944,9 +1024,9 @@ public class MenuScreen extends ScreenAdapter {
         spriteBatch.draw(exitButton, screenWidth - 90 * scaleConstant, 10 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
 
         // Main Button Text
-        menuButtonFont.draw(spriteBatch, menuText[0], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[0] * scaleConstant, screenHeight / 16 * 7 + 96 * scaleConstant);
-        menuButtonFont.draw(spriteBatch, menuText[1], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[1] * scaleConstant, screenHeight / 16 * 7 - 200 * scaleConstant + 96 * scaleConstant);
-        menuButtonFont.draw(spriteBatch, menuText[2], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[2] * scaleConstant, screenHeight / 16 * 7 - 400 * scaleConstant + 96 * scaleConstant);
+        menuButtonFont.draw(spriteBatch, text[0], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + textIndent[0] * scaleConstant, screenHeight / 16 * 7 + 96 * scaleConstant);
+        menuButtonFont.draw(spriteBatch, text[1], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + textIndent[1] * scaleConstant, screenHeight / 16 * 7 - 200 * scaleConstant + 96 * scaleConstant);
+        menuButtonFont.draw(spriteBatch, text[2], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + textIndent[2] * scaleConstant, screenHeight / 16 * 7 - 400 * scaleConstant + 96 * scaleConstant);
 
         // Button Down Images
         if(buttonDown[0]) { spriteBatch.draw(selectedButton, screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2, screenHeight / 16 * 7, 300 * scaleConstant, 150 * scaleConstant); }
@@ -975,27 +1055,27 @@ public class MenuScreen extends ScreenAdapter {
         spriteBatch.draw(helpButton, 620 * scaleConstant, 830 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
 
         // Title text
-        menuTitleFont.draw(spriteBatch, menuText[3], menuTextIndent[3] * scaleConstant, screenHeight / 32 * 31);
+        menuTitleFont.draw(spriteBatch, text[3], textIndent[3] * scaleConstant, screenHeight / 32 * 31);
         // Button text
-        menuButtonFontBold.draw(spriteBatch, menuText[6], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[6] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, text[6], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + textIndent[6] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
 
         // Sub heading text
-        menuButtonFont.draw(spriteBatch, menuText[4], 30 * scaleConstant, screenHeight / 32 * 28);
-        menuButtonFont.draw(spriteBatch, menuText[5], 30 * scaleConstant, screenHeight / 32 * 22);
-        menuButtonFont.draw(spriteBatch, menuText[16], 125 * scaleConstant, screenHeight / 32 * 9);
+        menuButtonFont.draw(spriteBatch, text[4], 30 * scaleConstant, screenHeight / 32 * 28);
+        menuButtonFont.draw(spriteBatch, text[5], 30 * scaleConstant, screenHeight / 32 * 22);
+        menuButtonFont.draw(spriteBatch, text[16], 125 * scaleConstant, screenHeight / 32 * 9);
 
         // Difficulty Selection text
-        menuButtonFontBold.draw(spriteBatch, menuText[7], (30 + menuTextIndent[7]) * scaleConstant, 1038 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[8], (250 + menuTextIndent[8]) * scaleConstant, 1038 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[9], (470 + menuTextIndent[9]) * scaleConstant, 1038 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, text[7], (30 + textIndent[7]) * scaleConstant, 1038 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, text[8], (250 + textIndent[8]) * scaleConstant, 1038 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, text[9], (470 + textIndent[9]) * scaleConstant, 1038 * scaleConstant);
 
         // Game Mode Selection text
-        menuButtonFontBold.draw(spriteBatch, menuText[10], 40 * scaleConstant, 664 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[11], 365 * scaleConstant, 714 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[12], 365 * scaleConstant, 664 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[13], 40 * scaleConstant, 459 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[14], 365 * scaleConstant, 509 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[15], 365 * scaleConstant, 459 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, text[10], 40 * scaleConstant, 664 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, text[11], 365 * scaleConstant, 714 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, text[12], 365 * scaleConstant, 664 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, text[13], 40 * scaleConstant, 459 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, text[14], 365 * scaleConstant, 509 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, text[15], 365 * scaleConstant, 459 * scaleConstant);
 
         if(buttonDown[0]) { spriteBatch.draw(selectedButtonSmall, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
         if(buttonDown[1]) { spriteBatch.draw(selectedButtonSmall, 620 * scaleConstant, 830 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
@@ -1058,37 +1138,37 @@ public class MenuScreen extends ScreenAdapter {
         spriteBatch.draw(helpButton, 620 * scaleConstant, 650 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
 
         // Title text
-        menuTitleFont.draw(spriteBatch, menuText[17], menuTextIndent[17] * scaleConstant, screenHeight / 32 * 31);
+        menuTitleFont.draw(spriteBatch, text[17], textIndent[17] * scaleConstant, screenHeight / 32 * 31);
         // Button text
         if(selectedOpposition == 5) {
             if(showConnecting) {
-                menuButtonFont.draw(spriteBatch, menuText[44], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[44] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
+                menuButtonFont.draw(spriteBatch, text[44], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + textIndent[44] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
             } else{
-                menuButtonFontBold.draw(spriteBatch, menuText[23], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[23] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
+                menuButtonFontBold.draw(spriteBatch, text[23], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + textIndent[23] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
             }
         } else{
-            menuButtonFontBold.draw(spriteBatch, menuText[6], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[6] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
+            menuButtonFontBold.draw(spriteBatch, text[6], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + textIndent[6] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
         }
         // Sub heading text
-        menuButtonFont.draw(spriteBatch, menuText[18], 30 * scaleConstant, screenHeight / 32 * 28);
-        menuButtonFont.draw(spriteBatch, menuText[5], 30 * scaleConstant, screenHeight / 32 * 18 - 20 * scaleConstant);
+        menuButtonFont.draw(spriteBatch, text[18], 30 * scaleConstant, screenHeight / 32 * 28);
+        menuButtonFont.draw(spriteBatch, text[5], 30 * scaleConstant, screenHeight / 32 * 18 - 20 * scaleConstant);
 
         // Multiplayer Type Selector text
-        menuButtonFontBold.draw(spriteBatch, menuText[19], 40 * scaleConstant, 1045 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[20], 40 * scaleConstant, 945 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[24], 40 * scaleConstant, 845 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, text[19], 40 * scaleConstant, 1045 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, text[20], 40 * scaleConstant, 945 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, text[24], 40 * scaleConstant, 845 * scaleConstant);
         // Multiplayer Type Selector description text
-        menuDescriptionFont.draw(spriteBatch, menuText[21], 40 * scaleConstant, 990 * scaleConstant);
-        menuDescriptionFont.draw(spriteBatch, menuText[22], 40 * scaleConstant, 890 * scaleConstant);
-        menuDescriptionFont.draw(spriteBatch, menuText[25], 40 * scaleConstant, 790 * scaleConstant);
+        menuDescriptionFont.draw(spriteBatch, text[21], 40 * scaleConstant, 990 * scaleConstant);
+        menuDescriptionFont.draw(spriteBatch, text[22], 40 * scaleConstant, 890 * scaleConstant);
+        menuDescriptionFont.draw(spriteBatch, text[25], 40 * scaleConstant, 790 * scaleConstant);
 
         // Game Mode Selection text
-        menuButtonFontBold.draw(spriteBatch, menuText[10], 40 * scaleConstant, 484 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[11], 365 * scaleConstant, 534 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[12], 365 * scaleConstant, 484 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[13], 40 * scaleConstant, 279 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[14], 365 * scaleConstant, 329 * scaleConstant);
-        menuButtonFontBold.draw(spriteBatch, menuText[15], 365 * scaleConstant, 279 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, text[10], 40 * scaleConstant, 484 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, text[11], 365 * scaleConstant, 534 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, text[12], 365 * scaleConstant, 484 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, text[13], 40 * scaleConstant, 279 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, text[14], 365 * scaleConstant, 329 * scaleConstant);
+        menuButtonFontBold.draw(spriteBatch, text[15], 365 * scaleConstant, 279 * scaleConstant);
 
         // Button Down Highlighting
         if(buttonDown[0]) { spriteBatch.draw(selectedButtonSmall, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
@@ -1149,11 +1229,11 @@ public class MenuScreen extends ScreenAdapter {
         spriteBatch.draw(rightButton, 620 * scaleConstant, 660 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
 
         // Title text
-        menuTitleFont.draw(spriteBatch, menuText[45], menuTextIndent[45] * scaleConstant, screenHeight / 32 * 31);
+        menuTitleFont.draw(spriteBatch, text[45], textIndent[45] * scaleConstant, screenHeight / 32 * 31);
 
         // Sub heading text
-        menuButtonFont.draw(spriteBatch, menuText[46], 30 * scaleConstant, screenHeight / 32 * 28);
-        menuButtonFont.draw(spriteBatch, menuText[47], 30 * scaleConstant, screenHeight / 32 * 18);
+        menuButtonFont.draw(spriteBatch, text[46], 30 * scaleConstant, screenHeight / 32 * 28);
+        menuButtonFont.draw(spriteBatch, text[47], 30 * scaleConstant, screenHeight / 32 * 18);
 
         if(buttonDown[0]) { spriteBatch.draw(selectedButtonSmall, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
         if(buttonDown[1]) { spriteBatch.draw(selectedButtonSmall, 530 * scaleConstant, 1060 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
@@ -1173,9 +1253,9 @@ public class MenuScreen extends ScreenAdapter {
         spriteBatch.draw(backButton, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
 
         // Title text
-        menuTitleFont.draw(spriteBatch, menuText[48], menuTextIndent[48] * scaleConstant, screenHeight / 32 * 31);
+        menuTitleFont.draw(spriteBatch, text[48], textIndent[48] * scaleConstant, screenHeight / 32 * 31);
         // Sub heading text
-        menuButtonFont.draw(spriteBatch, menuText[52] + ": " + (int) ((GameScreen.sensitivityZ) * 100) + "%", 30 * scaleConstant, screenHeight / 32 * 28);
+        menuButtonFont.draw(spriteBatch, text[52] + ": " + (int) ((GameScreen.sensitivityZ) * 100) + "%", 30 * scaleConstant, screenHeight / 32 * 28);
 
         // Slider
         spriteBatch.draw(sliderBar, 60 * scaleConstant, 960 * scaleConstant, 600 * scaleConstant, 75 * scaleConstant);
@@ -1208,7 +1288,7 @@ public class MenuScreen extends ScreenAdapter {
         spriteBatch.draw(flag10, 400 * scaleConstant, 150 * scaleConstant, 200 * scaleConstant, 125 * scaleConstant);
 
         // Title text
-        menuTitleFont.draw(spriteBatch, menuText[49], menuTextIndent[49] * scaleConstant, screenHeight / 32 * 31);
+        menuTitleFont.draw(spriteBatch, text[49], textIndent[49] * scaleConstant, screenHeight / 32 * 31);
 
         // Language text
         spriteBatch.draw(langImage, 0, 0, 720 * scaleConstant, 1280 * scaleConstant);
@@ -1221,7 +1301,123 @@ public class MenuScreen extends ScreenAdapter {
         spriteBatch.end();
     }
 
-    public void drawTutorialScreen() {
+    private void drawSummaryScreen() {
+        spriteBatch.begin();
+
+        // Background Overlay
+        spriteBatch.draw(submenuBackground, 0, 0, screenWidth, screenHeight);
+        // Buttons for main menu/rematch
+        spriteBatch.draw(defaultButton, 40 * scaleConstant, 20 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant);
+        spriteBatch.draw(defaultButton, 380 * scaleConstant, 20 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant);
+
+        // Title text
+        menuTitleFont.draw(spriteBatch, text[140], textIndent[140] * scaleConstant, screenHeight / 32 * 31);
+
+        // Button text
+        menuButtonFont.draw(spriteBatch, text[143], (40 + textIndent[143]) * scaleConstant, 116 * scaleConstant);
+        menuButtonFont.draw(spriteBatch, text[144], (380 + textIndent[144]) * scaleConstant, 116 * scaleConstant);
+
+        spriteBatch.end();
+
+        switch (GameScreen.gameClass.getGameMode()) {
+            case 1:
+                // Sub heading text
+                spriteBatch.begin();
+
+                menuButtonFont.draw(spriteBatch, text[141], 30 * scaleConstant, screenHeight / 32 * 28);
+                menuButtonFont.draw(spriteBatch, text[142], 30 * scaleConstant, screenHeight / 32 * 13);
+
+                // Player names
+                summaryFont.draw(spriteBatch, GameScreen.gameClass.playerNames[0], 30 * scaleConstant, 1040 * scaleConstant);
+                summaryFont.draw(spriteBatch, GameScreen.gameClass.playerNames[1], 360 * scaleConstant, 1040 * scaleConstant);
+
+                // Score Table text
+                for(int i = 0; i < 10; i++) {
+                    // Turn
+                    summaryFont.draw(spriteBatch, String.valueOf(i + 1 + summaryDisplayScore), (305 - 5 * String.valueOf(i + 1 + summaryDisplayScore).length()) * scaleConstant, (990 - 40 * i) * scaleConstant);
+                    
+                    // Dart Scores
+                    for(int player = 0; player < 2; player++) {
+                        int[] dart = GameScreen.gameClass.scoreSystem.dartScore[i + summaryDisplayScore][player];
+                        int[] dartNature = GameScreen.gameClass.scoreSystem.dartNature[i + summaryDisplayScore][player];
+
+                        for (int j = 0; j < 3; j++) {
+                            if (dartNature[j] != 0) {
+                                summaryFontColored[dartNature[j]].draw(spriteBatch, String.valueOf(dart[j]), (30 + 50 * j + 420 * player + 9 * (2 - String.valueOf(dart[j]).length())) * scaleConstant, (990 - 40 * i) * scaleConstant);
+                            }
+                        }
+                    }
+                    
+                    // Overall Scores
+                    if(i + summaryDisplayScore <= GameScreen.gameClass.scoreSystem.turn) {
+                        summaryFont.draw(spriteBatch, String.valueOf(GameScreen.gameClass.scoreSystem.overallScore[i + summaryDisplayScore][0]), (230 - 14 * (String.valueOf(GameScreen.gameClass.scoreSystem.overallScore[i + summaryDisplayScore][0]).length() - 1)) * scaleConstant, (990 - 40 * i) * scaleConstant);
+                        summaryFont.draw(spriteBatch, String.valueOf(GameScreen.gameClass.scoreSystem.overallScore[i + summaryDisplayScore][1]), (365) * scaleConstant, (990 - 40 * i) * scaleConstant);
+                    }
+                }
+
+                // Draw score navigation buttons
+                spriteBatch.draw(upButton, 620 * scaleConstant, 690 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
+                spriteBatch.draw(downButton, 620 * scaleConstant, 600 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
+
+                // Statistics
+                float[][] stats = GameScreen.gameClass.scoreSystem.statistics;
+
+                for(int i = 0; i < 6; i++) {
+                    summaryFont.draw(spriteBatch, text[i + 148], (360 - 6 * text[i + 148].length()) * scaleConstant, (440 - i * 40) * scaleConstant);
+
+                    if(i == 4) {    // Element 4 should be displayed as an integer, whereas everything else should be displayed to 2 d.p.
+                        summaryFont.draw(spriteBatch, String.valueOf((int) stats[0][i]), 40 * scaleConstant, (440 - i * 40) * scaleConstant);
+                        summaryFont.draw(spriteBatch, String.valueOf((int) stats[1][i]), 620 * scaleConstant, (440 - i * 40) * scaleConstant);
+                    } else{
+                        summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[0][i]) / 100.0), 40 * scaleConstant, (440 - i * 40) * scaleConstant);
+                        summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[1][i]) / 100.0), 620 * scaleConstant, (440 - i * 40) * scaleConstant);
+                    }
+                }
+
+                // Button animations
+                if(buttonDown[0]) { spriteBatch.draw(selectedButton, 40 * scaleConstant, 20 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant); }
+                if(buttonDown[1]) { spriteBatch.draw(selectedButton, 380 * scaleConstant, 20 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant); }
+                if(buttonDown[2]) { spriteBatch.draw(selectedButtonSmall, 620 * scaleConstant, 690 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+                if(buttonDown[3]) { spriteBatch.draw(selectedButtonSmall, 620 * scaleConstant, 600 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+
+
+                spriteBatch.end();
+
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+                // Score table
+                shapeRenderer.setColor(new Color(0.0f, 0.0f, 0.8f, 1.0f));
+                shapeRenderer.rect(28 * scaleConstant, 998 * scaleConstant, 554 * scaleConstant, 6 * scaleConstant);
+                shapeRenderer.rect(253 * scaleConstant, 598 * scaleConstant, 6 * scaleConstant, 402 * scaleConstant);
+                shapeRenderer.rect(353 * scaleConstant, 598 * scaleConstant, 6 * scaleConstant, 402 * scaleConstant);
+                shapeRenderer.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+                shapeRenderer.rect(30 * scaleConstant, 1000 * scaleConstant, 550 * scaleConstant, 2 * scaleConstant);
+                shapeRenderer.rect(255 * scaleConstant, 600 * scaleConstant, 2 * scaleConstant, 400 * scaleConstant);
+                shapeRenderer.rect(355 * scaleConstant, 600 * scaleConstant, 2 * scaleConstant, 400 * scaleConstant);
+
+                // Statistics table
+                shapeRenderer.setColor(new Color(0.0f, 0.0f, 0.8f, 1.0f));
+                shapeRenderer.rect(148 * scaleConstant, 198 * scaleConstant, 6 * scaleConstant, 254 * scaleConstant);
+                shapeRenderer.rect(568 * scaleConstant, 198 * scaleConstant, 6 * scaleConstant, 254 * scaleConstant);
+                shapeRenderer.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+                shapeRenderer.rect(150 * scaleConstant, 200 * scaleConstant, 2 * scaleConstant, 250 * scaleConstant);
+                shapeRenderer.rect(570 * scaleConstant, 200 * scaleConstant, 2 * scaleConstant, 250 * scaleConstant);
+
+                shapeRenderer.end();
+                break;
+
+            case 2:
+                break;
+
+            case 3:
+                break;
+
+            case 4:
+                break;
+        }
+    }
+
+    private void drawTutorialScreen() {
         spriteBatch.begin();
 
         // Background Overlay
@@ -1230,11 +1426,11 @@ public class MenuScreen extends ScreenAdapter {
         spriteBatch.draw(backButton, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
 
         // Title text
-        menuTitleFont.draw(spriteBatch, menuText[50], menuTextIndent[50] * scaleConstant, screenHeight / 32 * 31);
+        menuTitleFont.draw(spriteBatch, text[50], textIndent[50] * scaleConstant, screenHeight / 32 * 31);
 
         // Info text
         for(int i = 116; i < 136; i++) {
-            menuDescriptionFont.draw(spriteBatch, menuText[i], 30 * scaleConstant, (1120 - 30 * (i - 117)) * scaleConstant);
+            menuDescriptionFont.draw(spriteBatch, text[i], 30 * scaleConstant, (1120 - 30 * (i - 117)) * scaleConstant);
         }
 
         if(buttonDown[0]) { spriteBatch.draw(selectedButtonSmall, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
@@ -1258,44 +1454,44 @@ public class MenuScreen extends ScreenAdapter {
 
 
         // Title text
-        menuTitleFont.draw(spriteBatch, menuText[17], menuTextIndent[17] * scaleConstant, screenHeight / 32 * 31);
+        menuTitleFont.draw(spriteBatch, text[17], textIndent[17] * scaleConstant, screenHeight / 32 * 31);
         // Button text
         if(showConnecting) {
-            menuButtonFont.draw(spriteBatch, menuText[44], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[44] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
+            menuButtonFont.draw(spriteBatch, text[44], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + textIndent[44] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
         } else{
-            menuButtonFontBold.draw(spriteBatch, menuText[23], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + menuTextIndent[23] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
+            menuButtonFontBold.draw(spriteBatch, text[23], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + textIndent[23] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
         }
         // Sub heading text
-        menuButtonFont.draw(spriteBatch, menuText[26], 30 * scaleConstant, screenHeight / 32 * 28);
-        menuButtonFont.draw(spriteBatch, menuText[27], 30 * scaleConstant, screenHeight / 32 * 22);
+        menuButtonFont.draw(spriteBatch, text[26], 30 * scaleConstant, screenHeight / 32 * 28);
+        menuButtonFont.draw(spriteBatch, text[27], 30 * scaleConstant, screenHeight / 32 * 22);
 
         // Status text (informs user whether username is taken or whether opponent exists)
         if(usernameChecked) {
             if(usernameAvailable) {
-                menuStatusFontGreen.draw(spriteBatch, menuText[32], 30 * scaleConstant, 970 * scaleConstant);
+                menuStatusFontGreen.draw(spriteBatch, text[32], 30 * scaleConstant, 970 * scaleConstant);
             } else{
-                menuStatusFontRed.draw(spriteBatch, menuText[33], 30 * scaleConstant, 970 * scaleConstant);
+                menuStatusFontRed.draw(spriteBatch, text[33], 30 * scaleConstant, 970 * scaleConstant);
             }
         }
 
         if(opponentChecked) {
             if(opponentAvailable) {
-                menuStatusFontGreen.draw(spriteBatch, menuText[33], 30 * scaleConstant, 730 * scaleConstant);
+                menuStatusFontGreen.draw(spriteBatch, text[33], 30 * scaleConstant, 730 * scaleConstant);
             } else{
-                menuStatusFontRed.draw(spriteBatch, menuText[34], 30 * scaleConstant, 730 * scaleConstant);
+                menuStatusFontRed.draw(spriteBatch, text[34], 30 * scaleConstant, 730 * scaleConstant);
             }
         }
 
         if(showHelpMultiplayer) {
             // Information text
-            menuDescriptionFont.draw(spriteBatch, menuText[36], 30 * scaleConstant, 650 * scaleConstant);
-            menuDescriptionFont.draw(spriteBatch, menuText[37], 30 * scaleConstant, 610 * scaleConstant);
-            menuDescriptionFont.draw(spriteBatch, menuText[38], 30 * scaleConstant, 570 * scaleConstant);
-            menuDescriptionFont.draw(spriteBatch, menuText[39], 30 * scaleConstant, 530 * scaleConstant);
-            menuDescriptionFont.draw(spriteBatch, menuText[40], 30 * scaleConstant, 490 * scaleConstant);
-            menuDescriptionFont.draw(spriteBatch, menuText[41], 30 * scaleConstant, 450 * scaleConstant);
-            menuDescriptionFont.draw(spriteBatch, menuText[42], 30 * scaleConstant, 410 * scaleConstant);
-            menuDescriptionFont.draw(spriteBatch, menuText[43], 30 * scaleConstant, 370 * scaleConstant);
+            menuDescriptionFont.draw(spriteBatch, text[36], 30 * scaleConstant, 650 * scaleConstant);
+            menuDescriptionFont.draw(spriteBatch, text[37], 30 * scaleConstant, 610 * scaleConstant);
+            menuDescriptionFont.draw(spriteBatch, text[38], 30 * scaleConstant, 570 * scaleConstant);
+            menuDescriptionFont.draw(spriteBatch, text[39], 30 * scaleConstant, 530 * scaleConstant);
+            menuDescriptionFont.draw(spriteBatch, text[40], 30 * scaleConstant, 490 * scaleConstant);
+            menuDescriptionFont.draw(spriteBatch, text[41], 30 * scaleConstant, 450 * scaleConstant);
+            menuDescriptionFont.draw(spriteBatch, text[42], 30 * scaleConstant, 410 * scaleConstant);
+            menuDescriptionFont.draw(spriteBatch, text[43], 30 * scaleConstant, 370 * scaleConstant);
         }
 
         if(buttonDown[0]) { spriteBatch.draw(selectedButtonSmall, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
@@ -1325,7 +1521,7 @@ public class MenuScreen extends ScreenAdapter {
         spriteBatch.end();
     }
 
-    public void drawGamemodeInfoScreen() {
+    private void drawGamemodeInfoScreen() {
         spriteBatch.begin();
 
         // Background Overlay
@@ -1338,7 +1534,7 @@ public class MenuScreen extends ScreenAdapter {
         spriteBatch.draw(rightButton, 620 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
 
         // Title text
-        menuTitleFont.draw(spriteBatch, menuText[51], menuTextIndent[51] * scaleConstant, screenHeight / 32 * 31);
+        menuTitleFont.draw(spriteBatch, text[51], textIndent[51] * scaleConstant, screenHeight / 32 * 31);
 
         // Info text
         int firstLine = 0;
@@ -1346,25 +1542,25 @@ public class MenuScreen extends ScreenAdapter {
 
         switch(gameInfoScreen) {
             case 1:
-                menuButtonFont.draw(spriteBatch, menuText[10], 30 * scaleConstant, screenHeight / 32 * 28);
+                menuButtonFont.draw(spriteBatch, text[10], 30 * scaleConstant, screenHeight / 32 * 28);
                 firstLine = 53;
                 totalLines = 22;
                 break;
 
             case 2:
-                menuButtonFont.draw(spriteBatch, menuText[11] + " " + menuText[12], 30 * scaleConstant, screenHeight / 32 * 28);
+                menuButtonFont.draw(spriteBatch, text[11] + " " + text[12], 30 * scaleConstant, screenHeight / 32 * 28);
                 firstLine = 75;
                 totalLines = 9;
                 break;
 
             case 3:
-                menuButtonFont.draw(spriteBatch, menuText[13], 30 * scaleConstant, screenHeight / 32 * 28);
+                menuButtonFont.draw(spriteBatch, text[13], 30 * scaleConstant, screenHeight / 32 * 28);
                 firstLine = 84;
                 totalLines = 17;
                 break;
 
             case 4:
-                menuButtonFont.draw(spriteBatch, menuText[14] + " " + menuText[15], 30 * scaleConstant, screenHeight / 32 * 28);
+                menuButtonFont.draw(spriteBatch, text[14] + " " + text[15], 30 * scaleConstant, screenHeight / 32 * 28);
                 firstLine = 101;
                 totalLines = 15;
                 break;
@@ -1372,7 +1568,7 @@ public class MenuScreen extends ScreenAdapter {
 
         // Draw text to screen
         for(int i = firstLine; i < firstLine + totalLines; i++) {
-            menuDescriptionFont.draw(spriteBatch, menuText[i], 30 * scaleConstant, (1060 - 30 * (i - firstLine)) * scaleConstant);
+            menuDescriptionFont.draw(spriteBatch, text[i], 30 * scaleConstant, (1060 - 30 * (i - firstLine)) * scaleConstant);
         }
 
         if(buttonDown[0]) { spriteBatch.draw(selectedButtonSmall, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }

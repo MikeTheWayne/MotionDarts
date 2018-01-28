@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g3d.Model;
+import com.badlogic.gdx.graphics.g3d.ModelInstance;
 
 /**
  * The base LibGdx class, begins as soon as the application is opened.
@@ -129,6 +130,9 @@ public class MotionDarts extends Game {
         assetManager.load("textures/sliderBitSelected.png", Texture.class);
         assetManager.load("textures/leftButton.png", Texture.class);
         assetManager.load("textures/rightButton.png", Texture.class);
+        assetManager.load("textures/menuPopup.png", Texture.class);
+        assetManager.load("textures/upButton.png", Texture.class);
+        assetManager.load("textures/downButton.png", Texture.class);
 
         assetManager.load("textures/flag1.png", Texture.class);
         assetManager.load("textures/flag2.png", Texture.class);
@@ -152,16 +156,16 @@ public class MotionDarts extends Game {
         FileHandle[] langFiles = {Gdx.files.internal("languages/english.txt"), Gdx.files.internal("languages/bulgarian.txt"), Gdx.files.internal("languages/russian.txt")};
         FileHandle[] indentFiles = {Gdx.files.internal("text_indent_values/englishTextIndents.txt"), Gdx.files.internal("text_indent_values/bulgarianTextIndents.txt"), Gdx.files.internal("text_indent_values/russianTextIndents.txt")};
 
-        MenuScreen.menuText = new String[150];
-        MenuScreen.menuTextIndent = new int[150];
+        MenuScreen.text = new String[200];
+        MenuScreen.textIndent = new int[200];
 
         String languageInput = langFiles[language].readString();
-        MenuScreen.menuText = languageInput.split("\n");
+        MenuScreen.text = languageInput.split("\n");
 
         String indentInput = indentFiles[language].readString();
         String[] indentStrArr = indentInput.split("\n");
         for(int i = 0; i < indentStrArr.length; i++) {
-            MenuScreen.menuTextIndent[i] = Integer.parseInt(indentStrArr[i].trim());
+            MenuScreen.textIndent[i] = Integer.parseInt(indentStrArr[i].trim());
         }
 
     }

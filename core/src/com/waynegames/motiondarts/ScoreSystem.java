@@ -1,6 +1,5 @@
 package com.waynegames.motiondarts;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.math.collision.BoundingBox;
 
 import java.util.Random;
@@ -18,8 +17,14 @@ public class ScoreSystem {
     int dartsThrown = 0;
     int currentPlayer = 0;
 
+    int winner = 0;
+
     int[][][] dartScore = new int[100][2][3]; // [turn][player][throw] Integer value of each dart's score
     int[][][] dartNature = new int[100][2][3]; // [turn][player][throw] Nature of throw (miss, normal, double, triple, bull, etc.)
+
+    int[][] overallScore = new int[100][2]; // [turn][player] End of turn overall score
+    // vv this needs to be made local to score_501
+    float[][] statistics = new float[2][7]; // Avg dart, 1st dart avg, 2nd dart avg, 3rd dart avg, highest score, player dart avg, player lifetime darts thrown
 
     private BoundingBox dartboardBox;
 
@@ -71,7 +76,7 @@ public class ScoreSystem {
         if(dartLandZone == 0) {
             // Miss
             dartScore[turn][currentPlayer][dartsThrown] = 0;
-            dartNature[turn][currentPlayer][dartsThrown] = 0;
+            dartNature[turn][currentPlayer][dartsThrown] = 7;
         } else if(dartLandZone > 0 && dartLandZone <= 40) {
             // Normal score, between 1 and 20
             dartScore[turn][currentPlayer][dartsThrown] = dartLandZone % 20;
@@ -96,13 +101,6 @@ public class ScoreSystem {
 
     int[] getScore() {
         return new int[2];
-    }
-
-    /**
-     * Ends the game, returns to the summary screen in the menus
-     */
-    void endGame() {
-        // End of game
     }
 
     /**
@@ -132,6 +130,27 @@ public class ScoreSystem {
         } else{
             return wireHit(xPix, yPix, searchRadius + 1);
         }
+    }
+
+    /**
+     * Called every throw, calculates averages and other statistics
+     */
+    void calculateStatistics() {
+
+        int totalDartsThrown = turn * 3 + dartsThrown + 1;
+
+        // Dart Average
+        statistics[currentPlayer][0] = (statistics[currentPlayer][0] * (totalDartsThrown - 1) + dartScore[turn][currentPlayer][dartsThrown]) / totalDartsThrown;
+        // 1st, 2nd, & 3rd dart average
+        statistics[currentPlayer][dartsThrown + 1] = (statistics[currentPlayer][dartsThrown + 1] * turn + dartScore[turn][currentPlayer][dartsThrown]) / (turn + 1);
+        // Highest score
+        if(turn > 0) {
+            statistics[currentPlayer][4] = Math.max(dartScore[turn][currentPlayer][0] + dartScore[turn][currentPlayer][1] + dartScore[turn][currentPlayer][2], statistics[currentPlayer][4]);
+        }
+
+        // Player Dart Average
+        statistics[currentPlayer][5] = (statistics[currentPlayer][5] * statistics[currentPlayer][6] + dartScore[turn][currentPlayer][dartsThrown]) / ++statistics[currentPlayer][6];
+
     }
 
 }

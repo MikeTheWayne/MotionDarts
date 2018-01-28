@@ -133,6 +133,54 @@ might have sensor issues. Try restarting the device.
 
 
 
+RETURN TO THE
+MAIN MENU?
+YES
+NO
+SCORE
+GAME SUMMARY
+SCORES
+STATISTICS
+MAIN MENU
+REMATCH
+DRAW
+WINS
+TAP ANYWHERE TO CONTINUE
+AVERAGE DART SCORE
+1st DART AVERAGE
+2nd DART AVERAGE
+3rd DART AVERAGE
+HIGHEST SCORE
+PLAYER'S AVERAGE DART
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -11,6 +11,8 @@ public class GameClass {
     private int gameMode;
     private int competitionType;         // 0 = Practice, 1 - 3 = AI difficulty (easy to hard), 4 = Pass and play, 5 = Networked Multiplayer
 
+    String[] playerNames = {"PLAYER 1", "PLAYER 2"};
+
     ScoreSystem scoreSystem;
 
     GameClass(int gameModeParam, int competitionTypeParam) {
@@ -31,6 +33,8 @@ public class GameClass {
                 break;
         }
 
+        // Load in player's average scores
+
     }
 
     /**
@@ -42,6 +46,7 @@ public class GameClass {
     void newThrow(float landX, float landY) {
 
         scoreSystem.handleScore(scoreSystem.landZone(landX, landY));
+        scoreSystem.calculateStatistics();
 
         scoreSystem.dartsThrown++;
 
@@ -53,10 +58,14 @@ public class GameClass {
 
             if(competitionType > 0) {
                 // Advance turn (primarily for scoring)
-                if (scoreSystem.turn < 100 && scoreSystem.currentPlayer == 1) {
+                if (scoreSystem.turn < 99 && scoreSystem.currentPlayer == 1) {
+                    scoreSystem.overallScore[scoreSystem.turn][0] = scoreSystem.getScore()[0];
+                    scoreSystem.overallScore[scoreSystem.turn][1] = scoreSystem.getScore()[1];
                     scoreSystem.turn++;
-                } else if (scoreSystem.turn == 100) {
-                    scoreSystem.endGame();
+                } else if (scoreSystem.turn == 99 && scoreSystem.currentPlayer == 1) {
+                    scoreSystem.overallScore[scoreSystem.turn][0] = scoreSystem.getScore()[0];
+                    scoreSystem.overallScore[scoreSystem.turn][1] = scoreSystem.getScore()[1];
+                    GameScreen.endGame = true;
                 }
 
                 // Switch Player
@@ -68,6 +77,10 @@ public class GameClass {
             }
 
         }
+    }
+
+    int getGameMode() {
+        return gameMode;
     }
 
 }

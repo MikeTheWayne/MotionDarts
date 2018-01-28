@@ -17,9 +17,18 @@ public class Score_501 extends ScoreSystem {
         int scoreSubbed = score[currentPlayer] - dartScore[turn][currentPlayer][dartsThrown];
 
         if(dartNature[turn][currentPlayer][dartsThrown] == 2 && scoreSubbed == 0) {
+
             // Victory
             score[currentPlayer] = 0;
-            endGame();
+            winner = currentPlayer + 1;
+
+            // Final scores
+            overallScore[turn][0] = score[0];
+            overallScore[turn][1] = score[1];
+
+            // End Game
+            GameScreen.endGame = true;
+
         } else if(scoreSubbed <= 0) {
             // Bust
             dartNature[turn][currentPlayer][dartsThrown] = 6;

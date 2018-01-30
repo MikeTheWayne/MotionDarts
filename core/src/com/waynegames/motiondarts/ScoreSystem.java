@@ -24,7 +24,8 @@ public class ScoreSystem {
 
     int[][] overallScore = new int[100][2]; // [turn][player] End of turn overall score
     // vv this needs to be made local to score_501
-    float[][] statistics = new float[2][7]; // Avg dart, 1st dart avg, 2nd dart avg, 3rd dart avg, highest score, player dart avg, player lifetime darts thrown
+    float[][] gameStatistics = new float[2][5]; // Avg dart, 1st dart avg, 2nd dart avg, 3rd dart avg, highest score
+    float[] personalStatistics = new float[2]; //  player dart avg, player lifetime darts thrown
 
     private BoundingBox dartboardBox;
 
@@ -140,17 +141,18 @@ public class ScoreSystem {
         int totalDartsThrown = turn * 3 + dartsThrown + 1;
 
         // Dart Average
-        statistics[currentPlayer][0] = (statistics[currentPlayer][0] * (totalDartsThrown - 1) + dartScore[turn][currentPlayer][dartsThrown]) / totalDartsThrown;
+        gameStatistics[currentPlayer][0] = (gameStatistics[currentPlayer][0] * (totalDartsThrown - 1) + dartScore[turn][currentPlayer][dartsThrown]) / totalDartsThrown;
         // 1st, 2nd, & 3rd dart average
-        statistics[currentPlayer][dartsThrown + 1] = (statistics[currentPlayer][dartsThrown + 1] * turn + dartScore[turn][currentPlayer][dartsThrown]) / (turn + 1);
+        gameStatistics[currentPlayer][dartsThrown + 1] = (gameStatistics[currentPlayer][dartsThrown + 1] * turn + dartScore[turn][currentPlayer][dartsThrown]) / (turn + 1);
         // Highest score
         if(turn > 0) {
-            statistics[currentPlayer][4] = Math.max(dartScore[turn][currentPlayer][0] + dartScore[turn][currentPlayer][1] + dartScore[turn][currentPlayer][2], statistics[currentPlayer][4]);
+            gameStatistics[currentPlayer][4] = Math.max(dartScore[turn][currentPlayer][0] + dartScore[turn][currentPlayer][1] + dartScore[turn][currentPlayer][2], gameStatistics[currentPlayer][4]);
         }
 
         // Player Dart Average
-        statistics[currentPlayer][5] = (statistics[currentPlayer][5] * statistics[currentPlayer][6] + dartScore[turn][currentPlayer][dartsThrown]) / ++statistics[currentPlayer][6];
-
+        if(currentPlayer == 0) {
+            personalStatistics[0] = (personalStatistics[0] * personalStatistics[1] + dartScore[turn][0][dartsThrown]) / ++personalStatistics[1];
+        }
     }
 
 }

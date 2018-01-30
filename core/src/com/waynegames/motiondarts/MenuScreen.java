@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
@@ -64,14 +65,15 @@ public class MenuScreen extends ScreenAdapter {
     private Sprite defaultButton, settingsButton, languageButton, exitButton, title, submenuBackground,
             backButton, tickButton, connectButton, helpButton, flag1, flag2, flag3, flag4, flag5, flag6,
             flag7, flag8, flag9, flag10, selectedButton, selectedButtonSmall, selectedLanguage, langImage,
-            sliderBar, sliderBit, sliderBitSelected, leftButton, rightButton, upButton, downButton;
+            sliderBar, sliderBit, sliderBitSelected, leftButton, rightButton, upButton, downButton,
+            customisationOption, customisationOptionSelected;
 
     private static Array<ModelInstance> instances = new Array<ModelInstance>();
 
     private int screenWidth;
     private int screenHeight;
 
-    private int language = 0;
+    static int language = 0;
 
     static String[] text;
     static int[] textIndent;
@@ -113,6 +115,13 @@ public class MenuScreen extends ScreenAdapter {
     private float[] rot = new float[3];
 
     private int throwTime = 0;
+
+    /* Customisation menu variables */
+    private int customisationDartsPage = 0;
+    private int customisationLocationPage = 0;
+
+    private int totalDartsPages = 2;
+    private int totalLocationPages = 2;
 
     MenuScreen(final MotionDarts game) {
         this.game = game;
@@ -207,6 +216,8 @@ public class MenuScreen extends ScreenAdapter {
         Texture rightButtonTexture = MotionDarts.assetManager.get("textures/rightButton.png", Texture.class);
         Texture upButtonTexture = MotionDarts.assetManager.get("textures/upButton.png", Texture.class);
         Texture downButtonTexture = MotionDarts.assetManager.get("textures/downButton.png", Texture.class);
+        Texture customisationOptionTexture = MotionDarts.assetManager.get("textures/customisationOption.png", Texture.class);
+        Texture customisationOptionSelectedTexture = MotionDarts.assetManager.get("textures/customisationOptionSelected.png", Texture.class);
 
         defaultButton = new Sprite(defaultButtonTexture);
         settingsButton = new Sprite(settingsButtonTexture);
@@ -239,6 +250,8 @@ public class MenuScreen extends ScreenAdapter {
         rightButton = new Sprite(rightButtonTexture);
         upButton = new Sprite(upButtonTexture);
         downButton = new Sprite(downButtonTexture);
+        customisationOption = new Sprite(customisationOptionTexture);
+        customisationOptionSelected = new Sprite(customisationOptionSelectedTexture);
 
         /* Game Environment */
         environment = new Environment();
@@ -309,6 +322,31 @@ public class MenuScreen extends ScreenAdapter {
                                 selectedGameMode = 4;
                             } else if(touchY < (screenHeight - 432 * scaleConstant) && touchY > (screenHeight - 634) * scaleConstant) {
                                 selectedGameMode = 2;
+                            }
+                        }
+
+                        break;
+
+                    case 4:
+
+                        for(int i = 0; i < 3; i++) {
+                            if(touchY <= screenHeight - 740 * scaleConstant && touchY >= screenHeight - 1040 * scaleConstant) {
+                                if(touchX >= (20 + i * 230) * scaleConstant && touchX <= (240 + i * 230) * scaleConstant) {
+
+                                    if(i + 1 + customisationDartsPage * 3 <= GameScreen.dartFiles.length) {
+                                        GameScreen.selectedDart = customisationDartsPage * 3 + i;
+                                        System.out.println(i + " " + GameScreen.selectedDart);
+                                    }
+
+                                }
+                            } else if(touchY <= screenHeight - 260 * scaleConstant && touchY >= screenHeight - 560 * scaleConstant) {
+                                if(touchX >= (20 + i * 230) * scaleConstant && touchX <= (240 + i * 230) * scaleConstant) {
+
+                                    if(i + 1 + customisationLocationPage * 3 <= GameScreen.locationFiles.length) {
+                                        GameScreen.selectedLocation = customisationLocationPage * 3 + i;
+                                    }
+
+                                }
                             }
                         }
 
@@ -461,16 +499,16 @@ public class MenuScreen extends ScreenAdapter {
                         }
 
                         if(touchY >= screenHeight - 1160 * scaleConstant && touchY <= screenHeight - 1080 * scaleConstant) {
-                            if(touchX >= 530 * scaleConstant && touchX <= 610 * scaleConstant) {
-
-                            } else if(touchX >= 620 * scaleConstant && touchX <= 700 * scaleConstant) {
-
+                            if(touchX >= 530 * scaleConstant && touchX <= 610 * scaleConstant && customisationDartsPage > 0) {
+                                customisationDartsPage--;
+                            } else if(touchX >= 620 * scaleConstant && touchX <= 700 * scaleConstant && customisationDartsPage < totalDartsPages - 1) {
+                                customisationDartsPage++;
                             }
-                        } else if(touchY >= screenHeight - 740 * scaleConstant && touchY <= screenHeight - 660 * scaleConstant) {
-                            if(touchX >= 530 * scaleConstant && touchX <= 610 * scaleConstant) {
-
-                            } else if(touchX >= 620 * scaleConstant && touchX <= 700 * scaleConstant) {
-
+                        } else if(touchY >= screenHeight - 660 * scaleConstant && touchY <= screenHeight - 580 * scaleConstant) {
+                            if(touchX >= 530 * scaleConstant && touchX <= 610 * scaleConstant && customisationLocationPage > 0) {
+                                customisationLocationPage--;
+                            } else if(touchX >= 620 * scaleConstant && touchX <= 700 * scaleConstant && customisationLocationPage < totalLocationPages - 1) {
+                                customisationLocationPage++;
                             }
                         }
 
@@ -739,8 +777,8 @@ public class MenuScreen extends ScreenAdapter {
                     buttonDown[0] = (touchX >= 20 * scaleConstant && touchX <= 100 * scaleConstant) && (touchY >= screenHeight - 100 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
                     buttonDown[1] = (touchX >= 530 * scaleConstant && touchX <= 610 * scaleConstant) && (touchY >= screenHeight - 1160 * scaleConstant && touchY <= screenHeight - 1080 * scaleConstant);
                     buttonDown[2] = (touchX >= 620 * scaleConstant && touchX <= 700 * scaleConstant) && (touchY >= screenHeight - 1160 * scaleConstant && touchY <= screenHeight - 1080 * scaleConstant);
-                    buttonDown[3] = (touchX >= 530 * scaleConstant && touchX <= 610 * scaleConstant) && (touchY >= screenHeight - 740 * scaleConstant && touchY <= screenHeight - 660 * scaleConstant);
-                    buttonDown[4] = (touchX >= 620 * scaleConstant && touchX <= 700 * scaleConstant) && (touchY >= screenHeight - 740 * scaleConstant && touchY <= screenHeight - 660 * scaleConstant);
+                    buttonDown[3] = (touchX >= 530 * scaleConstant && touchX <= 610 * scaleConstant) && (touchY >= screenHeight - 660 * scaleConstant && touchY <= screenHeight - 580 * scaleConstant);
+                    buttonDown[4] = (touchX >= 620 * scaleConstant && touchX <= 700 * scaleConstant) && (touchY >= screenHeight - 660 * scaleConstant && touchY <= screenHeight - 580 * scaleConstant);
                     break;
 
                 case 5:
@@ -882,6 +920,7 @@ public class MenuScreen extends ScreenAdapter {
             case 1:     // Bulgarian
             case 2:     // Russian
                 /* Fonts Setup*/
+                System.out.println("sup nigger");
                 freeTypeFontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/agencyfbcyrillic.ttf"));
                 freeTypeFontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
 
@@ -1038,6 +1077,11 @@ public class MenuScreen extends ScreenAdapter {
         if(buttonDown[5]) { spriteBatch.draw(selectedButtonSmall, 190 * scaleConstant, 10 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
 
         if(buttonDown[6]) { spriteBatch.draw(selectedButtonSmall, screenWidth - 90 * scaleConstant, 10 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+
+        // Introductory help text
+        if(!Gdx.files.local("savefile.txt").exists()) {
+            menuButtonFont.draw(spriteBatch, "<-- Start here", 280 * scaleConstant, 70 * scaleConstant);
+        }
 
         spriteBatch.end();
     }
@@ -1225,21 +1269,58 @@ public class MenuScreen extends ScreenAdapter {
         spriteBatch.draw(leftButton, 530 * scaleConstant, 1060 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
         spriteBatch.draw(rightButton, 620 * scaleConstant, 1060 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
         // Location
-        spriteBatch.draw(leftButton, 530 * scaleConstant, 660 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
-        spriteBatch.draw(rightButton, 620 * scaleConstant, 660 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
+        spriteBatch.draw(leftButton, 530 * scaleConstant, 580 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
+        spriteBatch.draw(rightButton, 620 * scaleConstant, 580 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
 
         // Title text
         menuTitleFont.draw(spriteBatch, text[45], textIndent[45] * scaleConstant, screenHeight / 32 * 31);
 
         // Sub heading text
         menuButtonFont.draw(spriteBatch, text[46], 30 * scaleConstant, screenHeight / 32 * 28);
-        menuButtonFont.draw(spriteBatch, text[47], 30 * scaleConstant, screenHeight / 32 * 18);
+        menuButtonFont.draw(spriteBatch, text[47], 30 * scaleConstant, screenHeight / 32 * 16);
 
+        // Darts customisation options
+        switch (customisationDartsPage) {
+            case 0:
+                spriteBatch.draw(customisationOption, 20 * scaleConstant, 740 * scaleConstant, 220 * scaleConstant, 300 * scaleConstant);
+                spriteBatch.draw(customisationOption, 250 * scaleConstant, 740 * scaleConstant, 220 * scaleConstant, 300 * scaleConstant);
+                spriteBatch.draw(customisationOption, 480 * scaleConstant, 740 * scaleConstant, 220 * scaleConstant, 300 * scaleConstant);
+                break;
+
+            case 1:
+                spriteBatch.draw(customisationOption, 20 * scaleConstant, 740 * scaleConstant, 220 * scaleConstant, 300 * scaleConstant);
+                break;
+        }
+
+        // Location customsiation options
+        switch (customisationLocationPage) {
+            case 0:
+                spriteBatch.draw(customisationOption, 20 * scaleConstant, 260 * scaleConstant, 220 * scaleConstant, 300 * scaleConstant);
+                spriteBatch.draw(customisationOption, 250 * scaleConstant, 260 * scaleConstant, 220 * scaleConstant, 300 * scaleConstant);
+                spriteBatch.draw(customisationOption, 480 * scaleConstant, 260 * scaleConstant, 220 * scaleConstant, 300 * scaleConstant);
+                break;
+
+            case 1:
+                spriteBatch.draw(customisationOption, 20 * scaleConstant, 260 * scaleConstant, 220 * scaleConstant, 300 * scaleConstant);
+                break;
+        }
+
+        // Selected
+        if(GameScreen.selectedDart / 3 == customisationDartsPage) {
+            spriteBatch.draw(customisationOptionSelected, (20 + 230 * (GameScreen.selectedDart % 3)) * scaleConstant, 740 * scaleConstant, 220 * scaleConstant, 300 * scaleConstant);
+        }
+
+        if(GameScreen.selectedLocation / 3 == customisationLocationPage) {
+            spriteBatch.draw(customisationOptionSelected, (20 + 230 * (GameScreen.selectedLocation % 3)) * scaleConstant, 260 * scaleConstant, 220 * scaleConstant, 300 * scaleConstant);
+        }
+
+
+        // Button Highlighting
         if(buttonDown[0]) { spriteBatch.draw(selectedButtonSmall, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
         if(buttonDown[1]) { spriteBatch.draw(selectedButtonSmall, 530 * scaleConstant, 1060 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
         if(buttonDown[2]) { spriteBatch.draw(selectedButtonSmall, 620 * scaleConstant, 1060 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
-        if(buttonDown[3]) { spriteBatch.draw(selectedButtonSmall, 530 * scaleConstant, 660 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
-        if(buttonDown[4]) { spriteBatch.draw(selectedButtonSmall, 620 * scaleConstant, 660 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+        if(buttonDown[3]) { spriteBatch.draw(selectedButtonSmall, 530 * scaleConstant, 580 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+        if(buttonDown[4]) { spriteBatch.draw(selectedButtonSmall, 620 * scaleConstant, 580 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
 
         spriteBatch.end();
     }
@@ -1360,19 +1441,24 @@ public class MenuScreen extends ScreenAdapter {
                 spriteBatch.draw(downButton, 620 * scaleConstant, 600 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
 
                 // Statistics
-                float[][] stats = GameScreen.gameClass.scoreSystem.statistics;
+                float[][] stats = GameScreen.gameClass.scoreSystem.gameStatistics;
 
                 for(int i = 0; i < 6; i++) {
                     summaryFont.draw(spriteBatch, text[i + 148], (360 - 6 * text[i + 148].length()) * scaleConstant, (440 - i * 40) * scaleConstant);
-
-                    if(i == 4) {    // Element 4 should be displayed as an integer, whereas everything else should be displayed to 2 d.p.
-                        summaryFont.draw(spriteBatch, String.valueOf((int) stats[0][i]), 40 * scaleConstant, (440 - i * 40) * scaleConstant);
-                        summaryFont.draw(spriteBatch, String.valueOf((int) stats[1][i]), 620 * scaleConstant, (440 - i * 40) * scaleConstant);
-                    } else{
-                        summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[0][i]) / 100.0), 40 * scaleConstant, (440 - i * 40) * scaleConstant);
-                        summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[1][i]) / 100.0), 620 * scaleConstant, (440 - i * 40) * scaleConstant);
-                    }
                 }
+
+                summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[0][0]) / 100.0), 40 * scaleConstant, (440) * scaleConstant);
+                summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[1][0]) / 100.0), 620 * scaleConstant, (440) * scaleConstant);
+                summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[0][1]) / 100.0), 40 * scaleConstant, (400) * scaleConstant);
+                summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[1][1]) / 100.0), 620 * scaleConstant, (400) * scaleConstant);
+                summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[0][2]) / 100.0), 40 * scaleConstant, (360) * scaleConstant);
+                summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[1][2]) / 100.0), 620 * scaleConstant, (360) * scaleConstant);
+                summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[0][3]) / 100.0), 40 * scaleConstant, (320) * scaleConstant);
+                summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[1][3]) / 100.0), 620 * scaleConstant, (320) * scaleConstant);
+                summaryFont.draw(spriteBatch, String.valueOf((int) stats[0][4]), 40 * scaleConstant, (280) * scaleConstant);
+                summaryFont.draw(spriteBatch, String.valueOf((int) stats[1][4]), 620 * scaleConstant, (280) * scaleConstant);
+                summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * GameScreen.gameClass.scoreSystem.personalStatistics[0]) / 100.0), 40 * scaleConstant, (240) * scaleConstant);
+                //summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[1][0]) / 100.0), 620 * scaleConstant, (440) * scaleConstant);     // Get multiplayer statistic
 
                 // Button animations
                 if(buttonDown[0]) { spriteBatch.draw(selectedButton, 40 * scaleConstant, 20 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant); }
@@ -1429,7 +1515,7 @@ public class MenuScreen extends ScreenAdapter {
         menuTitleFont.draw(spriteBatch, text[50], textIndent[50] * scaleConstant, screenHeight / 32 * 31);
 
         // Info text
-        for(int i = 116; i < 136; i++) {
+        for(int i = 116; i < 135; i++) {
             menuDescriptionFont.draw(spriteBatch, text[i], 30 * scaleConstant, (1120 - 30 * (i - 117)) * scaleConstant);
         }
 

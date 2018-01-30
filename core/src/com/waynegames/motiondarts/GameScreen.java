@@ -96,8 +96,15 @@ public class GameScreen extends ScreenAdapter {
 
     static boolean endGame = false;
 
-    private float[] velGraph = new float[100];
+    private float[] velGraph = new float[50];
     private int velGraphHead = 0;
+
+    /* Customisation Variables */
+    static int selectedLocation = 0;
+    static int selectedDart = 0;
+
+    static String[] locationFiles = {"environment_01", "", "", ""};
+    static String[] dartFiles = {"dart_01", "", "", ""};
 
     /**
      * Game screen setup constructor<br>
@@ -165,9 +172,9 @@ public class GameScreen extends ScreenAdapter {
 
 
         /* Models Setup */
-        Model dartModel1 = MotionDarts.assetManager.get("models/dart_01.g3db", Model.class);
+        Model dartModel1 = MotionDarts.assetManager.get("models/" + dartFiles[selectedDart] + ".g3db", Model.class);
         Model dartboardModel1 = MotionDarts.assetManager.get("models/dartboard_01.g3db", Model.class);
-        Model environmentModel1 = MotionDarts.assetManager.get("models/environment_01.g3db", Model.class);
+        Model environmentModel1 = MotionDarts.assetManager.get("models/" + locationFiles[selectedLocation] + ".g3db", Model.class);
 
         // Assign Models to ModelInstances
         dartModelInstances[0] = new ModelInstance(dartModel1);
@@ -216,7 +223,8 @@ public class GameScreen extends ScreenAdapter {
         // Sets ambient lighting around the game environment
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.3f, 0.3f, 0.3f, 1.0f));
         // Creates a new point light; first three parameters: color, next three: position, then intensity
-        environment.add(new PointLight().set(0.8f, 0.8f, 0.8f, 0.0f, 7000.0f, 8000.0f, 150000000.0f));
+        environment.add(new PointLight().set(0.8f, 0.8f, 0.7f, 10000.0f, 10000.0f, 1000.0f, 300000000.0f));
+        environment.add(new PointLight().set(0.8f, 0.8f, 0.7f, -10000.0f, 10000.0f, 1000.0f, 100000000.0f));
 
 
         /* Game Input */
@@ -235,6 +243,8 @@ public class GameScreen extends ScreenAdapter {
                 if(endGame) {
                     game.setScreen(new MenuScreen(game));
                     MenuScreen.menuScreen = 8;
+                    endGame = false;
+                    gameClass.writeSaveData();
                     dispose();
                 }
 
@@ -320,6 +330,7 @@ public class GameScreen extends ScreenAdapter {
                             }
 
                             velGraph[velGraphHead] = velZ;
+                            velGraph[velGraphHead] = (Math.abs(velGraph[velGraphHead]) * 25 < 50) ? Math.abs(velGraph[velGraphHead]) * 25 / 3 : Math.abs(velGraph[velGraphHead]) * 25 * 2.333333f - 100;
                             velGraphHead = (velGraphHead < velGraph.length - 1) ? ++velGraphHead : 0;
 
                         }
@@ -345,6 +356,10 @@ public class GameScreen extends ScreenAdapter {
                     // Return to main menu popup
                     viewLock = true;
                     menuPopup = true;
+
+                    // Stop velocity calculation
+                    t.cancel();
+                    t.purge();
                 }
 
                 if(!inFlight && !viewLock) {
@@ -527,15 +542,15 @@ public class GameScreen extends ScreenAdapter {
         shapeRenderer.setColor(new Color(0.5f, 0.5f, 1.0f, 0.6f));
 
         for(int i = velGraphHead; i < velGraph.length; i++) {
-            shapeRenderer.rect((310 + (i - velGraphHead)) * scaleConstant, 20 * scaleConstant, scaleConstant, (Math.abs(velGraph[i]) * 25) * scaleConstant);
+            shapeRenderer.rect((310 + (i * (100 / velGraph.length) - velGraphHead * (100 / velGraph.length))) * scaleConstant, 20 * scaleConstant, (100 / velGraph.length) * scaleConstant, velGraph[i] * scaleConstant);
         }
 
         for(int i = 0; i < velGraphHead; i++) {
-            shapeRenderer.rect((310 + (i + velGraph.length - velGraphHead)) * scaleConstant, 20 * scaleConstant, scaleConstant, (Math.abs(velGraph[i]) * 25) * scaleConstant);
+            shapeRenderer.rect((310 + (i * (100 / velGraph.length) + 100 - velGraphHead * (100 / velGraph.length))) * scaleConstant, 20 * scaleConstant, (100 / velGraph.length) * scaleConstant, velGraph[i] * scaleConstant);
         }
 
         shapeRenderer.setColor(new Color(1.0f, 0.5f, 0.0f, 0.6f));
-        shapeRenderer.rect(407 * scaleConstant, (20 + Math.abs(velGraph[(velGraphHead >= 1) ? velGraphHead - 1 : 99]) * 25 - 3) * scaleConstant, 6 * scaleConstant, 6 * scaleConstant);
+        shapeRenderer.rect(407 * scaleConstant, (20 + velGraph[(velGraphHead >= 1) ? velGraphHead - 1 : velGraph.length - 1] - 3) * scaleConstant, 6 * scaleConstant, 6 * scaleConstant);
 
         shapeRenderer.setColor(new Color(1.0f, 0.5f, 0.0f, 0.6f));
         for(int i = 0; i < 10; i++) {

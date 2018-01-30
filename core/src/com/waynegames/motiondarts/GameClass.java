@@ -1,5 +1,8 @@
 package com.waynegames.motiondarts;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
+
 /**
  * Sets up and coordinates a game, including score, AI and networking, features all core variables
  *
@@ -34,6 +37,7 @@ public class GameClass {
         }
 
         // Load in player's average scores
+        readSaveData();
 
     }
 
@@ -61,6 +65,7 @@ public class GameClass {
                 if (scoreSystem.turn < 99 && scoreSystem.currentPlayer == 1) {
                     scoreSystem.overallScore[scoreSystem.turn][0] = scoreSystem.getScore()[0];
                     scoreSystem.overallScore[scoreSystem.turn][1] = scoreSystem.getScore()[1];
+                    writeSaveData();
                     scoreSystem.turn++;
                 } else if (scoreSystem.turn == 99 && scoreSystem.currentPlayer == 1) {
                     scoreSystem.overallScore[scoreSystem.turn][0] = scoreSystem.getScore()[0];
@@ -83,4 +88,37 @@ public class GameClass {
         return gameMode;
     }
 
+
+    /**
+     * Loads in save data, if it exists
+     */
+    private void readSaveData() {
+
+        FileHandle saveFile = Gdx.files.local("savefile.txt");
+        String[] dataIn;
+
+        if(saveFile.exists()) {
+            dataIn = saveFile.readString().split("\n");
+            for(int i = 0; i < dataIn.length; i++) {
+                if(!dataIn[i].equals("")) {
+                    scoreSystem.personalStatistics[i] = Float.valueOf(dataIn[i]);
+                }
+            }
+        }
+    }
+
+    /**
+     * Writes save data to file
+     */
+    void writeSaveData() {
+
+        FileHandle saveFile = Gdx.files.local("savefile.txt");
+
+        // Clear text file
+        saveFile.writeString("", false);
+
+        for(int i = 0; i < scoreSystem.personalStatistics.length; i++) {
+            saveFile.writeString(String.valueOf(scoreSystem.personalStatistics[i]) + "\n", true);
+        }
+    }
 }

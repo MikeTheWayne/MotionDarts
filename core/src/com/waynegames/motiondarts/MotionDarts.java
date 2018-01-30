@@ -5,10 +5,12 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 /**
  * The base LibGdx class, begins as soon as the application is opened.
@@ -28,13 +30,10 @@ public class MotionDarts extends Game {
      */
     @Override
     public void create () {
-        // Loading
-        hitZones = loadHitZones();
-        loadLanguage(0);   // Later load in the previously selected language from file
-        loadAssets();
 
-        // Start game
-        setScreen(new MenuScreen(this));
+        // Load everything in through loading screen
+        setScreen(new LoadScreen(this));
+
     }
 
     @Override
@@ -52,7 +51,7 @@ public class MotionDarts extends Game {
      *
      * @return integer array
      */
-    private int[][] loadHitZones() {
+    static int[][] loadHitZones() {
 
         int[][] hitZonesOut = new int[1000][1000];
 
@@ -99,51 +98,26 @@ public class MotionDarts extends Game {
     /**
      * Handles all of the loading for models and textures, any assets.
      */
-    private void loadAssets() {
+    static void loadAssets() {
 
         // Load assets from assets folder
         assetManager = new AssetManager();
+        // Asset file names
+        String[] modelAssets = {"dart_01", "dartboard_01", "environment_01", "menu_spacesurround"};
+        String[] textureAssets = {"defaultButton", "settingsButton", "languageButton", "backButton", "exitButton", "title", "submenu_background", "tickButton",
+                "connectButton", "helpButton", "selectedLanguage", "selectedButton", "selectedSmallButton", "langImage", "sliderBar", "sliderBit", "sliderBitSelected",
+                "leftButton", "rightButton", "menuPopup", "upButton", "downButton", "flag1", "flag2", "flag3", "flag4", "flag5", "flag6", "flag7", "flag8", "flag9",
+                "flag10", "customisationOption", "customisationOptionSelected"};
 
         // Models
-        assetManager.load("models/dart_01.g3db", Model.class);
-        assetManager.load("models/dartboard_01.g3db", Model.class);
-        assetManager.load("models/environment_01.g3db", Model.class);
-        assetManager.load("models/menu_spacesurround.g3db", Model.class);
+        for(String i : modelAssets) {
+            assetManager.load("models/" + i + ".g3db", Model.class);
+        }
 
         // Textures
-        assetManager.load("textures/defaultButton.png", Texture.class);
-        assetManager.load("textures/settingsButton.png", Texture.class);
-        assetManager.load("textures/languageButton.png", Texture.class);
-        assetManager.load("textures/backButton.png", Texture.class);
-        assetManager.load("textures/exitButton.png", Texture.class);
-        assetManager.load("textures/title.png", Texture.class);
-        assetManager.load("textures/submenu_background.png", Texture.class);
-        assetManager.load("textures/tickButton.png", Texture.class);
-        assetManager.load("textures/connectButton.png", Texture.class);
-        assetManager.load("textures/helpButton.png", Texture.class);
-        assetManager.load("textures/selectedLanguage.png", Texture.class);
-        assetManager.load("textures/selectedButton.png", Texture.class);
-        assetManager.load("textures/selectedSmallButton.png", Texture.class);
-        assetManager.load("textures/langImage.png", Texture.class);
-        assetManager.load("textures/sliderBar.png", Texture.class);
-        assetManager.load("textures/sliderBit.png", Texture.class);
-        assetManager.load("textures/sliderBitSelected.png", Texture.class);
-        assetManager.load("textures/leftButton.png", Texture.class);
-        assetManager.load("textures/rightButton.png", Texture.class);
-        assetManager.load("textures/menuPopup.png", Texture.class);
-        assetManager.load("textures/upButton.png", Texture.class);
-        assetManager.load("textures/downButton.png", Texture.class);
-
-        assetManager.load("textures/flag1.png", Texture.class);
-        assetManager.load("textures/flag2.png", Texture.class);
-        assetManager.load("textures/flag3.png", Texture.class);
-        assetManager.load("textures/flag4.png", Texture.class);
-        assetManager.load("textures/flag5.png", Texture.class);
-        assetManager.load("textures/flag6.png", Texture.class);
-        assetManager.load("textures/flag7.png", Texture.class);
-        assetManager.load("textures/flag8.png", Texture.class);
-        assetManager.load("textures/flag9.png", Texture.class);
-        assetManager.load("textures/flag10.png", Texture.class);
+        for(String i : textureAssets) {
+            assetManager.load("textures/" + i + ".png", Texture.class);
+        }
 
         assetManager.finishLoading();
 
@@ -153,6 +127,7 @@ public class MotionDarts extends Game {
      * Loads text and position values from language files
      */
     static void loadLanguage(int language) {
+
         FileHandle[] langFiles = {Gdx.files.internal("languages/english.txt"), Gdx.files.internal("languages/bulgarian.txt"), Gdx.files.internal("languages/russian.txt")};
         FileHandle[] indentFiles = {Gdx.files.internal("text_indent_values/englishTextIndents.txt"), Gdx.files.internal("text_indent_values/bulgarianTextIndents.txt"), Gdx.files.internal("text_indent_values/russianTextIndents.txt")};
 
@@ -164,10 +139,15 @@ public class MotionDarts extends Game {
 
         String indentInput = indentFiles[language].readString();
         String[] indentStrArr = indentInput.split("\n");
+
         for(int i = 0; i < indentStrArr.length; i++) {
             MenuScreen.textIndent[i] = Integer.parseInt(indentStrArr[i].trim());
         }
 
-    }
+        FileHandle langFile = Gdx.files.local("langSave.txt");
 
+        // Clear text file
+        langFile.writeString("" + language, false);
+
+    }
 }

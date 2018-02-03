@@ -17,6 +17,8 @@ public class ScoreSystem {
     int dartsThrown = 0;
     int currentPlayer = 0;
 
+    int totalDartsThrown;
+
     int winner = 0;
 
     int[][][] dartScore = new int[100][2][3]; // [turn][player][throw] Integer value of each dart's score
@@ -94,7 +96,7 @@ public class ScoreSystem {
         } else{
             // Outer Bull, then Bull
             dartScore[turn][currentPlayer][dartsThrown] = (dartLandZone - 80) * 25;
-            dartNature[turn][currentPlayer][dartsThrown] = (dartLandZone - 80);
+            dartNature[turn][currentPlayer][dartsThrown] = (dartLandZone - 80) + 3;
         }
 
 
@@ -103,6 +105,29 @@ public class ScoreSystem {
     int[] getScore() {
         return new int[2];
     }
+
+    /**
+     * Returns the innings array from the Score_Cricket claas. To be overwritten by the Score_Cricket
+     * class, and only used where the game mode is cricket. If the game mode is not cricket, then an
+     * empty 2D INT-Array will be returned.
+     *
+     * @return Empty array, until overwritten with innings array
+     */
+    int[][] getInnings() {
+        return new int[7][2];
+    }
+
+    int[][] getInningHits() { return new int[7][2];}
+
+    int getPlayerBatting() {
+        return 0;
+    }
+
+    int getWickets() {
+        return 0;
+    }
+
+    int[] getTurnsBowling() { return new int[2]; }
 
     /**
      * If the dart hits a wire, this recursive method will find the nearest scoring area
@@ -137,22 +162,7 @@ public class ScoreSystem {
      * Called every throw, calculates averages and other statistics
      */
     void calculateStatistics() {
-
-        int totalDartsThrown = turn * 3 + dartsThrown + 1;
-
-        // Dart Average
-        gameStatistics[currentPlayer][0] = (gameStatistics[currentPlayer][0] * (totalDartsThrown - 1) + dartScore[turn][currentPlayer][dartsThrown]) / totalDartsThrown;
-        // 1st, 2nd, & 3rd dart average
-        gameStatistics[currentPlayer][dartsThrown + 1] = (gameStatistics[currentPlayer][dartsThrown + 1] * turn + dartScore[turn][currentPlayer][dartsThrown]) / (turn + 1);
-        // Highest score
-        if(turn > 0) {
-            gameStatistics[currentPlayer][4] = Math.max(dartScore[turn][currentPlayer][0] + dartScore[turn][currentPlayer][1] + dartScore[turn][currentPlayer][2], gameStatistics[currentPlayer][4]);
-        }
-
-        // Player Dart Average
-        if(currentPlayer == 0) {
-            personalStatistics[0] = (personalStatistics[0] * personalStatistics[1] + dartScore[turn][0][dartsThrown]) / ++personalStatistics[1];
-        }
+        totalDartsThrown = turn * 3 + dartsThrown + 1;
     }
 
 }

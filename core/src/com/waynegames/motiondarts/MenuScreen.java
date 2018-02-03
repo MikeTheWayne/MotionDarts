@@ -545,6 +545,8 @@ public class MenuScreen extends ScreenAdapter {
                                 menuScreen = 1;
                             } else if(touchX > 380 * scaleConstant && touchX < 680 * scaleConstant) {
                                 // Reload same game
+                                selectedGameMode = GameScreen.gameClass.getGameMode();
+                                selectedOpposition = GameScreen.gameClass.getCompetitionType();
                                 loadGameScreen();
                             }
                         }
@@ -802,8 +804,10 @@ public class MenuScreen extends ScreenAdapter {
                     buttonDown[0] = (touchX >= 40 * scaleConstant && touchX <= 340 * scaleConstant) && (touchY >= screenHeight - 170 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
                     buttonDown[1] = (touchX >= 380 * scaleConstant && touchX <= 680 * scaleConstant) && (touchY >= screenHeight - 170 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
 
-                    buttonDown[2] = (touchX >= 620 * scaleConstant && touchX <= 700 * scaleConstant) && (touchY >= screenHeight - 770 * scaleConstant && touchY <= screenHeight - 690 * scaleConstant);
-                    buttonDown[3] = (touchX >= 620 * scaleConstant && touchX <= 700 * scaleConstant) && (touchY >= screenHeight - 680 * scaleConstant && touchY <= screenHeight - 600 * scaleConstant);
+                    if(GameScreen.gameClass.getGameMode() <= 2) {
+                        buttonDown[2] = (touchX >= 620 * scaleConstant && touchX <= 700 * scaleConstant) && (touchY >= screenHeight - 770 * scaleConstant && touchY <= screenHeight - 690 * scaleConstant);
+                        buttonDown[3] = (touchX >= 620 * scaleConstant && touchX <= 700 * scaleConstant) && (touchY >= screenHeight - 680 * scaleConstant && touchY <= screenHeight - 600 * scaleConstant);
+                    }
                     break;
 
                 case 9:
@@ -1042,7 +1046,11 @@ public class MenuScreen extends ScreenAdapter {
      */
     private void loadGameScreen() {
         game.setScreen(new GameScreen(game));
-        GameScreen.gameClass = new GameClass(selectedGameMode, selectedOpposition);
+        if(selectedPracticeMode) {
+            GameScreen.gameClass = new GameClass(0, 0);
+        } else {
+            GameScreen.gameClass = new GameClass(selectedGameMode, selectedOpposition);
+        }
         dispose();
     }
 
@@ -1394,23 +1402,23 @@ public class MenuScreen extends ScreenAdapter {
         // Title text
         menuTitleFont.draw(spriteBatch, text[140], textIndent[140] * scaleConstant, screenHeight / 32 * 31);
 
+        // Sub heading text
+        menuButtonFont.draw(spriteBatch, text[141], 30 * scaleConstant, screenHeight / 32 * 28);
+        menuButtonFont.draw(spriteBatch, text[142], 30 * scaleConstant, screenHeight / 32 * 13);
+
         // Button text
         menuButtonFont.draw(spriteBatch, text[143], (40 + textIndent[143]) * scaleConstant, 116 * scaleConstant);
         menuButtonFont.draw(spriteBatch, text[144], (380 + textIndent[144]) * scaleConstant, 116 * scaleConstant);
+
+        // Player names
+        summaryFont.draw(spriteBatch, GameScreen.gameClass.playerNames[0], 30 * scaleConstant, 1040 * scaleConstant);
+        summaryFont.draw(spriteBatch, GameScreen.gameClass.playerNames[1], 360 * scaleConstant, 1040 * scaleConstant);
 
         spriteBatch.end();
 
         switch (GameScreen.gameClass.getGameMode()) {
             case 1:
-                // Sub heading text
                 spriteBatch.begin();
-
-                menuButtonFont.draw(spriteBatch, text[141], 30 * scaleConstant, screenHeight / 32 * 28);
-                menuButtonFont.draw(spriteBatch, text[142], 30 * scaleConstant, screenHeight / 32 * 13);
-
-                // Player names
-                summaryFont.draw(spriteBatch, GameScreen.gameClass.playerNames[0], 30 * scaleConstant, 1040 * scaleConstant);
-                summaryFont.draw(spriteBatch, GameScreen.gameClass.playerNames[1], 360 * scaleConstant, 1040 * scaleConstant);
 
                 // Score Table text
                 for(int i = 0; i < 10; i++) {
@@ -1493,12 +1501,218 @@ public class MenuScreen extends ScreenAdapter {
                 break;
 
             case 2:
+                spriteBatch.begin();
+
+                // Score Table text
+                for(int i = 0; i < 10; i++) {
+                    // Turn
+                    summaryFont.draw(spriteBatch, String.valueOf(i + 1 + summaryDisplayScore), (305 - 5 * String.valueOf(i + 1 + summaryDisplayScore).length()) * scaleConstant, (990 - 40 * i) * scaleConstant);
+
+                    // Dart Scores
+                    for(int player = 0; player < 2; player++) {
+                        int[] dart = GameScreen.gameClass.scoreSystem.dartScore[i + summaryDisplayScore][player];
+                        int[] dartNature = GameScreen.gameClass.scoreSystem.dartNature[i + summaryDisplayScore][player];
+
+                        for (int j = 0; j < 3; j++) {
+                            if (dartNature[j] != 0) {
+                                summaryFontColored[dartNature[j]].draw(spriteBatch, String.valueOf((dartNature[j] <= 3) ? dart[j] / dartNature[j] : dart[j]), (30 + 50 * j + 420 * player + 9 * (2 - String.valueOf((dartNature[j] <= 3) ? dart[j] / dartNature[j] : dart[j]).length())) * scaleConstant, (990 - 40 * i) * scaleConstant);
+                            }
+                        }
+                    }
+
+                    // Overall Scores
+                    if(i + summaryDisplayScore <= GameScreen.gameClass.scoreSystem.turn) {
+                        summaryFont.draw(spriteBatch, String.valueOf(GameScreen.gameClass.scoreSystem.overallScore[i + summaryDisplayScore][0]), (230 - 14 * (String.valueOf(GameScreen.gameClass.scoreSystem.overallScore[i + summaryDisplayScore][0]).length() - 1)) * scaleConstant, (990 - 40 * i) * scaleConstant);
+                        summaryFont.draw(spriteBatch, String.valueOf(GameScreen.gameClass.scoreSystem.overallScore[i + summaryDisplayScore][1]), (365) * scaleConstant, (990 - 40 * i) * scaleConstant);
+                    }
+                }
+
+                // Draw score navigation buttons
+                spriteBatch.draw(upButton, 620 * scaleConstant, 690 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
+                spriteBatch.draw(downButton, 620 * scaleConstant, 600 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant);
+
+                // Statistics
+                stats = GameScreen.gameClass.scoreSystem.gameStatistics;
+
+                summaryFont.draw(spriteBatch, text[156], (360 - 6 * text[156].length()) * scaleConstant, (440) * scaleConstant);
+                summaryFont.draw(spriteBatch, text[157], (360 - 6 * text[157].length()) * scaleConstant, (400) * scaleConstant);
+                summaryFont.draw(spriteBatch, text[153], (360 - 6 * text[153].length()) * scaleConstant, (240) * scaleConstant);
+
+                summaryFont.draw(spriteBatch, String.valueOf(Math.round(10 * stats[0][0]) / 10.0) + "%", 40 * scaleConstant, (440) * scaleConstant);
+                summaryFont.draw(spriteBatch, String.valueOf(Math.round(10 * stats[1][0]) / 10.0) + "%", 620 * scaleConstant, (440) * scaleConstant);
+                summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[0][1]) / 100.0), 40 * scaleConstant, (400) * scaleConstant);
+                summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[1][1]) / 100.0), 620 * scaleConstant, (400) * scaleConstant);
+                summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * GameScreen.gameClass.scoreSystem.personalStatistics[0]) / 100.0), 40 * scaleConstant, (240) * scaleConstant);
+                //summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[1][0]) / 100.0), 620 * scaleConstant, (440) * scaleConstant);     // Get multiplayer statistic
+
+                // Button animations
+                if(buttonDown[0]) { spriteBatch.draw(selectedButton, 40 * scaleConstant, 20 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant); }
+                if(buttonDown[1]) { spriteBatch.draw(selectedButton, 380 * scaleConstant, 20 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant); }
+                if(buttonDown[2]) { spriteBatch.draw(selectedButtonSmall, 620 * scaleConstant, 690 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+                if(buttonDown[3]) { spriteBatch.draw(selectedButtonSmall, 620 * scaleConstant, 600 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+
+
+                spriteBatch.end();
+
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+                // Score table
+                shapeRenderer.setColor(new Color(0.0f, 0.0f, 0.8f, 1.0f));
+                shapeRenderer.rect(28 * scaleConstant, 998 * scaleConstant, 554 * scaleConstant, 6 * scaleConstant);
+                shapeRenderer.rect(253 * scaleConstant, 598 * scaleConstant, 6 * scaleConstant, 402 * scaleConstant);
+                shapeRenderer.rect(353 * scaleConstant, 598 * scaleConstant, 6 * scaleConstant, 402 * scaleConstant);
+                shapeRenderer.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+                shapeRenderer.rect(30 * scaleConstant, 1000 * scaleConstant, 550 * scaleConstant, 2 * scaleConstant);
+                shapeRenderer.rect(255 * scaleConstant, 600 * scaleConstant, 2 * scaleConstant, 400 * scaleConstant);
+                shapeRenderer.rect(355 * scaleConstant, 600 * scaleConstant, 2 * scaleConstant, 400 * scaleConstant);
+
+                // Statistics table
+                shapeRenderer.setColor(new Color(0.0f, 0.0f, 0.8f, 1.0f));
+                shapeRenderer.rect(148 * scaleConstant, 198 * scaleConstant, 6 * scaleConstant, 254 * scaleConstant);
+                shapeRenderer.rect(568 * scaleConstant, 198 * scaleConstant, 6 * scaleConstant, 254 * scaleConstant);
+                shapeRenderer.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+                shapeRenderer.rect(150 * scaleConstant, 200 * scaleConstant, 2 * scaleConstant, 250 * scaleConstant);
+                shapeRenderer.rect(570 * scaleConstant, 200 * scaleConstant, 2 * scaleConstant, 250 * scaleConstant);
+
+                shapeRenderer.end();
                 break;
 
             case 3:
+                spriteBatch.begin();
+
+                String[] tempOpeningsTexts = {"20", "19", "18", "17", "16", "15", "BU"};
+                // Score Table text
+                for(int i = 0; i < 7; i++) {
+                    // Innings
+                    summaryFont.draw(spriteBatch, tempOpeningsTexts[i], (305 - 5 * String.valueOf(i + 1 + summaryDisplayScore).length()) * scaleConstant, (990 - 40 * i) * scaleConstant);
+
+                    // Dart Scores
+                    for(int player = 0; player < 2; player++) {
+
+                        if(GameScreen.gameClass.scoreSystem.getInnings()[player][i] >= 1) {
+                            summaryFontColored[1].draw(spriteBatch, "/", (225 + 150 * player) * scaleConstant, (990 - 40 * i) * scaleConstant);
+                        }
+
+                        if(GameScreen.gameClass.scoreSystem.getInnings()[player][i] >= 2) {
+                            summaryFontColored[1].draw(spriteBatch, "\\", (225 + 150 * player) * scaleConstant, (990 - 40 * i) * scaleConstant);
+                        }
+
+                        if(GameScreen.gameClass.scoreSystem.getInnings()[player][i] >= 3) {
+                            summaryFontColored[1].draw(spriteBatch, "0", (225 + 150 * player) * scaleConstant, (990 - 40 * i) * scaleConstant);
+                        }
+
+                        // Hits
+                        if(GameScreen.gameClass.scoreSystem.getInningHits()[player][i] > 3) {
+                            summaryFontColored[1].draw(spriteBatch, String.valueOf(GameScreen.gameClass.scoreSystem.getInningHits()[player][i] - 3), (100 + 400 * player) * scaleConstant, (990 - 40 * i) * scaleConstant);
+                        }
+                    }
+                }
+
+                summaryFontColored[1].draw(spriteBatch, String.valueOf(GameScreen.gameClass.scoreSystem.getScore()[0]), (100) * scaleConstant, (670) * scaleConstant);
+                summaryFontColored[1].draw(spriteBatch, String.valueOf(GameScreen.gameClass.scoreSystem.getScore()[1]), (500) * scaleConstant, (670) * scaleConstant);
+
+                // Statistics
+                stats = GameScreen.gameClass.scoreSystem.gameStatistics;
+
+                summaryFont.draw(spriteBatch, text[156], (360 - 6 * text[156].length()) * scaleConstant, (440) * scaleConstant);
+                summaryFont.draw(spriteBatch, text[148], (360 - 6 * text[148].length()) * scaleConstant, (400) * scaleConstant);
+                summaryFont.draw(spriteBatch, text[153], (360 - 6 * text[153].length()) * scaleConstant, (240) * scaleConstant);
+
+                summaryFont.draw(spriteBatch, String.valueOf(Math.round(10 * stats[0][0]) / 10.0) + "%", 40 * scaleConstant, (440) * scaleConstant);
+                summaryFont.draw(spriteBatch, String.valueOf(Math.round(10 * stats[1][0]) / 10.0) + "%", 620 * scaleConstant, (440) * scaleConstant);
+                summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[0][1]) / 100.0), 40 * scaleConstant, (400) * scaleConstant);
+                summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[1][1]) / 100.0), 620 * scaleConstant, (400) * scaleConstant);
+                summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * GameScreen.gameClass.scoreSystem.personalStatistics[0]) / 100.0), 40 * scaleConstant, (240) * scaleConstant);
+                //summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[1][0]) / 100.0), 620 * scaleConstant, (440) * scaleConstant);     // Get multiplayer statistic
+
+                // Button animations
+                if(buttonDown[0]) { spriteBatch.draw(selectedButton, 40 * scaleConstant, 20 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant); }
+                if(buttonDown[1]) { spriteBatch.draw(selectedButton, 380 * scaleConstant, 20 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant); }
+                if(buttonDown[2]) { spriteBatch.draw(selectedButtonSmall, 620 * scaleConstant, 690 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+                if(buttonDown[3]) { spriteBatch.draw(selectedButtonSmall, 620 * scaleConstant, 600 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+
+
+                spriteBatch.end();
+
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+                // Score table
+                shapeRenderer.setColor(new Color(0.0f, 0.0f, 0.8f, 1.0f));
+                shapeRenderer.rect(28 * scaleConstant, 998 * scaleConstant, 554 * scaleConstant, 6 * scaleConstant);
+                shapeRenderer.rect(253 * scaleConstant, 718 * scaleConstant, 6 * scaleConstant, 282 * scaleConstant);
+                shapeRenderer.rect(353 * scaleConstant, 718 * scaleConstant, 6 * scaleConstant, 282 * scaleConstant);
+                shapeRenderer.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+                shapeRenderer.rect(30 * scaleConstant, 1000 * scaleConstant, 550 * scaleConstant, 2 * scaleConstant);
+                shapeRenderer.rect(255 * scaleConstant, 720 * scaleConstant, 2 * scaleConstant, 280 * scaleConstant);
+                shapeRenderer.rect(355 * scaleConstant, 720 * scaleConstant, 2 * scaleConstant, 280 * scaleConstant);
+
+                // Statistics table
+                shapeRenderer.setColor(new Color(0.0f, 0.0f, 0.8f, 1.0f));
+                shapeRenderer.rect(148 * scaleConstant, 198 * scaleConstant, 6 * scaleConstant, 254 * scaleConstant);
+                shapeRenderer.rect(568 * scaleConstant, 198 * scaleConstant, 6 * scaleConstant, 254 * scaleConstant);
+                shapeRenderer.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+                shapeRenderer.rect(150 * scaleConstant, 200 * scaleConstant, 2 * scaleConstant, 250 * scaleConstant);
+                shapeRenderer.rect(570 * scaleConstant, 200 * scaleConstant, 2 * scaleConstant, 250 * scaleConstant);
+
+                shapeRenderer.end();
                 break;
 
             case 4:
+                spriteBatch.begin();
+
+                // Score Table text
+                summaryFont.draw(spriteBatch, text[160], (267 - 6 * text[160].length()) * scaleConstant, (990) * scaleConstant);
+                summaryFont.draw(spriteBatch, text[161], (265 - 6 * text[161].length()) * scaleConstant, (950) * scaleConstant);
+
+                summaryFont.draw(spriteBatch, String.valueOf(GameScreen.gameClass.scoreSystem.getScore()[0]), (100 - 5 * String.valueOf(GameScreen.gameClass.scoreSystem.getScore()[0]).length()) * scaleConstant, (990) * scaleConstant);
+                summaryFont.draw(spriteBatch, String.valueOf(GameScreen.gameClass.scoreSystem.getScore()[1]), (410) * scaleConstant, (990) * scaleConstant);
+                summaryFont.draw(spriteBatch, String.valueOf(GameScreen.gameClass.scoreSystem.getTurnsBowling()[0]), (100 - 5 * String.valueOf(GameScreen.gameClass.scoreSystem.getTurnsBowling()[0]).length()) * scaleConstant, (950) * scaleConstant);
+                summaryFont.draw(spriteBatch, String.valueOf(GameScreen.gameClass.scoreSystem.getTurnsBowling()[1]), (410) * scaleConstant, (950) * scaleConstant);
+
+                // Statistics
+                stats = GameScreen.gameClass.scoreSystem.gameStatistics;
+
+                summaryFont.draw(spriteBatch, text[159], (360 - 6 * text[159].length()) * scaleConstant, (440) * scaleConstant);
+                summaryFont.draw(spriteBatch, text[158], (360 - 6 * text[158].length()) * scaleConstant, (400) * scaleConstant);
+                summaryFont.draw(spriteBatch, text[153], (360 - 6 * text[153].length()) * scaleConstant, (240) * scaleConstant);
+
+                summaryFont.draw(spriteBatch, String.valueOf(Math.round(10 * stats[0][0]) / 10.0) + "%", 40 * scaleConstant, (440) * scaleConstant);
+                summaryFont.draw(spriteBatch, String.valueOf(Math.round(10 * stats[1][0]) / 10.0) + "%", 620 * scaleConstant, (440) * scaleConstant);
+                summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[0][1]) / 100.0), 40 * scaleConstant, (400) * scaleConstant);
+                summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[1][1]) / 100.0), 620 * scaleConstant, (400) * scaleConstant);
+                summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * GameScreen.gameClass.scoreSystem.personalStatistics[0]) / 100.0), 40 * scaleConstant, (240) * scaleConstant);
+                //summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[1][0]) / 100.0), 620 * scaleConstant, (440) * scaleConstant);     // Get multiplayer statistic
+
+                // Button animations
+                if(buttonDown[0]) { spriteBatch.draw(selectedButton, 40 * scaleConstant, 20 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant); }
+                if(buttonDown[1]) { spriteBatch.draw(selectedButton, 380 * scaleConstant, 20 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant); }
+                if(buttonDown[2]) { spriteBatch.draw(selectedButtonSmall, 620 * scaleConstant, 690 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+                if(buttonDown[3]) { spriteBatch.draw(selectedButtonSmall, 620 * scaleConstant, 600 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
+
+
+                spriteBatch.end();
+
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+                // Score table
+                shapeRenderer.setColor(new Color(0.0f, 0.0f, 0.8f, 1.0f));
+                shapeRenderer.rect(28 * scaleConstant, 998 * scaleConstant, 484 * scaleConstant, 6 * scaleConstant);
+                shapeRenderer.rect(183 * scaleConstant, 918 * scaleConstant, 6 * scaleConstant, 82 * scaleConstant);
+                shapeRenderer.rect(343 * scaleConstant, 918 * scaleConstant, 6 * scaleConstant, 82 * scaleConstant);
+                shapeRenderer.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+                shapeRenderer.rect(30 * scaleConstant, 1000 * scaleConstant, 480 * scaleConstant, 2 * scaleConstant);
+                shapeRenderer.rect(185 * scaleConstant, 920 * scaleConstant, 2 * scaleConstant, 80 * scaleConstant);
+                shapeRenderer.rect(345 * scaleConstant, 920 * scaleConstant, 2 * scaleConstant, 80 * scaleConstant);
+
+                // Statistics table
+                shapeRenderer.setColor(new Color(0.0f, 0.0f, 0.8f, 1.0f));
+                shapeRenderer.rect(148 * scaleConstant, 198 * scaleConstant, 6 * scaleConstant, 254 * scaleConstant);
+                shapeRenderer.rect(568 * scaleConstant, 198 * scaleConstant, 6 * scaleConstant, 254 * scaleConstant);
+                shapeRenderer.setColor(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+                shapeRenderer.rect(150 * scaleConstant, 200 * scaleConstant, 2 * scaleConstant, 250 * scaleConstant);
+                shapeRenderer.rect(570 * scaleConstant, 200 * scaleConstant, 2 * scaleConstant, 250 * scaleConstant);
+
+                shapeRenderer.end();
                 break;
         }
     }

@@ -25,14 +25,20 @@ public class GameClass {
 
         // Instantiate the score system, depending on the game mode
         switch (gameModeParam) {
+            case 0:
+                scoreSystem = new Score_Practice();
+                break;
             case 1:
                 scoreSystem = new Score_501();
                 break;
             case 2:
+                scoreSystem = new Score_RTC();
                 break;
             case 3:
+                scoreSystem = new Score_Cricket();
                 break;
             case 4:
+                scoreSystem = new Score_UKCricket();
                 break;
         }
 
@@ -87,6 +93,8 @@ public class GameClass {
     int getGameMode() {
         return gameMode;
     }
+
+    int getCompetitionType() { return competitionType; }
 
 
     /**

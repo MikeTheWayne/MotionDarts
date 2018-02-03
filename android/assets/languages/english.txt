@@ -82,19 +82,19 @@ next number. The first player to finish wins.
 
 
 
-The objective of cricket is to 'own' certain numbers on the
-board, to achieve the highest score. To own a number, you
+The objective of cricket is to 'open' certain numbers on the
+board, to achieve the highest score. To open a number, you
 must land 3 darts in that number (doubles count for 2
-darts, and triples count for 3). Once a number is owned,
-that number will earn you points every turn, until the
-other player lands 3 darts in that number. The player with
-the most points and who owns all the numbers first wins,
-or if both players are tied on points, the player who owns
-all the numbers first will win.
+darts, and triples count for 3). Once a number is opened,
+any further hits to that number will earn the player points
+as normal, until the other player lands 3 darts in that
+number, which then closes that number, making it no longer
+earn points. The player with the most points and who opens
+all the numbers first wins, or if both players are tied on
+points, the player who opens all the numbers first will win.
 
 The numbers involved are the 20, 19, 18, 17, 16, 15 and the
 bullseye.
-
 
 
 
@@ -151,8 +151,15 @@ AVERAGE DART SCORE
 2nd DART AVERAGE
 3rd DART AVERAGE
 HIGHEST SCORE
-PLAYER'S AVERAGE DART
-
+PLAYER'S AVERAGE DART (501)
+TARGET
+WICKETS
+ACCURACY
+AVERAGE DARTS PER TARGET
+AVERAGE BATTING SCORE
+BOWLING ACCURACY
+BATTING
+BOWLING
 
 
 

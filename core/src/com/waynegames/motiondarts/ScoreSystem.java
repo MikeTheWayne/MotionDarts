@@ -17,9 +17,13 @@ public class ScoreSystem {
     int dartsThrown = 0;
     int currentPlayer = 0;
 
+    int firstPlayer = 0;
+
     int totalDartsThrown;
 
     int winner = 0;
+
+    boolean bust = false;
 
     int[][][] dartScore = new int[100][2][3]; // [turn][player][throw] Integer value of each dart's score
     int[][][] dartNature = new int[100][2][3]; // [turn][player][throw] Nature of throw (miss, normal, double, triple, bull, etc.)

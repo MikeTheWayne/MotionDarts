@@ -113,6 +113,13 @@ public class GameScreen extends ScreenAdapter {
     static String[] locationFiles = {"environment_01", "", "", ""};
     static String[] dartFiles = {"dart_01", "", "", ""};
 
+    /* AI Variables */
+    private int aiTimeCounter = 0;
+
+    /* Animation Variables */
+    private int translats = 0;
+    private int translatCount = 0;
+
     /**
      * Game screen setup constructor<br>
      * Handles:<br>
@@ -217,7 +224,7 @@ public class GameScreen extends ScreenAdapter {
         // 100.0f = 1 cm
         // Game plays in the positive z axis (forwards)
         dartModelInstances[0].transform.setToTranslation(0.0f, 0.0f, -500.0f);
-        dartModelInstances[0].transform.rotate(1.0f, 0.0f, 0.0f, 90);
+        dartModelInstances[0].transform.rotate(1.0f, 0.0f, 0.0f, 89);
         dartModelInstances[0].transform.rotate(0.0f, 1.0f, 0.0f, 45);
 
         dartModelInstances[1].transform.setToTranslation(4100.0f, -10000.0f, -1000.0f);
@@ -275,20 +282,15 @@ public class GameScreen extends ScreenAdapter {
                     dispose();
                 }
 
-                if(!inFlight && !viewLock) {
+                if(!inFlight && !viewLock && !gameClass.aiTurn) {
                     // Revert darts to be in hand
                     if(gameClass.scoreSystem.dartsThrown == 0 && !dartsReset) {
-                        for(int i = 0; i < 3; i++) {
-                            dartModelInstances[i].transform.setToTranslation(4000.0f + 100.0f * i, -10000.0f, -1000.0f);
-                            dartModelInstances[i].transform.rotate(1.0f, 0.0f, 0.0f, 90);
-                            dartModelInstances[i].transform.rotate(0.0f, 1.0f, 0.0f, 45);
-                        }
-                        dartsReset = true;
+                        resetDartPositions();
                     }
 
                     // Places dart in right hand from left hand (avoids annoying graphical flash of the dart not being centred)
                     dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.setToTranslation(0.0f, 0.0f, -500.0f);
-                    dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.rotate(1.0f, 0.0f, 0.0f, 90);
+                    dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.rotate(1.0f, 0.0f, 0.0f, 89);
                     dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.rotate(0.0f, 1.0f, 0.0f, 45);
 
                     setViewPosition(1);
@@ -376,6 +378,8 @@ public class GameScreen extends ScreenAdapter {
                         } else{
                             MenuScreen.menuScreen = 1;
                         }
+                        gameClass.scoreSystem.overallScore[gameClass.scoreSystem.turn][0] = gameClass.scoreSystem.getScore()[0];
+                        gameClass.scoreSystem.overallScore[gameClass.scoreSystem.turn][1] = gameClass.scoreSystem.getScore()[1];
                         dispose();
                     } else{
                         menuPopup = false;
@@ -393,9 +397,9 @@ public class GameScreen extends ScreenAdapter {
                     menuPopup = true;
                 }
 
-                if(!inFlight && !viewLock) {
+                if(!inFlight && !viewLock && !gameClass.aiTurn) {
                     // Dart throwing
-                    if(gameClass.scoreSystem.dartsThrown < 3) { // This avoids crash caused by misbehaving gopnik timer, occasionally running once more, even though it's been cancelled
+                    if(gameClass.scoreSystem.dartsThrown < 3) { // This avoids crash caused by misbehaving timer, occasionally running once more, even though it's been cancelled
                         dartThrow();
                     }
                 }
@@ -480,6 +484,13 @@ public class GameScreen extends ScreenAdapter {
 
         shapeRenderer.end();
 
+        // Game start text
+        if(!gameClass.gameStarted && gameClass.getGameMode() > 0 && gameClass.getGameMode() <= 3) {
+            spriteBatch.begin();
+            scoreFontSmall.draw(spriteBatch, text[163], (360 - text[163].length() * 6) * scaleConstant, 950 * scaleConstant);
+            spriteBatch.end();
+        }
+
         // Game end
         if(endGame) {
             spriteBatch.begin();
@@ -518,35 +529,152 @@ public class GameScreen extends ScreenAdapter {
             spriteBatch.end();
         }
 
+        /* AI */
+        if(gameClass.aiTurn && !endGame && !viewLock && !inFlight) {
+
+            if(gameClass.scoreSystem.dartsThrown == 0 && !dartsReset) {
+                resetDartPositions();
+            }
+
+            final int CURRENT_FPS = (Gdx.graphics.getFramesPerSecond() > 10) ? Gdx.graphics.getFramesPerSecond() : 30;
+
+            if(!gameClass.ai.throwing) {
+
+                int target = 0;
+
+                // Get target based on score and game mode
+                switch (gameClass.getGameMode()) {
+                    case 1:
+                        target = gameClass.ai.targeting_501(gameClass.scoreSystem.getScore()[1]);
+                        break;
+                    case 2:
+                        target = gameClass.ai.targeting_RTC(gameClass.scoreSystem.getScore()[1]);
+                        break;
+                    case 3:
+                        target = gameClass.ai.targeting_Cricket(gameClass.scoreSystem.getScore(), gameClass.scoreSystem.getInnings());
+                        break;
+                    case 4:
+                        target = gameClass.ai.targeting_UKCricket(gameClass.scoreSystem.getPlayerBatting() == 1);
+                        break;
+                }
+
+                // Receive location of target from target position array
+                gameClass.ai.targetX = gameClass.ai.TARGETS[target][0];
+                gameClass.ai.targetY = gameClass.ai.TARGETS[target][1];
+
+                // Overrides target to bullseye if game hasn't started
+                if(!gameClass.gameStarted && gameClass.getGameMode() <= 3) {
+                    gameClass.ai.targetX = 500;
+                    gameClass.ai.targetY = 504;
+                }
+
+                // Generate randomised landing site around target
+                gameClass.ai.aiThrow();
+
+                translats = CURRENT_FPS / 4;
+
+                gameClass.ai.throwing = true;
+            }
+
+            float aimingX = -(gameClass.ai.targetX - 500) * 5.6f;
+            float aimingY = -(gameClass.ai.targetY - 500) * 5.6f;
+
+            float animLength = CURRENT_FPS / 2;
+
+            if(aiTimeCounter < animLength) {
+                aiTimeCounter++;
+
+                dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.setToTranslation(aimingX / animLength * aiTimeCounter, aimingY / animLength * aiTimeCounter, -500.0f);
+                dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.rotate(1.0f, 0.0f, 0.0f, 89);
+                dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.rotate(0.0f, 1.0f, 0.0f, 45);
+
+                perspectiveCamera.position.set(aimingX / animLength * aiTimeCounter, aimingY / animLength * aiTimeCounter, -2500.0f);
+                perspectiveCamera.lookAt(aimingX / animLength * aiTimeCounter, aimingY / animLength * aiTimeCounter, 18000.0f);
+                perspectiveCamera.update();
+            } else if(aiTimeCounter < animLength * 2) {
+                aiTimeCounter++;
+            } else {
+
+                float landingX = gameClass.ai.landingPosX;
+                float landingY = gameClass.ai.landingPosY;
+
+                // Throw dart
+                float yPos = (1.65f * (30 / 1000.0f) * translatCount) + (-4.905f * ((30 / 1000.0f) * translatCount) * ((30 / 1000.0f) * translatCount));
+
+                if (translatCount < translats) {
+                    // Translate the dart to the calculate position where it would be at that point in flight
+                    dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.setToTranslation(gameClass.ai.targetX + ((landingX - gameClass.ai.targetX / 10000.0f) * 10000.0f) / translats * translatCount, gameClass.ai.targetY + (yPos * 10000.0f), (distanceToBoard - 500.0f) / translats * translatCount);
+                } else {
+                    // Translate the dart to the exact position that it was calculated to land
+                    dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.setToTranslation((landingX * 10000.0f), (landingY * 10000.0f), (distanceToBoard - 500.0f) / translats * translatCount);
+                }
+
+                // Correct the rotation
+                dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.rotate(1.0f, 0.0f, 0.0f, 90);
+                dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.rotate(0.0f, 1.0f, 0.0f, 45);
+
+                // Check whether the animation should be ended
+                if(translatCount >= translats  || yPos <= -1.73f) {
+
+                    inFlight = false;
+                    gameClass.ai.throwing = false;
+
+                    translatCount = 0;
+                    translats = 0;
+                    aiTimeCounter = 0;
+
+                    if(!gameClass.gameStarted && gameClass.getGameMode() <= 3 && gameClass.getGameMode() > 0) {
+                        gameClass.firstThrow(landingX, landingY);
+                    } else{
+                        gameClass.newThrow(landingX, landingY);
+                    }
+
+                    // Camera zoom in on dartboard
+                    if(gameClass.scoreSystem.dartsThrown == 0 || endGame) {
+
+                        viewLock = true;
+
+                        setViewPosition(new Random().nextInt(3) + 3);
+
+                        new Timer().schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                setViewPosition(1);
+                                viewLock = false;
+                            }
+                        }, 2000);
+
+                    }
+                }
+
+                translatCount++;
+            }
+
+
+        }
+
 
         /* Touch Down */
         if(Gdx.input.isTouched()) {
 
             // Dart aiming
-            if(!inFlight && !viewLock) {
+            if(!inFlight && !viewLock && !gameClass.aiTurn) {
 
                 // If player holds down finger during camera closeup, touchDown doesn't get called, but this does
                 if(gameClass.scoreSystem.dartsThrown == 0 && !dartsReset) {
-                    for(int i = 0; i < 3; i++) {
-                        dartModelInstances[i].transform.setToTranslation(4000.0f + 100.0f * i, -10000.0f, -1000.0f);
-                        dartModelInstances[i].transform.rotate(1.0f, 0.0f, 0.0f, 90);
-                        dartModelInstances[i].transform.rotate(0.0f, 1.0f, 0.0f, 45);
-                        dartsReset = true;
-                    }
+                    resetDartPositions();
                 }
 
-                float aimSensitivity = 5.6f;
-
-                // isTouched() is called before InputAdapter, this avoids crashes
                 if(gameClass.scoreSystem.dartsThrown < 3) {
-                    aimX = -(Gdx.input.getX() - (screenWidth / 2f)) * aimSensitivity;
-                    aimY = -(Gdx.input.getY() - (screenHeight / 2f)) * aimSensitivity;
+                    aimX = -(Gdx.input.getX() - (screenWidth / 2f)) * 5.6f;
+                    aimY = -(Gdx.input.getY() - (screenHeight / 2f)) * 5.6f;
 
                     dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.setToTranslation(aimX, aimY, -500.0f);
-                    dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.rotate(1.0f, 0.0f, 0.0f, 90);
+                    dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.rotate(1.0f, 0.0f, 0.0f, 89);
                     dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.rotate(0.0f, 1.0f, 0.0f, 45);
 
-                    perspectiveCamera.position.set(aimX, aimY + 20.0f, -2500.0f);
+                    perspectiveCamera.position.set(aimX, aimY, -2500.0f);
+                    perspectiveCamera.lookAt(aimX, aimY, 18000.0f);
                     perspectiveCamera.update();
                 }
             }
@@ -639,10 +767,14 @@ public class GameScreen extends ScreenAdapter {
 
                     inFlight = false;
 
-                    gameClass.newThrow(landX, landY);
+                    if(!gameClass.gameStarted && gameClass.getGameMode() <= 3 && gameClass.getGameMode() > 0) {
+                        gameClass.firstThrow(landX, landY);
+                    } else {
+                        gameClass.newThrow(landX, landY);
+                    }
 
                     // Camera zoom in on dartboard
-                    if(gameClass.scoreSystem.dartsThrown == 0) {
+                    if(gameClass.scoreSystem.dartsThrown == 0 || (gameClass.scoreSystem.getScore()[gameClass.scoreSystem.currentPlayer] == 0 && gameClass.getGameMode() == 1)) {
 
                         viewLock = true;
 
@@ -679,7 +811,7 @@ public class GameScreen extends ScreenAdapter {
         switch(position) {
             case 1:
                 // Normal viewport position, as though looking directly at dartboard
-                perspectiveCamera.position.set(0.0f, 20.0f, -2500.0f);
+                perspectiveCamera.position.set(0.0f, 0.0f, -2500.0f);
                 perspectiveCamera.up.set(0.0f, 1.0f, 0.0f);
                 perspectiveCamera.lookAt(0.0f, 0.0f, 18700.0f);
                 break;
@@ -710,6 +842,15 @@ public class GameScreen extends ScreenAdapter {
         }
 
         perspectiveCamera.update();
+    }
+
+    private void resetDartPositions() {
+        for(int i = 0; i < 3; i++) {
+            dartModelInstances[i].transform.setToTranslation(4000.0f + 100.0f * i, -10000.0f, -1000.0f);
+            dartModelInstances[i].transform.rotate(1.0f, 0.0f, 0.0f, 89);
+            dartModelInstances[i].transform.rotate(0.0f, 1.0f, 0.0f, 45);
+        }
+        dartsReset = true;
     }
 
     private void drawUI_501() {
@@ -758,14 +899,18 @@ public class GameScreen extends ScreenAdapter {
         scoreFont.draw(spriteBatch, "" + gameClass.scoreSystem.getScore()[1], (570 + 14 * (3 - String.valueOf(gameClass.scoreSystem.getScore()[1]).length())) * scaleConstant, 70 * scaleConstant);
 
         // Draw dart score
-        int turn = (gameClass.scoreSystem.dartsThrown == 0 && gameClass.scoreSystem.currentPlayer == 0 && gameClass.scoreSystem.turn > 0) ? gameClass.scoreSystem.turn - 1 : gameClass.scoreSystem.turn;
+        int turn = (gameClass.scoreSystem.dartsThrown == 0 && gameClass.scoreSystem.currentPlayer == gameClass.scoreSystem.firstPlayer && gameClass.scoreSystem.turn > 0) ? gameClass.scoreSystem.turn - 1 : gameClass.scoreSystem.turn;
 
         for(int i = 0; i < 3; i++) {
-            scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][0][i], 10 * scaleConstant, (140 + 45 * i) * scaleConstant);
+            if(gameClass.scoreSystem.dartNature[turn][0][i] > 0) {
+                scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][0][i], 10 * scaleConstant, (140 + 45 * i) * scaleConstant);
+            }
         }
 
         for(int i = 0; i < 3; i++) {
-            scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][1][i], (710 - 13 * String.valueOf(gameClass.scoreSystem.dartScore[turn][1][i]).length()) * scaleConstant, (140 + 45 * i) * scaleConstant);
+            if(gameClass.scoreSystem.dartNature[turn][1][i] > 0) {
+                scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][1][i], (710 - 13 * String.valueOf(gameClass.scoreSystem.dartScore[turn][1][i]).length()) * scaleConstant, (140 + 45 * i) * scaleConstant);
+            }
         }
 
         // Draw back button chevron
@@ -821,14 +966,18 @@ public class GameScreen extends ScreenAdapter {
         scoreFont.draw(spriteBatch, "" + gameClass.scoreSystem.getScore()[1], (570 + 14 * (3 - String.valueOf(gameClass.scoreSystem.getScore()[1]).length())) * scaleConstant, 70 * scaleConstant);
 
         // Draw dart score
-        int turn = (gameClass.scoreSystem.dartsThrown == 0 && gameClass.scoreSystem.currentPlayer == 0 && gameClass.scoreSystem.turn > 0) ? gameClass.scoreSystem.turn - 1 : gameClass.scoreSystem.turn;
+        int turn = (gameClass.scoreSystem.dartsThrown == 0 && gameClass.scoreSystem.currentPlayer == gameClass.scoreSystem.firstPlayer && gameClass.scoreSystem.turn > 0) ? gameClass.scoreSystem.turn - 1 : gameClass.scoreSystem.turn;
 
         for(int i = 0; i < 3; i++) {
-            scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][0][i], 10 * scaleConstant, (140 + 45 * i) * scaleConstant);
+            if(gameClass.scoreSystem.dartNature[turn][0][i] > 0) {
+                scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][0][i], 10 * scaleConstant, (140 + 45 * i) * scaleConstant);
+            }
         }
 
         for(int i = 0; i < 3; i++) {
-            scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][1][i], (710 - 13 * String.valueOf(gameClass.scoreSystem.dartScore[turn][1][i]).length()) * scaleConstant, (140 + 45 * i) * scaleConstant);
+            if(gameClass.scoreSystem.dartNature[turn][1][i] > 0) {
+                scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][1][i], (710 - 13 * String.valueOf(gameClass.scoreSystem.dartScore[turn][1][i]).length()) * scaleConstant, (140 + 45 * i) * scaleConstant);
+            }
         }
 
         // Draw back button chevron
@@ -891,14 +1040,18 @@ public class GameScreen extends ScreenAdapter {
         scoreFont.draw(spriteBatch, "" + gameClass.scoreSystem.getScore()[1], (570 + 14 * (3 - String.valueOf(gameClass.scoreSystem.getScore()[1]).length())) * scaleConstant, 70 * scaleConstant);
 
         // Draw dart score
-        int turn = (gameClass.scoreSystem.dartsThrown == 0 && gameClass.scoreSystem.currentPlayer == 0 && gameClass.scoreSystem.turn > 0) ? gameClass.scoreSystem.turn - 1 : gameClass.scoreSystem.turn;
+        int turn = (gameClass.scoreSystem.dartsThrown == 0 && gameClass.scoreSystem.currentPlayer == gameClass.scoreSystem.firstPlayer && gameClass.scoreSystem.turn > 0) ? gameClass.scoreSystem.turn - 1 : gameClass.scoreSystem.turn;
 
         for(int i = 0; i < 3; i++) {
-            scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][0][i], 85 * scaleConstant, (140 + 45 * i) * scaleConstant);
+            if(gameClass.scoreSystem.dartNature[turn][0][i] > 0) {
+                scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][0][i], 85 * scaleConstant, (140 + 45 * i) * scaleConstant);
+            }
         }
 
         for(int i = 0; i < 3; i++) {
-            scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][1][i], (635 - 13 * String.valueOf(gameClass.scoreSystem.dartScore[turn][1][i]).length()) * scaleConstant, (140 + 45 * i) * scaleConstant);
+            if(gameClass.scoreSystem.dartNature[turn][1][i] > 0) {
+                scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][1][i], (635 - 13 * String.valueOf(gameClass.scoreSystem.dartScore[turn][1][i]).length()) * scaleConstant, (140 + 45 * i) * scaleConstant);
+            }
         }
 
         // Cricket Scoreboard Text
@@ -964,18 +1117,34 @@ public class GameScreen extends ScreenAdapter {
         descriptionFont.draw(spriteBatch, text[155], (695 - 6 * text[155].length()) * scaleConstant, 90 * scaleConstant);
 
         // Draw user names
-        switch (gameClass.scoreSystem.currentPlayer) {
+        if(gameClass.scoreSystem.getPlayerBatting() == 0) {
+            switch (gameClass.scoreSystem.currentPlayer) {
 
-            case 0:
-                currentPlayerFont.draw(spriteBatch, gameClass.playerNames[gameClass.scoreSystem.getPlayerBatting()], 100 * scaleConstant, 150 * scaleConstant);
-                playerFont.draw(spriteBatch, gameClass.playerNames[1 - gameClass.scoreSystem.getPlayerBatting()], (575 - gameClass.playerNames[1].length() * 10) * scaleConstant, 150 * scaleConstant);
-                break;
+                case 0:
+                    currentPlayerFont.draw(spriteBatch, gameClass.playerNames[gameClass.scoreSystem.getPlayerBatting()], 100 * scaleConstant, 150 * scaleConstant);
+                    playerFont.draw(spriteBatch, gameClass.playerNames[1 - gameClass.scoreSystem.getPlayerBatting()], (575 - gameClass.playerNames[1 - gameClass.scoreSystem.getPlayerBatting()].length() * 10) * scaleConstant, 150 * scaleConstant);
+                    break;
 
-            case 1:
-                playerFont.draw(spriteBatch, gameClass.playerNames[gameClass.scoreSystem.getPlayerBatting()], 100 * scaleConstant, 150 * scaleConstant);
-                currentPlayerFont.draw(spriteBatch, gameClass.playerNames[1 - gameClass.scoreSystem.getPlayerBatting()], (580 - gameClass.playerNames[1].length() * 10) * scaleConstant, 150 * scaleConstant);
-                break;
+                case 1:
+                    playerFont.draw(spriteBatch, gameClass.playerNames[gameClass.scoreSystem.getPlayerBatting()], 100 * scaleConstant, 150 * scaleConstant);
+                    currentPlayerFont.draw(spriteBatch, gameClass.playerNames[1 - gameClass.scoreSystem.getPlayerBatting()], (580 - gameClass.playerNames[1 - gameClass.scoreSystem.getPlayerBatting()].length() * 10) * scaleConstant, 150 * scaleConstant);
+                    break;
 
+            }
+        } else{
+            switch (gameClass.scoreSystem.currentPlayer) {
+
+                case 0:
+                    playerFont.draw(spriteBatch, gameClass.playerNames[gameClass.scoreSystem.getPlayerBatting()], 100 * scaleConstant, 150 * scaleConstant);
+                    currentPlayerFont.draw(spriteBatch, gameClass.playerNames[1 - gameClass.scoreSystem.getPlayerBatting()], (575 - gameClass.playerNames[1 - gameClass.scoreSystem.getPlayerBatting()].length() * 10) * scaleConstant, 150 * scaleConstant);
+                    break;
+
+                case 1:
+                    currentPlayerFont.draw(spriteBatch, gameClass.playerNames[gameClass.scoreSystem.getPlayerBatting()], 100 * scaleConstant, 150 * scaleConstant);
+                    playerFont.draw(spriteBatch, gameClass.playerNames[1 - gameClass.scoreSystem.getPlayerBatting()], (580 - gameClass.playerNames[1 - gameClass.scoreSystem.getPlayerBatting()].length() * 10) * scaleConstant, 150 * scaleConstant);
+                    break;
+
+            }
         }
         scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.getScore()[1 - gameClass.scoreSystem.getPlayerBatting()], (540 - String.valueOf(gameClass.scoreSystem.getScore()[1 - gameClass.scoreSystem.getPlayerBatting()]).length() * 6) * scaleConstant, 35 * scaleConstant);
 
@@ -984,10 +1153,12 @@ public class GameScreen extends ScreenAdapter {
         scoreFont.draw(spriteBatch, "" + gameClass.scoreSystem.getWickets(), (614) * scaleConstant, 60 * scaleConstant);
 
         // Draw dart score
-        int turn = (gameClass.scoreSystem.dartsThrown == 0 && gameClass.scoreSystem.currentPlayer == 0 && gameClass.scoreSystem.turn > 0) ? gameClass.scoreSystem.turn - 1 : gameClass.scoreSystem.turn;
+        int turn = (gameClass.scoreSystem.dartsThrown == 0 && gameClass.scoreSystem.currentPlayer == gameClass.scoreSystem.getPlayerBatting() && gameClass.scoreSystem.turn > 0) ? gameClass.scoreSystem.turn - 1 : gameClass.scoreSystem.turn - ((gameClass.scoreSystem.currentPlayer == gameClass.scoreSystem.getPlayerBatting()) ? 0 : gameClass.scoreSystem.getPlayerBatting());
 
         for(int i = 0; i < 3; i++) {
-            scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][gameClass.scoreSystem.getPlayerBatting()][i], 10 * scaleConstant, (140 + 45 * i) * scaleConstant);
+            if(gameClass.scoreSystem.dartNature[turn][gameClass.scoreSystem.getPlayerBatting()][i] > 0) {
+                scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][gameClass.scoreSystem.getPlayerBatting()][i], 10 * scaleConstant, (140 + 45 * i) * scaleConstant);
+            }
         }
 
         // Draw back button chevron

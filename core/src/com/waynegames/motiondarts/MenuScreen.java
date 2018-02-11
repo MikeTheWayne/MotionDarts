@@ -1615,7 +1615,7 @@ public class MenuScreen extends ScreenAdapter {
                 stats = GameScreen.gameClass.scoreSystem.gameStatistics;
 
                 summaryFont.draw(spriteBatch, text[156], (360 - 6 * text[156].length()) * scaleConstant, (440) * scaleConstant);
-                summaryFont.draw(spriteBatch, text[148], (360 - 6 * text[148].length()) * scaleConstant, (400) * scaleConstant);
+                summaryFont.draw(spriteBatch, text[162], (360 - 6 * text[148].length()) * scaleConstant, (400) * scaleConstant);
                 summaryFont.draw(spriteBatch, text[153], (360 - 6 * text[153].length()) * scaleConstant, (240) * scaleConstant);
 
                 summaryFont.draw(spriteBatch, String.valueOf(Math.round(10 * stats[0][0]) / 10.0) + "%", 40 * scaleConstant, (440) * scaleConstant);

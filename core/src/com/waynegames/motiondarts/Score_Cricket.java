@@ -19,21 +19,21 @@ public class Score_Cricket extends ScoreSystem {
             // Bull or Outer Bull
             targetHit = 7;
             innings[currentPlayer][6] += dartNature[turn][currentPlayer][dartsThrown] - 3;
-            inningHits[currentPlayer][targetHit - 1]++;
+            inningHits[currentPlayer][targetHit - 1] += dartNature[turn][currentPlayer][dartsThrown] - 3;
             accurateHits[currentPlayer]++;
 
         } else if(dartNature[turn][currentPlayer][dartsThrown] <= 3 && dartScore[turn][currentPlayer][dartsThrown] / dartNature[turn][currentPlayer][dartsThrown] >= 15) {
             // Regular Numbers
             targetHit = 21 - dartScore[turn][currentPlayer][dartsThrown] / dartNature[turn][currentPlayer][dartsThrown];
             innings[currentPlayer][targetHit - 1] += dartNature[turn][currentPlayer][dartsThrown];
-            inningHits[currentPlayer][targetHit - 1]++;
+            inningHits[currentPlayer][targetHit - 1] += dartNature[turn][currentPlayer][dartsThrown];
             accurateHits[currentPlayer]++;
 
         }
 
         if (targetHit > 0 && innings[currentPlayer][targetHit - 1] >= 3 && innings[1 - currentPlayer][targetHit - 1] < 3) {
 
-            int[] tempScores = {20, 19, 18, 17, 16, 15, 50};
+            int[] tempScores = {20, 19, 18, 17, 16, 15, 25};
             score[currentPlayer] += tempScores[targetHit - 1] * (innings[currentPlayer][targetHit - 1] - 3);
             innings[currentPlayer][targetHit - 1] = 3;
 

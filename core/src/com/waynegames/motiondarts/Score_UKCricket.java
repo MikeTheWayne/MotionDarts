@@ -42,7 +42,9 @@ public class Score_UKCricket extends ScoreSystem {
         // Check for end game / player role switch
         if(wickets <= 0) {
             if(playerBatting == 0) {
-                playerBatting++;
+                playerBatting = 1;
+                turn++;
+                dartsThrown = -1;
                 wickets = 10;
             } else{
                 // End game

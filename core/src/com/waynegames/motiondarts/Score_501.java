@@ -16,7 +16,7 @@ public class Score_501 extends ScoreSystem {
 
         int scoreSubbed = score[currentPlayer] - dartScore[turn][currentPlayer][dartsThrown];
 
-        if(dartNature[turn][currentPlayer][dartsThrown] == 2 && scoreSubbed == 0) {
+        if((dartNature[turn][currentPlayer][dartsThrown] == 2 || dartNature[turn][currentPlayer][dartsThrown] == 5) && scoreSubbed == 0) {
             /* Game Win */
             // Set score to 0
             score[currentPlayer] = 0;
@@ -33,6 +33,7 @@ public class Score_501 extends ScoreSystem {
         } else if(scoreSubbed <= 0) {
             // Bust
             dartNature[turn][currentPlayer][dartsThrown] = 6;
+            bust = true;
         } else{
             // Normal Scoring
             score[currentPlayer] = scoreSubbed;
@@ -44,19 +45,21 @@ public class Score_501 extends ScoreSystem {
     void calculateStatistics() {
         super.calculateStatistics();
 
-        // Dart Average
-        gameStatistics[currentPlayer][0] = (gameStatistics[currentPlayer][0] * (totalDartsThrown - 1) + dartScore[turn][currentPlayer][dartsThrown]) / totalDartsThrown;
+        // High Dart Average
+        if(dartsThrown == 2) {
+            gameStatistics[currentPlayer][0] = (gameStatistics[currentPlayer][0] * (totalDartsThrown / 3 - 1) + dartScore[turn][currentPlayer][0] + dartScore[turn][currentPlayer][1] + dartScore[turn][currentPlayer][2]) / (totalDartsThrown / 3);
+
+            // Player Dart Average
+            if(currentPlayer == 0) {
+                personalStatistics[0] = (personalStatistics[0] * personalStatistics[1] / 3 + gameStatistics[0][0]) / ((personalStatistics[1] += 3) / 3);
+            }
+        }
+
         // 1st, 2nd, & 3rd dart average
         gameStatistics[currentPlayer][dartsThrown + 1] = (gameStatistics[currentPlayer][dartsThrown + 1] * turn + dartScore[turn][currentPlayer][dartsThrown]) / (turn + 1);
         // Highest score
-        if(turn > 0) {
-            gameStatistics[currentPlayer][4] = Math.max(dartScore[turn][currentPlayer][0] + dartScore[turn][currentPlayer][1] + dartScore[turn][currentPlayer][2], gameStatistics[currentPlayer][4]);
-        }
+        gameStatistics[currentPlayer][4] = Math.max(dartScore[turn][currentPlayer][0] + dartScore[turn][currentPlayer][1] + dartScore[turn][currentPlayer][2], gameStatistics[currentPlayer][4]);
 
-        // Player Dart Average
-        if(currentPlayer == 0) {
-            personalStatistics[0] = (personalStatistics[0] * personalStatistics[1] + dartScore[turn][0][dartsThrown]) / ++personalStatistics[1];
-        }
     }
 
     @Override

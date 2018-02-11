@@ -14,9 +14,15 @@ public class GameClass {
     private int gameMode;
     private int competitionType;         // 0 = Practice, 1 - 3 = AI difficulty (easy to hard), 4 = Pass and play, 5 = Networked Multiplayer
 
+    boolean aiTurn = false;
+
+    boolean gameStarted = false;
+    private float distToBull = 0;
+
     String[] playerNames = {"PLAYER 1", "PLAYER 2"};
 
     ScoreSystem scoreSystem;
+    ArtificialIntelligence ai;
 
     GameClass(int gameModeParam, int competitionTypeParam) {
 
@@ -42,6 +48,24 @@ public class GameClass {
                 break;
         }
 
+        switch(competitionTypeParam) {
+            case 1:
+                playerNames[1] = "EASY AI";
+                ai = new ArtificialIntelligence(competitionTypeParam);
+                break;
+            case 2:
+                playerNames[1] = "MEDIUM AI";
+                ai = new ArtificialIntelligence(competitionTypeParam);
+                break;
+            case 3:
+                playerNames[1] = "PRO AI";
+                ai = new ArtificialIntelligence(competitionTypeParam);
+                break;
+            case 5:
+                // Set up Multi-player
+                break;
+        }
+
         // Load in player's average scores
         readSaveData();
 
@@ -60,33 +84,58 @@ public class GameClass {
 
         scoreSystem.dartsThrown++;
 
-        if(scoreSystem.dartsThrown == 3) {
+        if(scoreSystem.dartsThrown == 3 || scoreSystem.bust) {
 
             // Reset darts thrown
             scoreSystem.dartsThrown = 0;
             GameScreen.dartsReset = false;
+            scoreSystem.bust = false;
 
             if(competitionType > 0) {
                 // Advance turn (primarily for scoring)
-                if (scoreSystem.turn < 99 && scoreSystem.currentPlayer == 1) {
+                if (scoreSystem.turn < 99 && scoreSystem.currentPlayer != scoreSystem.firstPlayer) {
                     scoreSystem.overallScore[scoreSystem.turn][0] = scoreSystem.getScore()[0];
                     scoreSystem.overallScore[scoreSystem.turn][1] = scoreSystem.getScore()[1];
                     writeSaveData();
                     scoreSystem.turn++;
-                } else if (scoreSystem.turn == 99 && scoreSystem.currentPlayer == 1) {
+                } else if (scoreSystem.turn == 99 && scoreSystem.currentPlayer != scoreSystem.firstPlayer) {
                     scoreSystem.overallScore[scoreSystem.turn][0] = scoreSystem.getScore()[0];
                     scoreSystem.overallScore[scoreSystem.turn][1] = scoreSystem.getScore()[1];
                     GameScreen.endGame = true;
                 }
 
                 // Switch Player
-                if (scoreSystem.currentPlayer == 0) {
-                    scoreSystem.currentPlayer = 1;
-                } else {
-                    scoreSystem.currentPlayer = 0;
+                scoreSystem.currentPlayer = 1 - scoreSystem.currentPlayer;
+
+                if(competitionType <= 3) {  // AI
+                    aiTurn = !aiTurn;
                 }
             }
 
+        }
+    }
+
+    void firstThrow(float landX, float landY) {
+
+        if(scoreSystem.currentPlayer == 0) {
+            // Calculate linear distance from bullseye
+            distToBull = (float) Math.sqrt(landX * landX + landY * landY);
+
+            scoreSystem.currentPlayer++;
+
+            if(competitionType <= 3) {  // AI
+                aiTurn = true;
+            }
+        } else{
+            // Calculate linear distance from bullseye, and compare to first player's landing
+            scoreSystem.currentPlayer = (distToBull < (float) Math.sqrt(landX * landX + landY * landY)) ? 0 : 1;
+            scoreSystem.firstPlayer = scoreSystem.currentPlayer;
+
+            if(scoreSystem.currentPlayer == 0) {
+                aiTurn = false;
+            }
+
+            gameStarted = true;
         }
     }
 

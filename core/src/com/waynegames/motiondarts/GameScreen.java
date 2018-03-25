@@ -1,6 +1,7 @@
 package com.waynegames.motiondarts;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.ScreenAdapter;
@@ -148,6 +149,8 @@ public class GameScreen extends ScreenAdapter {
 
         scaleConstant = screenWidth / 720;
 
+        endGame = false;
+
         /* Font Setup */
         freeTypeFontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/agencyfbbold.ttf"));
         freeTypeFontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
@@ -284,7 +287,6 @@ public class GameScreen extends ScreenAdapter {
                         MenuScreen.menuScreen = 1;
                         MenuScreen.selectedPracticeMode = false;
                     }
-                    endGame = false;
                     gameClass.writeSaveData();
                     dispose();
                 }
@@ -389,6 +391,7 @@ public class GameScreen extends ScreenAdapter {
                             }
                         } else{
                             MenuScreen.menuScreen = 1;
+                            MenuScreen.selectedPracticeMode = false;
                         }
                         gameClass.scoreSystem.overallScore[gameClass.scoreSystem.turn][0] = gameClass.scoreSystem.getScore()[0];
                         gameClass.scoreSystem.overallScore[gameClass.scoreSystem.turn][1] = gameClass.scoreSystem.getScore()[1];
@@ -427,6 +430,16 @@ public class GameScreen extends ScreenAdapter {
                     t.purge();
                 }
                 return true;
+            }
+
+            @Override
+            public boolean keyDown(int keyCode) {
+
+                if(keyCode == Input.Keys.BACK) {
+                    dispose();
+                }
+
+                return false;
             }
 
         });
@@ -499,6 +512,13 @@ public class GameScreen extends ScreenAdapter {
         }
 
         shapeRenderer.end();
+
+        // Timer
+        if(gameClass.getCompetitionType() == 5) {
+            spriteBatch.begin();
+            scoreFont.draw(spriteBatch, ServerComms.turnTimer + "", (700 - 20 * String.valueOf(ServerComms.turnTimer).length()) * scaleConstant, 1260 * scaleConstant);
+            spriteBatch.end();
+        }
 
         // Game start text
         if(gameClass.scoreSystem.currentPlayer == 0 && !gameClass.gameStarted && gameClass.getGameMode() > 0 && gameClass.getGameMode() <= 3) {
@@ -727,6 +747,7 @@ public class GameScreen extends ScreenAdapter {
         modelBatch.dispose();
         spriteBatch.dispose();
         instances.clear();
+        ServerComms.disconnectFromServer();
     }
 
     @Override

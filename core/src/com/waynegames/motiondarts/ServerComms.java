@@ -9,6 +9,8 @@ import com.badlogic.gdx.net.SocketHints;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Timer;
+import java.util.TimerTask;
 
 class ServerComms {
 
@@ -27,10 +29,13 @@ class ServerComms {
 
     static boolean newThrow = false;
 
-    static boolean disconnection = false;
-
     static float oppStats = 0;
     private static boolean incomingStat = false;
+
+    static boolean disconnection = false;
+    static boolean outOfTime = false;
+
+    static int turnTimer = 0;
 
     static void connectToServer() {
 
@@ -106,6 +111,8 @@ class ServerComms {
                                             }
                                         }
 
+                                        turnTimer = 20 + GameScreen.gameClass.scoreSystem.currentPlayer * 5;
+
                                     } else if(incomingStat) {
                                         oppStats = Float.valueOf(serverOutput);
                                         incomingStat = false;
@@ -140,6 +147,34 @@ class ServerComms {
             MenuScreen.connectionFailReason = 1;
         }
 
+    }
+
+    static void serverTimer() {
+        final Timer t = new Timer();
+
+        t.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                if(turnTimer > 0 && !GameScreen.endGame) {
+                    turnTimer--;
+                } else{
+                    if(!GameScreen.endGame) {
+                        GameScreen.gameClass.scoreSystem.winner = (1 - GameScreen.gameClass.scoreSystem.currentPlayer) + 1;
+                        outOfTime = true;
+                    }
+
+                    GameScreen.endGame = true;
+                    inGame = false;
+                    newThrow = false;
+                    disconnectFromServer();
+                    t.cancel();
+                }
+
+                if(!inGame) {
+                    t.cancel();
+                }
+            }
+        }, 0, 1000);
     }
 
     static void sendToServer(String message) {

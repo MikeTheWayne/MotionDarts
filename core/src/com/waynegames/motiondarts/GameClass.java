@@ -127,6 +127,8 @@ public class GameClass {
                 ServerComms.sendToServer(scoreSystem.personalStatistics[0] + "\n");
             }
 
+            ServerComms.turnTimer = 20 + scoreSystem.currentPlayer * 5;
+
             if(scoreSystem.dartsThrown == 0 || scoreSystem.bust) {
                 oppTurn = !oppTurn;
             }
@@ -151,6 +153,8 @@ public class GameClass {
                     ServerComms.sendToServer(scoreSystem.personalStatistics[0] + "\n");
                 }
                 oppTurn = !oppTurn;
+
+                ServerComms.turnTimer = 20 + scoreSystem.currentPlayer * 5;
             }
         } else{
             // Calculate linear distance from bullseye, and compare to first player's landing
@@ -167,6 +171,8 @@ public class GameClass {
                 oppTurn = false;
             } else if(competitionType == 5) {
                 oppTurn = true;
+
+                ServerComms.turnTimer = 20 + scoreSystem.currentPlayer * 5;
             }
 
             gameStarted = true;

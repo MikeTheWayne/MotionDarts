@@ -701,6 +701,17 @@ public class MenuScreen extends ScreenAdapter {
                 }
                 return true;
             }
+
+            @Override
+            public boolean keyDown(int keyCode) {
+
+                if(keyCode == Input.Keys.BACK) {
+                    dispose();
+                }
+
+                return false;
+            }
+
         };
 
         Gdx.input.setInputProcessor(inputAdapter);
@@ -852,6 +863,8 @@ public class MenuScreen extends ScreenAdapter {
             GameScreen.gameClass.playerNames[0] = (tempUsername.equals("")) ? "PLAYER 1" : tempUsername.toUpperCase();
             GameScreen.gameClass.oppTurn = onlinePlayer == 1;
             GameScreen.gameClass.startPlayer = onlinePlayer;
+            ServerComms.turnTimer = 15 + onlinePlayer * 5;
+            ServerComms.serverTimer();
             showWaiting = false;
             startGame = false;
         }

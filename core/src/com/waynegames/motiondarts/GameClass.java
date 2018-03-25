@@ -15,6 +15,9 @@ public class GameClass {
     private int competitionType;         // 0 = Practice, 1 - 3 = AI difficulty (easy to hard), 4 = Pass and play, 5 = Networked Multiplayer
 
     boolean aiTurn = false;
+    boolean oppTurn = false;
+
+    int startPlayer = 0;
 
     boolean gameStarted = false;
     private float distToBull = 0;
@@ -69,6 +72,11 @@ public class GameClass {
         // Load in player's average scores
         readSaveData();
 
+        // Send dart average to server
+        if(competitionType == 5) {
+            ServerComms.sendToServer(scoreSystem.personalStatistics[0] + "\n");
+        }
+
     }
 
     /**
@@ -89,7 +97,6 @@ public class GameClass {
             // Reset darts thrown
             scoreSystem.dartsThrown = 0;
             GameScreen.dartsReset = false;
-            scoreSystem.bust = false;
 
             if(competitionType > 0) {
                 // Advance turn (primarily for scoring)
@@ -113,26 +120,53 @@ public class GameClass {
             }
 
         }
+
+        if(competitionType == 5) {
+            if(!oppTurn) {
+                ServerComms.sendToServer("" + ((startPlayer == 1) ? 1 - scoreSystem.currentPlayer : scoreSystem.currentPlayer));
+                ServerComms.sendToServer(scoreSystem.personalStatistics[0] + "\n");
+            }
+
+            if(scoreSystem.dartsThrown == 0 || scoreSystem.bust) {
+                oppTurn = !oppTurn;
+            }
+        }
+
+        scoreSystem.bust = false;
     }
 
     void firstThrow(float landX, float landY) {
 
-        if(scoreSystem.currentPlayer == 0) {
+        if(scoreSystem.currentPlayer == startPlayer) {
             // Calculate linear distance from bullseye
             distToBull = (float) Math.sqrt(landX * landX + landY * landY);
 
-            scoreSystem.currentPlayer++;
+            scoreSystem.currentPlayer = 1 - scoreSystem.currentPlayer;
 
             if(competitionType <= 3) {  // AI
                 aiTurn = true;
+            } else if(competitionType == 5) {
+                if(!oppTurn) {
+                    ServerComms.sendToServer("" + scoreSystem.currentPlayer);
+                    ServerComms.sendToServer(scoreSystem.personalStatistics[0] + "\n");
+                }
+                oppTurn = !oppTurn;
             }
         } else{
             // Calculate linear distance from bullseye, and compare to first player's landing
-            scoreSystem.currentPlayer = (distToBull < (float) Math.sqrt(landX * landX + landY * landY)) ? 0 : 1;
+            scoreSystem.currentPlayer = (distToBull < (float) Math.sqrt(landX * landX + landY * landY)) ? startPlayer : 1 - startPlayer;
             scoreSystem.firstPlayer = scoreSystem.currentPlayer;
+
+            if(competitionType == 5 && !oppTurn) {
+                ServerComms.sendToServer("" + ((startPlayer == 1) ? 1 - scoreSystem.currentPlayer : scoreSystem.currentPlayer));
+                ServerComms.sendToServer(scoreSystem.personalStatistics[0] + "\n");
+            }
 
             if(scoreSystem.currentPlayer == 0) {
                 aiTurn = false;
+                oppTurn = false;
+            } else if(competitionType == 5) {
+                oppTurn = true;
             }
 
             gameStarted = true;

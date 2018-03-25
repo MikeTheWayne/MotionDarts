@@ -30,7 +30,7 @@ public class Score_501 extends ScoreSystem {
             // End Game
             GameScreen.endGame = true;
 
-        } else if(scoreSubbed <= 0) {
+        } else if(scoreSubbed <= 1) {
             // Bust
             dartNature[turn][currentPlayer][dartsThrown] = 6;
             bust = true;

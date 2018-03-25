@@ -22,8 +22,11 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.Array;
+import com.sun.corba.se.spi.activation.Server;
 
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Handles all of the touch input and graphics output for the menu interface.
@@ -85,22 +88,29 @@ public class MenuScreen extends ScreenAdapter {
 
     private int scaleConstant;
 
-    private int selectedOpposition = 2;
-    private int selectedGameMode = 1;
-    private boolean selectedPracticeMode = false;
+    static int selectedOpposition = 2;
+    static int selectedGameMode = 1;
+    static boolean selectedPracticeMode = false;
     private boolean selectedSpecificPlayer = false;
 
     private String tempUsername = "";
     private String opponentUsername = "";
 
-    private boolean usernameAvailable = false;
-    private boolean opponentAvailable = false;
+    static boolean usernameAvailable = false;
+    static boolean opponentAvailable = false;
 
-    private boolean usernameChecked = false;
-    private boolean opponentChecked = false;
+    static boolean usernameChecked = false;
+    static boolean opponentChecked = false;
 
-    private boolean showConnecting = false;
+    static boolean showWaiting = false;
+    static boolean startGame = false;
+    static int onlinePlayer = 0;
+    static String opponentName = "";
+
     private boolean showHelpMultiplayer = false;
+
+    static boolean connectionFailed = false;
+    static int connectionFailReason = 0;
 
     private boolean[] buttonDown = new boolean[10];
 
@@ -467,15 +477,19 @@ public class MenuScreen extends ScreenAdapter {
 
                             if(selectedSpecificPlayer) {
                                 // Connect to server
-                                menuScreen = 9;
-                                usernameChecked = false;
-                                opponentChecked = false;
+                                ServerComms.connectToServer();
+                                ServerComms.sendToServer(String.valueOf(1));
+                                if(!connectionFailed) {
+                                    menuScreen = 9;
+                                    usernameChecked = false;
+                                    opponentChecked = false;
+                                }
                             } else if(selectedOpposition == 5) {
-                                if(!showConnecting) {
-                                    showConnecting = true;
+                                if(!showWaiting) {
                                     // Connect to server
-                                    // Matchmake
-                                    // Begin Game
+                                    ServerComms.connectToServer();
+                                    ServerComms.sendToServer(String.valueOf(0));
+                                    ServerComms.sendToServer(String.valueOf(selectedGameMode));
                                 }
                             } else {
                                 // Begin Game
@@ -484,6 +498,9 @@ public class MenuScreen extends ScreenAdapter {
 
                         } else if(touchX > 20 * scaleConstant && touchX < 100 * scaleConstant && touchY > screenHeight - 170 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant) {
                             menuScreen = 1;
+                            connectionFailed = false;
+                            showWaiting = false;
+                            ServerComms.disconnectFromServer();
                         }
 
                         if(touchX > 620 * scaleConstant && touchX < 700 * scaleConstant && touchY < screenHeight - 650 * scaleConstant && touchY >= screenHeight - 730 * scaleConstant) {
@@ -541,14 +558,14 @@ public class MenuScreen extends ScreenAdapter {
                     case 8:
 
                         if(touchY > screenHeight - 170 * scaleConstant && touchY < screenHeight - 20 * scaleConstant) {
-                            if(touchX > 40 * scaleConstant && touchX < 340 * scaleConstant) {
+                            if(touchX > 210 * scaleConstant && touchX < 510 * scaleConstant) {
                                 menuScreen = 1;
-                            } else if(touchX > 380 * scaleConstant && touchX < 680 * scaleConstant) {
+                            } /*else if(touchX > 380 * scaleConstant && touchX < 680 * scaleConstant) {
                                 // Reload same game
                                 selectedGameMode = GameScreen.gameClass.getGameMode();
                                 selectedOpposition = GameScreen.gameClass.getCompetitionType();
                                 loadGameScreen();
-                            }
+                            }*/
                         }
 
                         if(touchX > 620 * scaleConstant && touchX < 700 * scaleConstant) {
@@ -570,6 +587,10 @@ public class MenuScreen extends ScreenAdapter {
                         if(touchY > screenHeight - 170 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant) {
                             if(touchX > 20 * scaleConstant && touchX < 100 * scaleConstant) {
                                 menuScreen = 3;
+                                connectionFailed = false;
+                                showWaiting = false;
+                                ServerComms.sendToServer("17");
+                                ServerComms.disconnectFromServer();
                             } else if(touchX > 110 * scaleConstant && touchX < 190 * scaleConstant) {
                                 showHelpMultiplayer = !showHelpMultiplayer;
                             }
@@ -577,20 +598,19 @@ public class MenuScreen extends ScreenAdapter {
 
                         if(touchX > screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 && touchX <  screenWidth / 2 + (defaultButton.getWidth() * scaleConstant) / 2 && touchY > screenHeight - 170 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant) {
                             // Check that everything's been entered correctly
-                            if(usernameAvailable && opponentAvailable) {
-                                if(!showConnecting) {
-                                    showConnecting = true;
-                                    // Wait for other user
-                                    // Start Game
-                                }
-                            } else{
-                                usernameChecked = true;
-                                opponentChecked = true;
+                            if(!showWaiting) {
+                                // Wait for other user
+                                // Start Game
+                                ServerComms.sendToServer(String.valueOf(10));
+                                ServerComms.sendToServer(tempUsername);
+                                ServerComms.sendToServer(opponentUsername);
+                                ServerComms.sendToServer(String.valueOf(selectedGameMode));
                             }
                         }
 
                         if(touchX > 30 * scaleConstant && touchX < 580 * scaleConstant) {
-                            if(touchY < (screenHeight - 975 * scaleConstant) && touchY > (screenHeight - 1055 * scaleConstant)) {
+                            if(touchY < (screenHeight - 975 * scaleConstant) && touchY > (screenHeight - 1055 * scaleConstant) && !showWaiting) {
+                                usernameChecked = false;
 
                                 Gdx.input.getTextInput(new Input.TextInputListener() {
                                     @Override
@@ -615,9 +635,10 @@ public class MenuScreen extends ScreenAdapter {
                                     public void canceled() {
 
                                     }
-                                }, text[27], tempUsername, text[28]);
+                                }, text[31], tempUsername, text[28]);
 
-                            } else if(touchY < (screenHeight - 735 * scaleConstant) && touchY > (screenHeight - 815 * scaleConstant)) {
+                            } else if(touchY < (screenHeight - 735 * scaleConstant) && touchY > (screenHeight - 815 * scaleConstant) && !showWaiting) {
+                                opponentChecked = false;
 
                                 Gdx.input.getTextInput(new Input.TextInputListener() {
                                     @Override
@@ -648,14 +669,14 @@ public class MenuScreen extends ScreenAdapter {
                         }
 
                         if(touchX > 605 && touchX < 685) {
-                            if(touchY < (screenHeight - 975 * scaleConstant) && touchY > (screenHeight - 1055 * scaleConstant)) {
+                            if(touchY < (screenHeight - 975 * scaleConstant) && touchY > (screenHeight - 1055 * scaleConstant) && !showWaiting) {
                                 // Run check in server to see if username is in use
-                                usernameAvailable = false;  // Replace this with function call
-                                usernameChecked = true;
-                            } else if(touchY < (screenHeight - 735 * scaleConstant) && touchY > (screenHeight - 815 * scaleConstant)) {
+                                ServerComms.sendToServer(String.valueOf(11));
+                                ServerComms.sendToServer(String.valueOf(tempUsername));
+                            } else if(touchY < (screenHeight - 735 * scaleConstant) && touchY > (screenHeight - 815 * scaleConstant) && !showWaiting) {
                                 // Run check in server to see if target exists
-                                opponentAvailable = false;  // Replace this with function call
-                                opponentChecked = true;
+                                ServerComms.sendToServer(String.valueOf(12));
+                                ServerComms.sendToServer(String.valueOf(opponentUsername));
                             }
                         }
                         break;
@@ -801,8 +822,8 @@ public class MenuScreen extends ScreenAdapter {
                     break;
 
                 case 8:
-                    buttonDown[0] = (touchX >= 40 * scaleConstant && touchX <= 340 * scaleConstant) && (touchY >= screenHeight - 170 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
-                    buttonDown[1] = (touchX >= 380 * scaleConstant && touchX <= 680 * scaleConstant) && (touchY >= screenHeight - 170 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
+                    buttonDown[0] = (touchX >= 210 * scaleConstant && touchX <= 510 * scaleConstant) && (touchY >= screenHeight - 170 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
+                    //buttonDown[1] = (touchX >= 380 * scaleConstant && touchX <= 680 * scaleConstant) && (touchY >= screenHeight - 170 * scaleConstant && touchY <= screenHeight - 20 * scaleConstant);
 
                     if(GameScreen.gameClass.getGameMode() <= 2) {
                         buttonDown[2] = (touchX >= 620 * scaleConstant && touchX <= 700 * scaleConstant) && (touchY >= screenHeight - 770 * scaleConstant && touchY <= screenHeight - 690 * scaleConstant);
@@ -824,6 +845,16 @@ public class MenuScreen extends ScreenAdapter {
             }
         }
 
+        if(startGame) {
+            loadGameScreen();
+            GameScreen.gameClass.scoreSystem.currentPlayer = onlinePlayer;
+            GameScreen.gameClass.playerNames[1] = (opponentName.equals("")) ? "PLAYER 2" : opponentName;
+            GameScreen.gameClass.playerNames[0] = (tempUsername.equals("")) ? "PLAYER 1" : tempUsername.toUpperCase();
+            GameScreen.gameClass.oppTurn = onlinePlayer == 1;
+            GameScreen.gameClass.startPlayer = onlinePlayer;
+            showWaiting = false;
+            startGame = false;
+        }
 	}
 	
 	@Override
@@ -1193,7 +1224,7 @@ public class MenuScreen extends ScreenAdapter {
         menuTitleFont.draw(spriteBatch, text[17], textIndent[17] * scaleConstant, screenHeight / 32 * 31);
         // Button text
         if(selectedOpposition == 5) {
-            if(showConnecting) {
+            if(showWaiting) {
                 menuButtonFont.draw(spriteBatch, text[44], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + textIndent[44] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
             } else{
                 menuButtonFontBold.draw(spriteBatch, text[23], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + textIndent[23] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
@@ -1221,6 +1252,24 @@ public class MenuScreen extends ScreenAdapter {
         menuButtonFontBold.draw(spriteBatch, text[13], 40 * scaleConstant, 279 * scaleConstant);
         menuButtonFontBold.draw(spriteBatch, text[14], 365 * scaleConstant, 329 * scaleConstant);
         menuButtonFontBold.draw(spriteBatch, text[15], 365 * scaleConstant, 279 * scaleConstant);
+
+        // Successful Connection Text
+        if(showWaiting) {
+            menuStatusFontGreen.draw(spriteBatch, text[167], textIndent[167] * scaleConstant, 200 * scaleConstant);
+        }
+
+        // Connection Error Text
+        if(connectionFailed) {
+            menuStatusFontRed.draw(spriteBatch, text[164], 230 * scaleConstant, 200 * scaleConstant);
+            switch (connectionFailReason) {
+                case 1:
+                    menuStatusFontRed.draw(spriteBatch, "(" + text[165] + ")", 400 * scaleConstant, 200 * scaleConstant);
+                    break;
+                case 2:
+                    menuStatusFontRed.draw(spriteBatch, "(" + text[166] + ")", 400 * scaleConstant, 200 * scaleConstant);
+                    break;
+            }
+        }
 
         // Button Down Highlighting
         if(buttonDown[0]) { spriteBatch.draw(selectedButtonSmall, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
@@ -1396,8 +1445,8 @@ public class MenuScreen extends ScreenAdapter {
         // Background Overlay
         spriteBatch.draw(submenuBackground, 0, 0, screenWidth, screenHeight);
         // Buttons for main menu/rematch
-        spriteBatch.draw(defaultButton, 40 * scaleConstant, 20 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant);
-        spriteBatch.draw(defaultButton, 380 * scaleConstant, 20 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant);
+        spriteBatch.draw(defaultButton, 210 * scaleConstant, 20 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant);
+        //spriteBatch.draw(defaultButton, 380 * scaleConstant, 20 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant);
 
         // Title text
         menuTitleFont.draw(spriteBatch, text[140], textIndent[140] * scaleConstant, screenHeight / 32 * 31);
@@ -1407,8 +1456,8 @@ public class MenuScreen extends ScreenAdapter {
         menuButtonFont.draw(spriteBatch, text[142], 30 * scaleConstant, screenHeight / 32 * 13);
 
         // Button text
-        menuButtonFont.draw(spriteBatch, text[143], (40 + textIndent[143]) * scaleConstant, 116 * scaleConstant);
-        menuButtonFont.draw(spriteBatch, text[144], (380 + textIndent[144]) * scaleConstant, 116 * scaleConstant);
+        menuButtonFont.draw(spriteBatch, text[143], (210 + textIndent[143]) * scaleConstant, 116 * scaleConstant);
+        //menuButtonFont.draw(spriteBatch, text[144], (380 + textIndent[144]) * scaleConstant, 116 * scaleConstant);
 
         // Player names
         summaryFont.draw(spriteBatch, GameScreen.gameClass.playerNames[0], 30 * scaleConstant, 1040 * scaleConstant);
@@ -1466,11 +1515,13 @@ public class MenuScreen extends ScreenAdapter {
                 summaryFont.draw(spriteBatch, String.valueOf((int) stats[0][4]), 40 * scaleConstant, (280) * scaleConstant);
                 summaryFont.draw(spriteBatch, String.valueOf((int) stats[1][4]), 620 * scaleConstant, (280) * scaleConstant);
                 summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * GameScreen.gameClass.scoreSystem.personalStatistics[0]) / 100.0), 40 * scaleConstant, (240) * scaleConstant);
-                //summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[1][0]) / 100.0), 620 * scaleConstant, (440) * scaleConstant);     // Get multiplayer statistic
+                if(GameScreen.gameClass.getCompetitionType() == 5) {
+                    summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * ServerComms.oppStats) / 100.0), 620 * scaleConstant, (240) * scaleConstant);     // Get multiplayer statistic
+                }
 
                 // Button animations
-                if(buttonDown[0]) { spriteBatch.draw(selectedButton, 40 * scaleConstant, 20 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant); }
-                if(buttonDown[1]) { spriteBatch.draw(selectedButton, 380 * scaleConstant, 20 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant); }
+                if(buttonDown[0]) { spriteBatch.draw(selectedButton, 210 * scaleConstant, 20 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant); }
+                //if(buttonDown[1]) { spriteBatch.draw(selectedButton, 380 * scaleConstant, 20 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant); }
                 if(buttonDown[2]) { spriteBatch.draw(selectedButtonSmall, 620 * scaleConstant, 690 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
                 if(buttonDown[3]) { spriteBatch.draw(selectedButtonSmall, 620 * scaleConstant, 600 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }
 
@@ -1543,7 +1594,9 @@ public class MenuScreen extends ScreenAdapter {
                 summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[0][1]) / 100.0), 40 * scaleConstant, (400) * scaleConstant);
                 summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[1][1]) / 100.0), 620 * scaleConstant, (400) * scaleConstant);
                 summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * GameScreen.gameClass.scoreSystem.personalStatistics[0]) / 100.0), 40 * scaleConstant, (240) * scaleConstant);
-                //summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[1][0]) / 100.0), 620 * scaleConstant, (440) * scaleConstant);     // Get multiplayer statistic
+                if(GameScreen.gameClass.getCompetitionType() == 5) {
+                    summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * ServerComms.oppStats) / 100.0), 620 * scaleConstant, (240) * scaleConstant);     // Get multiplayer statistic
+                }
 
                 // Button animations
                 if(buttonDown[0]) { spriteBatch.draw(selectedButton, 40 * scaleConstant, 20 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant); }
@@ -1623,7 +1676,9 @@ public class MenuScreen extends ScreenAdapter {
                 summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[0][1]) / 100.0), 40 * scaleConstant, (400) * scaleConstant);
                 summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[1][1]) / 100.0), 620 * scaleConstant, (400) * scaleConstant);
                 summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * GameScreen.gameClass.scoreSystem.personalStatistics[0]) / 100.0), 40 * scaleConstant, (240) * scaleConstant);
-                //summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[1][0]) / 100.0), 620 * scaleConstant, (440) * scaleConstant);     // Get multiplayer statistic
+                if(GameScreen.gameClass.getCompetitionType() == 5) {
+                    summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * ServerComms.oppStats) / 100.0), 620 * scaleConstant, (240) * scaleConstant);     // Get multiplayer statistic
+                }
 
                 // Button animations
                 if(buttonDown[0]) { spriteBatch.draw(selectedButton, 40 * scaleConstant, 20 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant); }
@@ -1681,7 +1736,9 @@ public class MenuScreen extends ScreenAdapter {
                 summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[0][1]) / 100.0), 40 * scaleConstant, (400) * scaleConstant);
                 summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[1][1]) / 100.0), 620 * scaleConstant, (400) * scaleConstant);
                 summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * GameScreen.gameClass.scoreSystem.personalStatistics[0]) / 100.0), 40 * scaleConstant, (240) * scaleConstant);
-                //summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * stats[1][0]) / 100.0), 620 * scaleConstant, (440) * scaleConstant);     // Get multiplayer statistic
+                if(GameScreen.gameClass.getCompetitionType() == 5) {
+                    summaryFont.draw(spriteBatch, String.valueOf(Math.round(100 * ServerComms.oppStats) / 100.0), 620 * scaleConstant, (240) * scaleConstant);     // Get multiplayer statistic
+                }
 
                 // Button animations
                 if(buttonDown[0]) { spriteBatch.draw(selectedButton, 40 * scaleConstant, 20 * scaleConstant, 300 * scaleConstant, 150 * scaleConstant); }
@@ -1756,7 +1813,7 @@ public class MenuScreen extends ScreenAdapter {
         // Title text
         menuTitleFont.draw(spriteBatch, text[17], textIndent[17] * scaleConstant, screenHeight / 32 * 31);
         // Button text
-        if(showConnecting) {
+        if(showWaiting) {
             menuButtonFont.draw(spriteBatch, text[44], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + textIndent[44] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
         } else{
             menuButtonFontBold.draw(spriteBatch, text[23], screenWidth / 2 - (defaultButton.getWidth() * scaleConstant) / 2 + textIndent[23] * scaleConstant, 20 * scaleConstant + 96 * scaleConstant);
@@ -1776,9 +1833,9 @@ public class MenuScreen extends ScreenAdapter {
 
         if(opponentChecked) {
             if(opponentAvailable) {
-                menuStatusFontGreen.draw(spriteBatch, text[33], 30 * scaleConstant, 730 * scaleConstant);
+                menuStatusFontGreen.draw(spriteBatch, text[34], 30 * scaleConstant, 730 * scaleConstant);
             } else{
-                menuStatusFontRed.draw(spriteBatch, text[34], 30 * scaleConstant, 730 * scaleConstant);
+                menuStatusFontRed.draw(spriteBatch, text[35], 30 * scaleConstant, 730 * scaleConstant);
             }
         }
 
@@ -1792,6 +1849,17 @@ public class MenuScreen extends ScreenAdapter {
             menuDescriptionFont.draw(spriteBatch, text[41], 30 * scaleConstant, 450 * scaleConstant);
             menuDescriptionFont.draw(spriteBatch, text[42], 30 * scaleConstant, 410 * scaleConstant);
             menuDescriptionFont.draw(spriteBatch, text[43], 30 * scaleConstant, 370 * scaleConstant);
+        }
+
+        // Successful Connection Text
+        if(showWaiting) {
+            menuStatusFontGreen.draw(spriteBatch, text[167], textIndent[167] * scaleConstant, 200 * scaleConstant);
+        }
+
+        // Connection Error Text
+        if(connectionFailed) {
+            menuStatusFontRed.draw(spriteBatch, text[164], 230 * scaleConstant, 200 * scaleConstant);
+            menuStatusFontRed.draw(spriteBatch, "(" + text[166] + ")", 400 * scaleConstant, 200 * scaleConstant);
         }
 
         if(buttonDown[0]) { spriteBatch.draw(selectedButtonSmall, 20 * scaleConstant, 20 * scaleConstant, 80 * scaleConstant, 80 * scaleConstant); }

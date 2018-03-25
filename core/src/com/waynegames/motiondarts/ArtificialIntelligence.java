@@ -117,7 +117,7 @@ public class ArtificialIntelligence {
 
         switch (action) {
             case 1:
-                target = findNewInning(target, innings);
+                target = findNewInning(target, innings, false);
                 targetLocated = true;
                 break;
             case 2:
@@ -145,7 +145,7 @@ public class ArtificialIntelligence {
         }
 
         if(!targetLocated) {
-            target = findNewInning(target, innings);
+            target = findNewInning(target, innings, false);
         }
 
         int[] tempTargets = {59, 58, 57, 56, 55, 54, 61};
@@ -165,18 +165,32 @@ public class ArtificialIntelligence {
 
     }
 
-    private int findNewInning(int target, int[][] innings) {
+    private int findNewInning(int target, int[][] innings, boolean attack) {
+
+        boolean inningFound = false;
+
         // Target the highest unopened inning, with the least hits by the other player
         for(int i = 0; i < 7; i++) {
             // Algorithm assigns a score based on how close each player is to getting the inning
             // boolean viableTarget = 2 - innings[0][i] + innings[1][i] > 2 - innings[0][i] + innings[1][target];
 
-            if(innings[1][i] < 3 && innings[0][i] < 3) {
+            if(innings[1][i] < 3 && innings[0][i] < 3 && !attack) {
                 target = i;
+                inningFound = true;
+                break;
+            } else if(innings[1][i] < 3 && attack) {
+                target = i;
+                inningFound = true;
                 break;
             }
         }
 
-        return target;
+        if(inningFound) {
+            return target;
+        } else{
+            // Attack the player if there are no new innings
+            return findNewInning(target, innings, true);
+        }
+
     }
 }

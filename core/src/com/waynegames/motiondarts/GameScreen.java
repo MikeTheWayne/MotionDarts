@@ -21,6 +21,7 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.Array;
+import com.sun.corba.se.spi.activation.Server;
 
 import java.util.Random;
 import java.util.Timer;
@@ -114,7 +115,7 @@ public class GameScreen extends ScreenAdapter {
     static String[] dartFiles = {"dart_01", "", "", ""};
 
     /* AI Variables */
-    private int aiTimeCounter = 0;
+    private int animTimeCounter = 0;
 
     /* Animation Variables */
     private int translats = 0;
@@ -271,18 +272,24 @@ public class GameScreen extends ScreenAdapter {
 
                 /* End the game if necessary, return to main menu */
                 if(endGame) {
+                    endGame = false;
                     game.setScreen(new MenuScreen(game));
                     if(gameClass.getCompetitionType() > 0) {
                         MenuScreen.menuScreen = 8;
+                        if(gameClass.getCompetitionType() == 5) {
+                            ServerComms.disconnectFromServer();
+                            ServerComms.disconnection = false;
+                        }
                     } else{
                         MenuScreen.menuScreen = 1;
+                        MenuScreen.selectedPracticeMode = false;
                     }
                     endGame = false;
                     gameClass.writeSaveData();
                     dispose();
                 }
 
-                if(!inFlight && !viewLock && !gameClass.aiTurn) {
+                if(!inFlight && !viewLock && !gameClass.aiTurn && !gameClass.oppTurn) {
                     // Revert darts to be in hand
                     if(gameClass.scoreSystem.dartsThrown == 0 && !dartsReset) {
                         resetDartPositions();
@@ -375,6 +382,11 @@ public class GameScreen extends ScreenAdapter {
                         game.setScreen(new MenuScreen(game));
                         if(gameClass.getCompetitionType() > 0) {
                             MenuScreen.menuScreen = 8;
+
+                            if(gameClass.getCompetitionType() == 5) {
+                                ServerComms.disconnectFromServer();
+                                ServerComms.newThrow = false;
+                            }
                         } else{
                             MenuScreen.menuScreen = 1;
                         }
@@ -397,7 +409,7 @@ public class GameScreen extends ScreenAdapter {
                     menuPopup = true;
                 }
 
-                if(!inFlight && !viewLock && !gameClass.aiTurn) {
+                if(!inFlight && !viewLock && !gameClass.aiTurn && !gameClass.oppTurn) {
                     // Dart throwing
                     if(gameClass.scoreSystem.dartsThrown < 3) { // This avoids crash caused by misbehaving timer, occasionally running once more, even though it's been cancelled
                         dartThrow();
@@ -410,8 +422,10 @@ public class GameScreen extends ScreenAdapter {
                 }
 
                 // Stop velocity calculation
-                t.cancel();
-                t.purge();
+                if(t != null) {
+                    t.cancel();
+                    t.purge();
+                }
                 return true;
             }
 
@@ -423,6 +437,8 @@ public class GameScreen extends ScreenAdapter {
 
     @Override
     public void render (float delta) {
+
+        final int CURRENT_FPS = (Gdx.graphics.getFramesPerSecond() > 10) ? Gdx.graphics.getFramesPerSecond() : 30;
 
         // Sets Viewport
         Gdx.gl.glViewport(0, 0, screenWidth, screenHeight);
@@ -485,7 +501,7 @@ public class GameScreen extends ScreenAdapter {
         shapeRenderer.end();
 
         // Game start text
-        if(!gameClass.gameStarted && gameClass.getGameMode() > 0 && gameClass.getGameMode() <= 3) {
+        if(gameClass.scoreSystem.currentPlayer == 0 && !gameClass.gameStarted && gameClass.getGameMode() > 0 && gameClass.getGameMode() <= 3) {
             spriteBatch.begin();
             scoreFontSmall.draw(spriteBatch, text[163], (360 - text[163].length() * 6) * scaleConstant, 950 * scaleConstant);
             spriteBatch.end();
@@ -511,6 +527,9 @@ public class GameScreen extends ScreenAdapter {
 
             }
             scoreFontSmall.draw(spriteBatch, text[147], (360 - 6 * text[147].length()) * scaleConstant, 740 * scaleConstant);
+            if(ServerComms.disconnection) {
+                scoreFontSmall.draw(spriteBatch, text[168], (360 - 6 * text[168].length()) * scaleConstant, 700 * scaleConstant);
+            }
 
             spriteBatch.end();
         }
@@ -529,16 +548,20 @@ public class GameScreen extends ScreenAdapter {
             spriteBatch.end();
         }
 
-        /* AI */
-        if(gameClass.aiTurn && !endGame && !viewLock && !inFlight) {
+        /* AI and Server Opponent */
+        if((gameClass.aiTurn || ServerComms.newThrow) && !endGame && !viewLock && !inFlight) {
 
             if(gameClass.scoreSystem.dartsThrown == 0 && !dartsReset) {
                 resetDartPositions();
             }
 
-            final int CURRENT_FPS = (Gdx.graphics.getFramesPerSecond() > 10) ? Gdx.graphics.getFramesPerSecond() : 30;
+            float aimingX = (gameClass.getCompetitionType() == 5) ? ServerComms.serverIn[2] : -(gameClass.ai.targetX - 500) * 5.6f;
+            float aimingY = (gameClass.getCompetitionType() == 5) ? ServerComms.serverIn[3] : -(gameClass.ai.targetY - 500) * 5.6f;
 
-            if(!gameClass.ai.throwing) {
+            float landingX = (gameClass.getCompetitionType() == 5) ? ServerComms.serverIn[0] : gameClass.ai.landingPosX;
+            float landingY = (gameClass.getCompetitionType() == 5) ? ServerComms.serverIn[1] : gameClass.ai.landingPosY;
+
+            if(gameClass.aiTurn && !gameClass.ai.throwing && !gameClass.oppTurn) {
 
                 int target = 0;
 
@@ -571,39 +594,33 @@ public class GameScreen extends ScreenAdapter {
                 // Generate randomised landing site around target
                 gameClass.ai.aiThrow();
 
-                translats = CURRENT_FPS / 4;
-
                 gameClass.ai.throwing = true;
             }
 
-            float aimingX = -(gameClass.ai.targetX - 500) * 5.6f;
-            float aimingY = -(gameClass.ai.targetY - 500) * 5.6f;
+            translats = CURRENT_FPS / 4;
 
             float animLength = CURRENT_FPS / 2;
 
-            if(aiTimeCounter < animLength) {
-                aiTimeCounter++;
+            if(animTimeCounter < animLength) {
+                animTimeCounter++;
 
-                dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.setToTranslation(aimingX / animLength * aiTimeCounter, aimingY / animLength * aiTimeCounter, -500.0f);
+                dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.setToTranslation(aimingX / animLength * animTimeCounter, aimingY / animLength * animTimeCounter, -500.0f);
                 dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.rotate(1.0f, 0.0f, 0.0f, 89);
                 dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.rotate(0.0f, 1.0f, 0.0f, 45);
 
-                perspectiveCamera.position.set(aimingX / animLength * aiTimeCounter, aimingY / animLength * aiTimeCounter, -2500.0f);
-                perspectiveCamera.lookAt(aimingX / animLength * aiTimeCounter, aimingY / animLength * aiTimeCounter, 18000.0f);
+                perspectiveCamera.position.set(aimingX / animLength * animTimeCounter, aimingY / animLength * animTimeCounter, -2500.0f);
+                perspectiveCamera.lookAt(aimingX / animLength * animTimeCounter, aimingY / animLength * animTimeCounter, 18000.0f);
                 perspectiveCamera.update();
-            } else if(aiTimeCounter < animLength * 2) {
-                aiTimeCounter++;
+            } else if(animTimeCounter < animLength * 2) {
+                animTimeCounter++;
             } else {
-
-                float landingX = gameClass.ai.landingPosX;
-                float landingY = gameClass.ai.landingPosY;
 
                 // Throw dart
                 float yPos = (1.65f * (30 / 1000.0f) * translatCount) + (-4.905f * ((30 / 1000.0f) * translatCount) * ((30 / 1000.0f) * translatCount));
 
                 if (translatCount < translats) {
                     // Translate the dart to the calculate position where it would be at that point in flight
-                    dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.setToTranslation(gameClass.ai.targetX + ((landingX - gameClass.ai.targetX / 10000.0f) * 10000.0f) / translats * translatCount, gameClass.ai.targetY + (yPos * 10000.0f), (distanceToBoard - 500.0f) / translats * translatCount);
+                    dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.setToTranslation(aimingX + ((landingX - aimingX / 10000.0f) * 10000.0f) / translats * translatCount, aimingY + (yPos * 10000.0f), (distanceToBoard - 500.0f) / translats * translatCount);
                 } else {
                     // Translate the dart to the exact position that it was calculated to land
                     dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.setToTranslation((landingX * 10000.0f), (landingY * 10000.0f), (distanceToBoard - 500.0f) / translats * translatCount);
@@ -617,11 +634,32 @@ public class GameScreen extends ScreenAdapter {
                 if(translatCount >= translats  || yPos <= -1.73f) {
 
                     inFlight = false;
-                    gameClass.ai.throwing = false;
+                    if(gameClass.aiTurn) {
+                        gameClass.ai.throwing = false;
+                    }
+
+                    if(gameClass.getCompetitionType() == 5) {
+                        if(ServerComms.backLog == 0) {
+                            ServerComms.newThrow = false;
+                        } else{
+                            // Clear backlog
+
+                            while(true) {
+                                if(ServerComms.readsLeft == 4) {
+                                    for (int i = 0; i < 4; i++) {
+                                        ServerComms.serverIn[i] = ServerComms.serverInBuffer[0][i];
+                                        ServerComms.serverInBuffer[0][i] = ServerComms.serverInBuffer[1][i];
+                                    }
+                                    ServerComms.backLog--;
+                                    break;
+                                }
+                            }
+                        }
+                    }
 
                     translatCount = 0;
                     translats = 0;
-                    aiTimeCounter = 0;
+                    animTimeCounter = 0;
 
                     if(!gameClass.gameStarted && gameClass.getGameMode() <= 3 && gameClass.getGameMode() > 0) {
                         gameClass.firstThrow(landingX, landingY);
@@ -658,7 +696,7 @@ public class GameScreen extends ScreenAdapter {
         if(Gdx.input.isTouched()) {
 
             // Dart aiming
-            if(!inFlight && !viewLock && !gameClass.aiTurn) {
+            if(!inFlight && !viewLock && !gameClass.aiTurn && !gameClass.oppTurn) {
 
                 // If player holds down finger during camera closeup, touchDown doesn't get called, but this does
                 if(gameClass.scoreSystem.dartsThrown == 0 && !dartsReset) {
@@ -735,6 +773,14 @@ public class GameScreen extends ScreenAdapter {
         inFlight = true;
 
         final float THROW_FPS = 30;     // Frames per second drawn to screen for dart throw
+
+        // Send to server
+        if(gameClass.getCompetitionType() == 5) {
+            ServerComms.sendToServer("" + ((Float.isInfinite(landX)) ? 0 : landX));
+            ServerComms.sendToServer("" + ((Float.isNaN(landY)) ? -1000 : landY));
+            ServerComms.sendToServer("" + aimX);
+            ServerComms.sendToServer("" + aimY);
+        }
 
         t.scheduleAtFixedRate(new TimerTask() {
 

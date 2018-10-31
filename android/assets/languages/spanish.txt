@@ -1,0 +1,182 @@
+UN JUGADOR
+MUCHOS
+PERSONALIZAR
+NUEVO JUEGO
+DIFICULTAD DEL OPONENTE
+TIPO DE JUEGO
+JUGAR
+FÁCIL
+MEDIO
+DIFÍCIL
+501
+ALREDEDOR
+EL RELOJ
+GRILLO
+BRITÁNICO
+GRILLO
+PRÁCTICA
+MUCHOS JUGADORES
+MUCHOS JUGADORES TIPO DE JUEGO
+MISMO DISPOSITIVO
+SERVIDOR GLOBAL
+PASAR EL TELÉFONO ENTRE 2 JUGADORES
+JUEGA CONTRA UN EXTRAÑO (WI-FI)
+CONECTAR
+CONECTA AL JUGADOR
+CONÉCTATE CON ALGUIEN QUE SABES (WI-FI)
+NOMBRE TEMPORAL
+NOMBRE DEL JUGADOR OPONENTE
+Nombre temporal
+Ingresa un nombre
+Nombre del oponente
+Ingrese el nombre del oponente
+El nombre está disponible
+Alguien más está usando este nombre, elige otro
+El nombre del oponente existe
+El oponente no existe
+1. Crea un nombre y escríbelo en el nombre superior
+caja
+2. Escriba el nombre de su amigo en el cuadro de texto inferior
+
+3. Tu amigo también debe escribir tu nombre en su
+caja de texto
+4. Ambos deben presionar 'conectar' para iniciar el
+juego
+ESPERANDO...
+OPCIONES
+DARDOS
+UBICACIÓN
+AJUSTES
+IDIOMAS
+CÓMO JUGAR
+TIPOS DE JUEGO
+SENSIBILIDAD DE LOS SENSORES
+El juego estándar de dardos.
+
+Los puntos se puntúan según el lugar donde aterriza el dardo. Si se
+aterriza en el delgado anillo exterior, el puntaje del dardo es
+duplicado. Si aterriza en el anillo delgado más cerca del centro,
+el puntaje del dardo se triplica. El centro de la
+dartboard, the bullseye, obtiene 50 puntos mientras que el
+anillo que lo rodea, el toro exterior, puntajes 25.
+
+Cada jugador se turna para lanzar 3 dardos. Al final de
+su turno, se toma el puntaje total de esos 3 dardos
+lejos del puntaje general del jugador, que comienza
+de 501. El objetivo del juego es hacer que
+puntaje igual a 0. Esto tiene que hacerse golpeando un
+doble con el dardo que desea marcar 0. Para
+ejemplo, si te quedaras con 20, necesitarías golpear
+10 en el anillo del doble para ganar.
+
+
+
+
+
+Cada jugador debe lanzar dardos en cada número en el tablero,
+de 1 a 20, en orden. Tan pronto como un jugador aterriza un dardo
+en el número objetivo, ese jugador puede entonces apuntar al
+próximo número. El primer jugador en terminar gana.
+
+
+
+
+
+El objetivo del cricket es 'abrir' ciertos números en el
+tablero, para lograr el puntaje más alto. Para abrir un número, usted
+debe aterrizar 3 dardos en ese número (los dobles cuentan para 2
+los dardos y los triples cuentan para 3). Una vez que se abre un número,
+cualquier golpe adicional a ese número ganará puntos de jugador
+como es normal, hasta que el otro jugador aterrice 3 dardos en ese
+número, que luego cierra ese número, por lo que ya no es
+gana puntos. El jugador con más puntos y quién abre
+todos los números ganan primero, o si ambos jugadores están atados
+puntos, el jugador que abre todos los números primero ganará.
+
+Los números involucrados son 20, 19, 18, 17, 16, 15 y el
+diana.
+
+
+
+
+Al comienzo del juego, un jugador es un "bateador" y el
+otro es un "jugador de bolos". El bateador gana puntos por cada turno
+que puntúan más de 40. Por ejemplo, si los puntajes del bateador
+39, ganarán 0 puntos. si anotan 50, lo harán
+gana 10 puntos Para detener los puntos de ganancia de la batería,
+jugador de bolos debe ganar 10 puntos, al golpear el exterior
+toro, que vale 1 punto, o el ojo de buey, que es
+vale 2 puntos Una vez que el jugador de bolos ha ganado 10 puntos, el
+los jugadores intercambian roles y vuelven a jugar. El bateador que gana
+la puntuación más alta gana.
+
+
+
+
+
+1. Para apuntar un dardo, mantenga presionado el dedo en la
+pantalla del teléfono.
+
+2. Mueva el dedo por la pantalla hasta que el dardo esté alineado.
+a su objetivo. No levante el dedo de la pantalla.
+
+3. Para lanzar el dardo, mueva su muñeca hacia atrás y luego
+Avanza en un movimiento rápido, liberando tu dedo de la pantalla
+como su muñeca se mueve hacia adelante, o mueva su brazo hacia
+atrás y luego avanza en un movimiento rápido, soltando tu dedo
+como tu brazo se mueve hacia adelante.
+
+Estos controles pueden tomar algún tiempo para acostumbrarse.
+Usted puede Practica sin preocupaciones en el MODO DE PRÁCTICA,
+al que puedes acceder En el menú del juego SINGLE PLAYER.
+
+¡Disfrutar!
+
+
+VOLVER A LA
+¿MENÚ PRINCIPAL?
+SÍ
+NO
+PUNTUACIÓN DEL JUEGO
+RESUMEN
+PUNTAJES DE JUEGO
+ESTADÍSTICA
+MENÚ PRINCIPAL
+JUEGA DE NUEVO
+EL JUEGO TERMINÓ EN UN SORTEO
+ÉXITOS
+TAP SCREEN PARA CONTINUAR
+PROMEDIO DE UN DARDO
+PROMEDIO DEL 1.º DART
+PROMEDIO DEL 2.º DART
+PROMEDIO DEL 3er DART
+PUNTAJE MÁS ALTO DEL JUEGO
+ALTO PROMEDIO DEL JUGADOR (501)
+OBJETIVO
+WICKETS
+EXACTITUD
+DARDOS PROMEDIOS QUE TIENEN OBJETIVO
+PUNTAJE PROMEDIO DEL BATTER
+PRECISIÓN DE BOWLER
+MASA
+JUGADOR DE BOLOS
+PUNTUACIÓN PROMEDIO DEL DART
+LANZAR UN DARDO EN EL CENTRO DEL OBJETIVO
+LA CONEXIÓN FALLÓ
+NO SE ENCUENTRA EL SERVIDOR
+SERVIDOR LLENO
+CONEXIÓN EXITOSA
+OPONENTE DESCONECTADO
+CARGANDO...
+ROJO
+VERDE
+AZUL
+OBSIDIANA
+LUJO
+PRIMA
+PUB
+BAR DEPORTIVO
+ESCENARIO
+MÁS PRONTO
+SONAR
+MÚSICA

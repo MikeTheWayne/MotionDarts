@@ -6,11 +6,13 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
@@ -19,11 +21,14 @@ import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
+import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.environment.PointLight;
+import com.badlogic.gdx.graphics.g3d.environment.SpotLight;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.Array;
 import com.sun.corba.se.spi.activation.Server;
 
+import java.awt.Menu;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -51,8 +56,9 @@ public class GameScreen extends ScreenAdapter {
 
     private ShapeRenderer shapeRenderer;
 
-    private ModelInstance[] dartModelInstances = new ModelInstance[3];
-    static ModelInstance dartboardModelInst1;
+    private ModelInstance[] dartModelInstances = new ModelInstance[6];
+    private ModelInstance dartboardModelInst1;
+    static ModelInstance dartboardBaseModelInst;
     private ModelInstance environmentModelInst1;
 
     private Array<ModelInstance> instances = new Array<ModelInstance>();
@@ -61,7 +67,6 @@ public class GameScreen extends ScreenAdapter {
 
     private BitmapFont scoreFont;
     private BitmapFont scoreFontSmall;
-    private BitmapFont descriptionFont;
     private BitmapFont playerFont;
     private BitmapFont currentPlayerFont;
     private BitmapFont scoreFontCricket;
@@ -69,8 +74,15 @@ public class GameScreen extends ScreenAdapter {
     private BitmapFont scoreFontCricketOpen;
     private BitmapFont scoreFontCricketClosed;
 
+    private BitmapFont descriptionFont;
+    private BitmapFont popupFont;
+    private BitmapFont onScreenFont;
+
     private FreeTypeFontGenerator freeTypeFontGenerator;
     private FreeTypeFontGenerator.FreeTypeFontParameter freeTypeFontParameter;
+
+    private boolean loadMenu = false;
+    private boolean loadLoop = false;
 
     private int screenWidth;
     private int screenHeight;
@@ -94,7 +106,7 @@ public class GameScreen extends ScreenAdapter {
     private int resetTimer = 0;
     private int prevZ = 0;
 
-    private int scaleConstant;
+    private double scaleConstant;
 
     private boolean menuPopup = false;
 
@@ -111,9 +123,13 @@ public class GameScreen extends ScreenAdapter {
     /* Customisation Variables */
     static int selectedLocation = 0;
     static int selectedDart = 0;
+    static int opponentSelectedDart = 0;
 
-    static String[] locationFiles = {"environment_01", "", "", ""};
-    static String[] dartFiles = {"dart_01", "", "", ""};
+    static int tempSelectedLocation = 0;
+
+    static String[] locationFiles = {"environment_01", "environment_02", "environment_03", "environment_ComingSoon"};
+    static String[] dartFiles = {"dart_01", "dart_05", "dart_06", "dart_04", "dart_02", "dart_03"};
+    static String[] dartboardFiles = {"dartboard_01", "dartboard_02", "dartboard_01", "dartboard_01"};
 
     /* AI Variables */
     private int animTimeCounter = 0;
@@ -121,6 +137,16 @@ public class GameScreen extends ScreenAdapter {
     /* Animation Variables */
     private int translats = 0;
     private int translatCount = 0;
+
+    static boolean dartboardHit = false;
+    private boolean swoosh = false;
+    private boolean oneeighty = false;
+    static boolean wow = false;
+
+    private Sound dartboardHitSound;
+    private Sound oneeightySound;
+    private Sound swooshSound;
+    private Sound wowSound;
 
     /**
      * Game screen setup constructor<br>
@@ -147,7 +173,7 @@ public class GameScreen extends ScreenAdapter {
         shapeRenderer = new ShapeRenderer();
         shapeRenderer.setAutoShapeType(true);
 
-        scaleConstant = screenWidth / 720;
+        scaleConstant = screenWidth / 720.0;
 
         endGame = false;
 
@@ -160,15 +186,14 @@ public class GameScreen extends ScreenAdapter {
         freeTypeFontParameter.borderWidth = 2;
 
         // Current player font
-        freeTypeFontParameter.size = 40 * scaleConstant;
+        freeTypeFontParameter.size = (int) (40 * scaleConstant);
         currentPlayerFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
 
         // Score Fonts
-        freeTypeFontParameter.size = 60 * scaleConstant;
-
+        freeTypeFontParameter.size = (int) (60 * scaleConstant);
         scoreFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
 
-        freeTypeFontParameter.size = 20 * scaleConstant;
+        freeTypeFontParameter.size = (int) (20 * scaleConstant);
         freeTypeFontParameter.borderWidth = 1;
         scoreFontCricket = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
 
@@ -178,23 +203,117 @@ public class GameScreen extends ScreenAdapter {
         freeTypeFontParameter.color = new Color(0.0f, 0.9f, 0.0f, 1.0f);
         scoreFontCricketOpen = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
 
-        freeTypeFontParameter.size = 20 * scaleConstant;
+        freeTypeFontParameter.size = (int) (20 * scaleConstant);
         freeTypeFontParameter.color = new Color(255, 255, 255, 255);
         freeTypeFontParameter.borderWidth = 0;
         scoreFontCricketMarks = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
 
         freeTypeFontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/agencyfb.ttf"));
 
-        freeTypeFontParameter.size = 30 * scaleConstant;
+        freeTypeFontParameter.size = (int) (30 * scaleConstant);
         freeTypeFontParameter.borderWidth = 2;
         scoreFontSmall = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
 
         // Description and Player Fonts
-        freeTypeFontParameter.size = 20 * scaleConstant;
-        descriptionFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
-
-        freeTypeFontParameter.size = 40 * scaleConstant;
+        freeTypeFontParameter.size = (int) (40 * scaleConstant);
         playerFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+
+        switch(MenuScreen.language) {
+            case 0:
+            case 3:
+            case 4:
+            case 5:
+            case 9:
+                freeTypeFontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/agencyfb.ttf"));
+                freeTypeFontParameter.size = (int) (20 * scaleConstant);
+                descriptionFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+
+                freeTypeFontParameter.size = (int) (30 * scaleConstant);
+                onScreenFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+
+                freeTypeFontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/agencyfbbold.ttf"));
+                freeTypeFontParameter.size = (int) (60 * scaleConstant);
+                popupFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+                break;
+            case 1:     // Bulgarian
+            case 2:     // Russian
+                freeTypeFontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/agencyfbcyrillic.ttf"));
+                freeTypeFontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+
+                freeTypeFontParameter.color = new Color(255, 255, 255, 255);
+                freeTypeFontParameter.borderColor = new Color(0, 0, 1.0f, 255);
+                freeTypeFontParameter.borderWidth = 2;
+
+                freeTypeFontParameter.characters = "ЕДИНГРАЧМУЛТПЙЪСЩОВК501ЯФЖ2З(WI-F)ШБремнотбилскапшвдяугз,ъщ.3жйх4'чЦцdartboulseyю\"9876фPHONEЮ?ХыёЫЁьЬ%";
+
+                freeTypeFontParameter.size = (int) (20 * scaleConstant);
+                descriptionFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+
+                freeTypeFontParameter.size = (int) (30 * scaleConstant);
+                onScreenFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+
+                freeTypeFontParameter.size = (int) (60 * scaleConstant);
+                popupFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+                break;
+            case 6:
+                freeTypeFontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/chinese.ttf"));
+                freeTypeFontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+
+                freeTypeFontParameter.color = new Color(255, 255, 255, 255);
+                freeTypeFontParameter.borderColor = new Color(0, 0, 1.0f, 255);
+                freeTypeFontParameter.borderWidth = 2;
+
+                freeTypeFontParameter.characters = "%一个球员很多定制新游戏对手困难类型玩简单中501周围时钟蟋蟀英国实践家相同的设备全服务器通过2名之间电话反陌生人（WI-F）连接到你认识临称输入字可用其他正在使这，选择另存不.创建并将顶级框下面文本朋友还必须4们都按“”才能开始等候项飞镖位置语言怎么传感灵敏度标准比赛。根据落地得分如果它稀薄外环登陆是倍靠近心三靶绕公牛为每轮流投掷3支最后总成绩就被拿走了远离从该目让于击a来完双想例您剩那需要点取棋盘上数依次旦着号码以瞄第胜利板'打某些达高任何进步命赢积像往常样直然关闭再赚谁所有首先获或者两起涉及,9876和而且超会停止线值眼交换角色钱出请指放屏幕齐与快速移动机际但没释前抬作大效习惯尝试练去白方块播似乎自行问题重启返回主菜？摘统计结束抽奖功继续骰子平均二水售票窗口确性池糊失败无法找已满断";
+
+                freeTypeFontParameter.size = (int) (20 * scaleConstant);
+                descriptionFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+
+                freeTypeFontParameter.size = (int) (30 * scaleConstant);
+                onScreenFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+
+                freeTypeFontParameter.size = (int) (60 * scaleConstant);
+                popupFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+                break;
+
+            case 7:
+                freeTypeFontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/japanese.ttf"));
+                freeTypeFontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+
+                freeTypeFontParameter.color = new Color(255, 255, 255, 255);
+                freeTypeFontParameter.borderColor = new Color(0, 0, 1.0f, 255);
+                freeTypeFontParameter.borderWidth = 2;
+
+                freeTypeFontParameter.characters = "%1人のプレイヤー多くカスタマズ新しいゲム反対難さ種類遊びます簡単中50わりザ・クロッリケトギ練習同じデバグルサ2間で電話をかけなンジャ（WI-F）と戦接続るにあたが知って連絡一時的名前入力だ相手敵者は利用可能他誰こ使存在.作成、それボ下テキ友3彼ら4次[]押待オショダツ設定言語方セ感度標準。ポ着地点基づ得ば薄外輪土倍増心近ドブア取巻側雄牛各交互投げ終合計全体コ離目等思う歳残ヒ必要勝つめ二重上べ数字打順並陸ぐ番号完最初選特「開」高達せんウ以獲通常どお閉もや両ち関係,9876よ始ラご挙例え止価値換再稼指画面緒携帯急速実際解放停持大効果動きメニ慣 \"試み行生不自然飛見場問題性起戻ュ？NO概統功継平均DARTィ正確象失敗フ切断";
+
+                freeTypeFontParameter.size = (int) (20 * scaleConstant);
+                descriptionFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+
+                freeTypeFontParameter.size = (int) (30 * scaleConstant);
+                onScreenFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+
+                freeTypeFontParameter.size = (int) (60 * scaleConstant);
+                popupFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+                break;
+            case 8:
+                freeTypeFontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/hindi.ttf"));
+                freeTypeFontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+
+                freeTypeFontParameter.color = new Color(255, 255, 255, 255);
+                freeTypeFontParameter.borderColor = new Color(0, 0, 1.0f, 255);
+                freeTypeFontParameter.borderWidth = 2;
+
+                freeTypeFontParameter.characters = "एक खिलाड़ीईअनुूतरेंयप्दवमशआसध501चोओघटगजभहइब2फै(-)थउ,षौ.औॉ3ठ4'।णछ9876ँ\"?%";
+
+                freeTypeFontParameter.size = (int) (20 * scaleConstant);
+                descriptionFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+
+                freeTypeFontParameter.size = (int) (30 * scaleConstant);
+                onScreenFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+
+                freeTypeFontParameter.size = (int) (60 * scaleConstant);
+                popupFont = freeTypeFontGenerator.generateFont(freeTypeFontParameter);
+                break;
+        }
 
 
         /* Viewpoint Setup */
@@ -207,44 +326,114 @@ public class GameScreen extends ScreenAdapter {
 
         /* Models Setup */
         Model dartModel1 = MotionDarts.assetManager.get("models/" + dartFiles[selectedDart] + ".g3db", Model.class);
-        Model dartboardModel1 = MotionDarts.assetManager.get("models/dartboard_01.g3db", Model.class);
+        Model dartModel2 = MotionDarts.assetManager.get("models/" + dartFiles[opponentSelectedDart] + ".g3db", Model.class);
+        Model dartboardModel1 = MotionDarts.assetManager.get("models/" + dartboardFiles[selectedLocation] + ".g3db", Model.class);
+        Model dartboardBaseModel = MotionDarts.assetManager.get("models/" + dartboardFiles[0] + ".g3db", Model.class);
         Model environmentModel1 = MotionDarts.assetManager.get("models/" + locationFiles[selectedLocation] + ".g3db", Model.class);
 
         // Assign Models to ModelInstances
         dartModelInstances[0] = new ModelInstance(dartModel1);
         dartModelInstances[1] = new ModelInstance(dartModel1);
         dartModelInstances[2] = new ModelInstance(dartModel1);
+        dartModelInstances[3] = new ModelInstance(dartModel2);
+        dartModelInstances[4] = new ModelInstance(dartModel2);
+        dartModelInstances[5] = new ModelInstance(dartModel2);
         dartboardModelInst1 = new ModelInstance(dartboardModel1);
+        dartboardBaseModelInst = new ModelInstance(dartboardBaseModel);
         environmentModelInst1 = new ModelInstance(environmentModel1);
 
         // Add ModelInstances to ModelInstance array
         instances.add(dartModelInstances[0]);
         instances.add(dartModelInstances[1]);
         instances.add(dartModelInstances[2]);
+        instances.add(dartModelInstances[3]);
+        instances.add(dartModelInstances[4]);
+        instances.add(dartModelInstances[5]);
         instances.add(dartboardModelInst1);
         instances.add(environmentModelInst1);
 
         // Moving everything into the right place for setup
         // 100.0f = 1 cm
         // Game plays in the positive z axis (forwards)
-        dartModelInstances[0].transform.setToTranslation(0.0f, 0.0f, -500.0f);
-        dartModelInstances[0].transform.rotate(1.0f, 0.0f, 0.0f, 89);
-        dartModelInstances[0].transform.rotate(0.0f, 1.0f, 0.0f, 45);
+        for(int i = 0; i < 6; i++) {
+            dartModelInstances[i].transform.setToTranslation(4000.0f, -10000.0f, -1000.0f);
+            dartModelInstances[i].transform.rotate(1.0f, 0.0f, 0.0f, 225);
+            dartModelInstances[i].transform.rotate(0.0f, 1.0f, 0.0f, 45);
 
-        dartModelInstances[1].transform.setToTranslation(4100.0f, -10000.0f, -1000.0f);
-        dartModelInstances[1].transform.rotate(1.0f, 0.0f, 0.0f, 225);
-        dartModelInstances[1].transform.rotate(0.0f, 1.0f, 0.0f, 45);
-
-        dartModelInstances[2].transform.setToTranslation(4200.0f, -10000.0f, -1000.0f);
-        dartModelInstances[2].transform.rotate(1.0f, 0.0f, 0.0f, 225);
-        dartModelInstances[2].transform.rotate(0.0f, 1.0f, 0.0f, 45);
+            dartModelInstances[i].materials.get(0).remove(ColorAttribute.Specular);
+            dartModelInstances[i].materials.get(1).remove(ColorAttribute.Specular);
+            dartModelInstances[i].materials.get(2).remove(ColorAttribute.Specular);
+        }
 
         dartboardModelInst1.transform.setToTranslation(0.0f, 0.0f, distanceToBoard);
         dartboardModelInst1.transform.rotate(0.0f, 1.0f, 0.0f, 90);
         dartboardModelInst1.transform.rotate(1.0f, 0.0f, 0.0f, 180);
 
-        environmentModelInst1.transform.setToTranslation(0.0f, -4700.0f, distanceToBoard + 200.0f);
+        switch(selectedLocation) {
+            case 0:
+            default:
+                dartboardModelInst1.materials.get(0).remove(ColorAttribute.Specular);
+                dartboardModelInst1.materials.get(1).remove(ColorAttribute.Specular);
+                dartboardModelInst1.materials.get(2).remove(ColorAttribute.Specular);
+                break;
+
+            case 1:
+                ModelInstance dartboardModelInst2 = new ModelInstance(dartboardModel1);
+                ModelInstance dartboardModelInst3 = new ModelInstance(dartboardModel1);
+
+                instances.add(dartboardModelInst2);
+                instances.add(dartboardModelInst3);
+
+                //dartboardModelInst1.materials.get(0).remove(ColorAttribute.Specular);
+                dartboardModelInst1.materials.get(1).remove(ColorAttribute.Specular);
+                dartboardModelInst1.materials.get(2).remove(ColorAttribute.Specular);
+                dartboardModelInst1.materials.get(3).remove(ColorAttribute.Specular);
+                dartboardModelInst1.materials.get(4).remove(ColorAttribute.Specular);
+                dartboardModelInst1.materials.get(5).remove(ColorAttribute.Specular);
+                dartboardModelInst1.materials.get(6).remove(ColorAttribute.Specular);
+                dartboardModelInst1.materials.get(7).remove(ColorAttribute.Specular);
+                dartboardModelInst1.materials.get(8).remove(ColorAttribute.Specular);
+
+                dartboardModelInst2.transform.setToTranslation(-10000.0f, 0.0f, distanceToBoard);
+                dartboardModelInst2.transform.rotate(0.0f, 1.0f, 0.0f, 90);
+                dartboardModelInst2.transform.rotate(1.0f, 0.0f, 0.0f, 180);
+                //dartboardModelInst2.materials.get(0).remove(ColorAttribute.Specular);
+                dartboardModelInst2.materials.get(1).remove(ColorAttribute.Specular);
+                dartboardModelInst2.materials.get(2).remove(ColorAttribute.Specular);
+                dartboardModelInst2.materials.get(3).remove(ColorAttribute.Specular);
+                dartboardModelInst2.materials.get(4).remove(ColorAttribute.Specular);
+                dartboardModelInst2.materials.get(5).remove(ColorAttribute.Specular);
+                dartboardModelInst2.materials.get(6).remove(ColorAttribute.Specular);
+                dartboardModelInst2.materials.get(7).remove(ColorAttribute.Specular);
+                dartboardModelInst2.materials.get(8).remove(ColorAttribute.Specular);
+
+                dartboardModelInst3.transform.setToTranslation(10000.0f, 0.0f, distanceToBoard);
+                dartboardModelInst3.transform.rotate(0.0f, 1.0f, 0.0f, 90);
+                dartboardModelInst3.transform.rotate(1.0f, 0.0f, 0.0f, 180);
+                //dartboardModelInst3.materials.get(0).remove(ColorAttribute.Specular);
+                dartboardModelInst3.materials.get(1).remove(ColorAttribute.Specular);
+                dartboardModelInst3.materials.get(2).remove(ColorAttribute.Specular);
+                dartboardModelInst3.materials.get(3).remove(ColorAttribute.Specular);
+                dartboardModelInst3.materials.get(4).remove(ColorAttribute.Specular);
+                dartboardModelInst3.materials.get(5).remove(ColorAttribute.Specular);
+                dartboardModelInst3.materials.get(6).remove(ColorAttribute.Specular);
+                dartboardModelInst3.materials.get(7).remove(ColorAttribute.Specular);
+                dartboardModelInst3.materials.get(8).remove(ColorAttribute.Specular);
+                break;
+        }
+
+        environmentModelInst1.transform.setToTranslation(-100.0f, -4700.0f, distanceToBoard + 200.0f);
         environmentModelInst1.transform.rotate(0.0f, 1.0f, 0.0f, 90);
+        switch(selectedLocation) {
+            case 0:
+            default:
+                environmentModelInst1.materials.get(0).remove(ColorAttribute.Specular);
+                environmentModelInst1.materials.get(1).remove(ColorAttribute.Specular);
+                environmentModelInst1.materials.get(2).remove(ColorAttribute.Specular);
+                break;
+            case 1:
+                break;
+        }
 
         /* Textures */
         Texture popupTexture = MotionDarts.assetManager.get("textures/menuPopup.png", Texture.class);
@@ -254,12 +443,36 @@ public class GameScreen extends ScreenAdapter {
         /* Game Environment */
         environment = new Environment();
 
-        // Sets ambient lighting around the game environment
-        environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.3f, 0.3f, 0.3f, 1.0f));
-        // Creates a new point light; first three parameters: color, next three: position, then intensity
-        environment.add(new PointLight().set(0.8f, 0.8f, 0.7f, 10000.0f, 10000.0f, 1000.0f, 300000000.0f));
-        environment.add(new PointLight().set(0.8f, 0.8f, 0.7f, -10000.0f, 10000.0f, 1000.0f, 100000000.0f));
+        switch (selectedLocation) {
 
+            case 0:
+            default:
+                // Sets ambient lighting around the game environment
+                environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.1f, 0.1f, 0.1f, 1.0f));
+                // Creates a new point light; first three parameters: color, next three: position, then intensity
+                environment.add(new PointLight().set(1.0f, 1.0f, 0.7f, 12000.0f, 3000.0f, 1000.0f, 320000000.0f));
+                environment.add(new PointLight().set(1.0f, 1.0f, 0.7f, -12000.0f, 3000.0f, 1000.0f, 320000000.0f));
+                environment.add(new DirectionalLight().set(0.1f, 0.1f, 0.08f, 0.0f, 1.0f, 0.0f));
+                environment.add(new DirectionalLight().set(0.4f, 0.4f, 0.28f, 0.0f, -1.0f, 0.0f));
+                break;
+
+            case 1:
+                // Sets ambient lighting around the game environment
+                environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.1f, 0.1f, 0.1f, 1.0f));
+                // Creates a new point light; first three parameters: color, next three: position, then intensity
+                environment.add(new PointLight().set(0.5f, 0.5f, 0.9f, 12000.0f, 3000.0f, 1000.0f, 370000000.0f));
+                environment.add(new PointLight().set(0.5f, 0.5f, 0.9f, -12000.0f, 3000.0f, 1000.0f, 370000000.0f));
+                environment.add(new DirectionalLight().set(0.1f, 0.1f, 0.3f, 0.0f, 1.0f, 0.0f));
+                environment.add(new DirectionalLight().set(0.1f, 0.1f, 0.2f, 0.0f, -1.0f, 0.0f));
+                break;
+        }
+
+
+        // Sounds
+        dartboardHitSound = Gdx.audio.newSound(Gdx.files.internal("sounds/darthit.mp3"));
+        oneeightySound = Gdx.audio.newSound(Gdx.files.internal("sounds/oneeighty.mp3"));
+        swooshSound = Gdx.audio.newSound(Gdx.files.internal("sounds/swoosh.mp3"));
+        wowSound = Gdx.audio.newSound(Gdx.files.internal("sounds/wow.mp3"));
 
         /* Game Input */
         // InputMultiplexer for handling multiple input sources
@@ -276,7 +489,6 @@ public class GameScreen extends ScreenAdapter {
                 /* End the game if necessary, return to main menu */
                 if(endGame) {
                     endGame = false;
-                    game.setScreen(new MenuScreen(game));
                     if(gameClass.getCompetitionType() > 0) {
                         MenuScreen.menuScreen = 8;
                         if(gameClass.getCompetitionType() == 5) {
@@ -288,7 +500,7 @@ public class GameScreen extends ScreenAdapter {
                         MenuScreen.selectedPracticeMode = false;
                     }
                     gameClass.writeSaveData();
-                    dispose();
+                    loadMenu = true;
                 }
 
                 if(!inFlight && !viewLock && !gameClass.aiTurn && !gameClass.oppTurn) {
@@ -380,8 +592,7 @@ public class GameScreen extends ScreenAdapter {
                 }
 
                 if(menuPopup) {
-                    if(touchX > 160 && touchX < 360 && touchY < screenHeight - 490 && touchY > screenHeight - 580) {
-                        game.setScreen(new MenuScreen(game));
+                    if(touchX > (int) (160 * scaleConstant) && touchX < (int) (360 * scaleConstant) && touchY < screenHeight - (int) (490 * scaleConstant) && touchY > screenHeight - (int) (580 * scaleConstant)) {
                         if(gameClass.getCompetitionType() > 0) {
                             MenuScreen.menuScreen = 8;
 
@@ -395,7 +606,7 @@ public class GameScreen extends ScreenAdapter {
                         }
                         gameClass.scoreSystem.overallScore[gameClass.scoreSystem.turn][0] = gameClass.scoreSystem.getScore()[0];
                         gameClass.scoreSystem.overallScore[gameClass.scoreSystem.turn][1] = gameClass.scoreSystem.getScore()[1];
-                        dispose();
+                        loadMenu = true;
                     } else{
                         menuPopup = false;
                     }
@@ -415,7 +626,9 @@ public class GameScreen extends ScreenAdapter {
                 if(!inFlight && !viewLock && !gameClass.aiTurn && !gameClass.oppTurn) {
                     // Dart throwing
                     if(gameClass.scoreSystem.dartsThrown < 3) { // This avoids crash caused by misbehaving timer, occasionally running once more, even though it's been cancelled
-                        dartThrow();
+                        if(velX > 0 || velY > 0 || velZ > 0) {
+                            dartThrow();
+                        }
                     }
                 }
 
@@ -456,7 +669,7 @@ public class GameScreen extends ScreenAdapter {
         // Sets Viewport
         Gdx.gl.glViewport(0, 0, screenWidth, screenHeight);
         // Clears Screen
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT | ((Gdx.graphics.getBufferFormat().coverageSampling) ? GL20.GL_COVERAGE_BUFFER_BIT_NV : 0));
 
         // Draw 3D graphics to screen
         modelBatch.begin(perspectiveCamera);
@@ -496,34 +709,35 @@ public class GameScreen extends ScreenAdapter {
         shapeRenderer.setColor(new Color(0.5f, 0.5f, 1.0f, 0.6f));
 
         for(int i = velGraphHead; i < velGraph.length; i++) {
-            shapeRenderer.rect((310 + (i * (100 / velGraph.length) - velGraphHead * (100 / velGraph.length))) * scaleConstant, 20 * scaleConstant, (100 / velGraph.length) * scaleConstant, velGraph[i] * scaleConstant);
+            shapeRenderer.rect((int) ((310 + (i * (100 / velGraph.length) - velGraphHead * (100 / velGraph.length))) * scaleConstant), (int) (20 * scaleConstant), (int) ((100 / velGraph.length) * scaleConstant), (int) (velGraph[i] * scaleConstant));
         }
 
         for(int i = 0; i < velGraphHead; i++) {
-            shapeRenderer.rect((310 + (i * (100 / velGraph.length) + 100 - velGraphHead * (100 / velGraph.length))) * scaleConstant, 20 * scaleConstant, (100 / velGraph.length) * scaleConstant, velGraph[i] * scaleConstant);
+            shapeRenderer.rect((int) ((310 + (i * (100 / velGraph.length) + 100 - velGraphHead * (100 / velGraph.length))) * scaleConstant), (int) (20 * scaleConstant), (int) ((100 / velGraph.length) * scaleConstant), (int) (velGraph[i] * scaleConstant));
         }
 
         shapeRenderer.setColor(new Color(1.0f, 0.5f, 0.0f, 0.6f));
-        shapeRenderer.rect(407 * scaleConstant, (20 + velGraph[(velGraphHead >= 1) ? velGraphHead - 1 : velGraph.length - 1] - 3) * scaleConstant, 6 * scaleConstant, 6 * scaleConstant);
+        shapeRenderer.rect((int) (407 * scaleConstant), (int) ((20 + velGraph[(velGraphHead >= 1) ? velGraphHead - 1 : velGraph.length - 1] - 3) * scaleConstant), (int) (6 * scaleConstant), (int) (6 * scaleConstant));
 
         shapeRenderer.setColor(new Color(1.0f, 0.5f, 0.0f, 0.6f));
         for(int i = 0; i < 10; i++) {
-            shapeRenderer.rect((310 + i * 10) * scaleConstant, 94 * scaleConstant, 5 * scaleConstant, scaleConstant);
+            shapeRenderer.rect((int) ((310 + i * 10) * scaleConstant), (int) (94 * scaleConstant), (int) (5 * scaleConstant), (int) (scaleConstant));
         }
 
         shapeRenderer.end();
 
         // Timer
-        if(gameClass.getCompetitionType() == 5) {
+        if(gameClass.getCompetitionType() == 5 && gameClass.scoreSystem.currentPlayer == 0) {
             spriteBatch.begin();
-            scoreFont.draw(spriteBatch, ServerComms.turnTimer + "", (700 - 20 * String.valueOf(ServerComms.turnTimer).length()) * scaleConstant, 1260 * scaleConstant);
+            scoreFont.draw(spriteBatch, ServerComms.turnTimer + "", (int) ((700 - 20 * String.valueOf(ServerComms.turnTimer).length()) * scaleConstant), (int) (1260 * scaleConstant));
             spriteBatch.end();
         }
 
         // Game start text
         if(gameClass.scoreSystem.currentPlayer == 0 && !gameClass.gameStarted && gameClass.getGameMode() > 0 && gameClass.getGameMode() <= 3) {
             spriteBatch.begin();
-            scoreFontSmall.draw(spriteBatch, text[163], (360 - text[163].length() * 6) * scaleConstant, 950 * scaleConstant);
+            GlyphLayout onScreenLayout = new GlyphLayout(onScreenFont, text[163]);
+            onScreenFont.draw(spriteBatch, onScreenLayout, (int) ((360) * scaleConstant) - onScreenLayout.width / 2, (int) (950 * scaleConstant));
             spriteBatch.end();
         }
 
@@ -534,21 +748,23 @@ public class GameScreen extends ScreenAdapter {
             switch (gameClass.scoreSystem.winner) {
 
                 case 0:
-                    scoreFont.draw(spriteBatch, text[145], (360 - text[145].length() * 12) * scaleConstant, 800 * scaleConstant);
+                    scoreFont.draw(spriteBatch, text[145], (int) ((360 - text[145].length() * 12) * scaleConstant), (int) (800 * scaleConstant));
                     break;
 
                 case 1:
-                    scoreFont.draw(spriteBatch, gameClass.playerNames[0] + " " + text[146], (360 - (text[146].length() + 1 + gameClass.playerNames[0].length()) * 12) * scaleConstant, 800 * scaleConstant);
+                    scoreFont.draw(spriteBatch, gameClass.playerNames[0] + " " + text[146], (int) ((360 - (text[146].length() + 1 + gameClass.playerNames[0].length()) * 12) * scaleConstant), (int) (800 * scaleConstant));
                     break;
 
                 case 2:
-                    scoreFont.draw(spriteBatch, gameClass.playerNames[1] + " " +  text[146], (360 - (text[146].length() + 1 + gameClass.playerNames[0].length()) * 12) * scaleConstant, 800 * scaleConstant);
+                    scoreFont.draw(spriteBatch, gameClass.playerNames[1] + " " +  text[146], (int) ((360 - (text[146].length() + 1 + gameClass.playerNames[0].length()) * 12) * scaleConstant), (int) (800 * scaleConstant));
                     break;
 
             }
-            scoreFontSmall.draw(spriteBatch, text[147], (360 - 6 * text[147].length()) * scaleConstant, 740 * scaleConstant);
-            if(ServerComms.disconnection) {
-                scoreFontSmall.draw(spriteBatch, text[168], (360 - 6 * text[168].length()) * scaleConstant, 700 * scaleConstant);
+            GlyphLayout onScreenLayout1 = new GlyphLayout(onScreenFont, text[147]);
+            onScreenFont.draw(spriteBatch, onScreenLayout1, (int) ((360) * scaleConstant) - onScreenLayout1.width / 2, (int) (740 * scaleConstant));
+            if(ServerComms.disconnection && (gameClass.scoreSystem.getScore()[0] > 0 && gameClass.scoreSystem.getScore()[0] > 0)) {
+                GlyphLayout onScreenLayout2 = new GlyphLayout(onScreenFont, text[168]);
+                onScreenFont.draw(spriteBatch, onScreenLayout2, (int) ((360) * scaleConstant) - onScreenLayout2.width / 2, (int) (700 * scaleConstant));
             }
 
             spriteBatch.end();
@@ -558,12 +774,12 @@ public class GameScreen extends ScreenAdapter {
         if(menuPopup) {
             spriteBatch.begin();
 
-            spriteBatch.draw(popup, 160 * scaleConstant, 490 * scaleConstant, 400 * scaleConstant, 300 * scaleConstant);
+            spriteBatch.draw(popup, (int) (160 * scaleConstant), (int) (490 * scaleConstant), (int) (400 * scaleConstant), (int) (300 * scaleConstant));
 
-            scoreFont.draw(spriteBatch, text[135], 170 * scaleConstant, 778 * scaleConstant);
-            scoreFont.draw(spriteBatch, text[136], 170 * scaleConstant, 723 * scaleConstant);
-            scoreFont.draw(spriteBatch, text[137], (170 + textIndent[137]) * scaleConstant, 566 * scaleConstant);
-            scoreFont.draw(spriteBatch, text[138], (170 + textIndent[138]) * scaleConstant, 566 * scaleConstant);
+            popupFont.draw(spriteBatch, text[135], (int) (170 * scaleConstant), (int) (778 * scaleConstant));
+            popupFont.draw(spriteBatch, text[136], (int) (170 * scaleConstant), (int) (723 * scaleConstant));
+            popupFont.draw(spriteBatch, text[137], (int) ((170 + textIndent[137]) * scaleConstant), (int) (566 * scaleConstant));
+            popupFont.draw(spriteBatch, text[138], (int) ((170 + textIndent[138]) * scaleConstant), (int) (566 * scaleConstant));
 
             spriteBatch.end();
         }
@@ -624,9 +840,9 @@ public class GameScreen extends ScreenAdapter {
             if(animTimeCounter < animLength) {
                 animTimeCounter++;
 
-                dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.setToTranslation(aimingX / animLength * animTimeCounter, aimingY / animLength * animTimeCounter, -500.0f);
-                dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.rotate(1.0f, 0.0f, 0.0f, 89);
-                dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.rotate(0.0f, 1.0f, 0.0f, 45);
+                dartModelInstances[3+gameClass.scoreSystem.dartsThrown].transform.setToTranslation(aimingX / animLength * animTimeCounter, aimingY / animLength * animTimeCounter, -500.0f);
+                dartModelInstances[3+gameClass.scoreSystem.dartsThrown].transform.rotate(1.0f, 0.0f, 0.0f, 89);
+                dartModelInstances[3+gameClass.scoreSystem.dartsThrown].transform.rotate(0.0f, 1.0f, 0.0f, 45);
 
                 perspectiveCamera.position.set(aimingX / animLength * animTimeCounter, aimingY / animLength * animTimeCounter, -2500.0f);
                 perspectiveCamera.lookAt(aimingX / animLength * animTimeCounter, aimingY / animLength * animTimeCounter, 18000.0f);
@@ -640,15 +856,15 @@ public class GameScreen extends ScreenAdapter {
 
                 if (translatCount < translats) {
                     // Translate the dart to the calculate position where it would be at that point in flight
-                    dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.setToTranslation(aimingX + ((landingX - aimingX / 10000.0f) * 10000.0f) / translats * translatCount, aimingY + (yPos * 10000.0f), (distanceToBoard - 500.0f) / translats * translatCount);
+                    dartModelInstances[3+gameClass.scoreSystem.dartsThrown].transform.setToTranslation(aimingX + ((landingX - aimingX / 10000.0f) * 10000.0f) / translats * translatCount, aimingY + (yPos * 10000.0f), (distanceToBoard - 500.0f) / translats * translatCount);
                 } else {
                     // Translate the dart to the exact position that it was calculated to land
-                    dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.setToTranslation((landingX * 10000.0f), (landingY * 10000.0f), (distanceToBoard - 500.0f) / translats * translatCount);
+                    dartModelInstances[3+gameClass.scoreSystem.dartsThrown].transform.setToTranslation((landingX * 10000.0f), (landingY * 10000.0f), (distanceToBoard - 500.0f) / translats * translatCount);
                 }
 
                 // Correct the rotation
-                dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.rotate(1.0f, 0.0f, 0.0f, 90);
-                dartModelInstances[gameClass.scoreSystem.dartsThrown].transform.rotate(0.0f, 1.0f, 0.0f, 45);
+                dartModelInstances[3+gameClass.scoreSystem.dartsThrown].transform.rotate(1.0f, 0.0f, 0.0f, 90);
+                dartModelInstances[3+gameClass.scoreSystem.dartsThrown].transform.rotate(0.0f, 1.0f, 0.0f, 45);
 
                 // Check whether the animation should be ended
                 if(translatCount >= translats  || yPos <= -1.73f) {
@@ -739,6 +955,42 @@ public class GameScreen extends ScreenAdapter {
 
         }
 
+        if(loadMenu) {
+            spriteBatch.begin();
+            popupFont.draw(spriteBatch, text[169], (int) (260 * scaleConstant), (int) (230 * scaleConstant));
+            spriteBatch.end();
+            if(loadLoop) {
+                loadMenu = false;
+                loadLoop = false;
+                game.setScreen(new MenuScreen(game));
+                dispose();
+            } else{
+                loadLoop = true;
+            }
+        }
+
+        // Sounds
+        if(MenuScreen.sound) {
+            if(dartboardHit) {
+                dartboardHitSound.play();
+                dartboardHit = false;
+            }
+            if(MenuScreen.lachie) {
+                if(swoosh) {
+                    swooshSound.play();
+                    swoosh = false;
+                }
+                if(oneeighty) {
+                    oneeightySound.play();
+                    oneeighty = false;
+                }
+                if(wow) {
+                    wowSound.play();
+                    wow = false;
+                }
+            }
+        }
+
     }
 
     @Override
@@ -766,8 +1018,12 @@ public class GameScreen extends ScreenAdapter {
      */
     private void dartThrow() {
 
+        if(MenuScreen.lachie) {
+            swoosh = true;
+        }
+
         // Z Velocity exaggeration
-        velZ = (velZ * velZ) / (0.5f) * sensitivityZ;
+        velZ = (velZ * velZ) / (0.5f) * sensitivityZ * 1.5f;
 
         // Damping
         if(velX < 11.5 && velX >= 0) {
@@ -916,6 +1172,9 @@ public class GameScreen extends ScreenAdapter {
             dartModelInstances[i].transform.setToTranslation(4000.0f + 100.0f * i, -10000.0f, -1000.0f);
             dartModelInstances[i].transform.rotate(1.0f, 0.0f, 0.0f, 89);
             dartModelInstances[i].transform.rotate(0.0f, 1.0f, 0.0f, 45);
+            dartModelInstances[i+3].transform.setToTranslation(-4000.0f - 100.0f * i, -10000.0f, -1000.0f);
+            dartModelInstances[i+3].transform.rotate(1.0f, 0.0f, 0.0f, 89);
+            dartModelInstances[i+3].transform.rotate(0.0f, 1.0f, 0.0f, 45);
         }
         dartsReset = true;
     }
@@ -924,64 +1183,67 @@ public class GameScreen extends ScreenAdapter {
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
-        shapeRenderer.rect(0, 0, 200 * scaleConstant, 100 * scaleConstant, darkBlue, darkBlue, lightBlue, lightBlue);
-        shapeRenderer.triangle(200 * scaleConstant, 0, 200 * scaleConstant, 100 * scaleConstant, 250 * scaleConstant, 0, darkBlue, lightBlue, darkBlue);
+        shapeRenderer.rect(0, 0, (int) (200 * scaleConstant), (int) (100 * scaleConstant), darkBlue, darkBlue, lightBlue, lightBlue);
+        shapeRenderer.triangle((int) (200 * scaleConstant), 0, (int) (200 * scaleConstant), (int) (100 * scaleConstant), (int) (250 * scaleConstant), 0, darkBlue, lightBlue, darkBlue);
 
-        shapeRenderer.rect(520 * scaleConstant, 0, 200 * scaleConstant, 100 * scaleConstant, darkBlue, darkBlue, lightBlue, lightBlue);
-        shapeRenderer.triangle(470 * scaleConstant, 0, 520 * scaleConstant, 100 * scaleConstant, 520 * scaleConstant, 0, darkBlue, lightBlue, darkBlue);
+        shapeRenderer.rect((int) (520 * scaleConstant), 0, (int) (200 * scaleConstant), (int) (100 * scaleConstant), darkBlue, darkBlue, lightBlue, lightBlue);
+        shapeRenderer.triangle((int) (470 * scaleConstant), 0, (int) (520 * scaleConstant), (int) (100 * scaleConstant), (int) (520 * scaleConstant), 0, darkBlue, lightBlue, darkBlue);
 
         // Back button
-        shapeRenderer.rect(0, 1205 * scaleConstant, 100 * scaleConstant, 75 * scaleConstant, lightBlue, lightBlue, darkBlue, darkBlue);
-        shapeRenderer.triangle(100 * scaleConstant, 1205 * scaleConstant, 100 * scaleConstant, 1280 * scaleConstant, 156 * scaleConstant, 1280 * scaleConstant, lightBlue, darkBlue, darkBlue);
+        shapeRenderer.rect(0, (int) (1205 * scaleConstant), (int) (100 * scaleConstant), (int) (75 * scaleConstant), lightBlue, lightBlue, darkBlue, darkBlue);
+        shapeRenderer.triangle((int) (100 * scaleConstant), (int) (1205 * scaleConstant), (int) (100 * scaleConstant), (int) (1280 * scaleConstant), (int) (156 * scaleConstant), (int) (1280 * scaleConstant), lightBlue, darkBlue, darkBlue);
 
         // Dart score blocks
-        shapeRenderer.rect(0, 100 * scaleConstant, 60 * scaleConstant, 150 * scaleConstant, darkBlue, darkBlue, lightBlue, lightBlue);
-        shapeRenderer.rect(660 * scaleConstant, 100 * scaleConstant, 60 * scaleConstant, 150 * scaleConstant, darkBlue, darkBlue, lightBlue, lightBlue);
+        shapeRenderer.rect(0, (int) (100 * scaleConstant), (int) (60 * scaleConstant), (int) (150 * scaleConstant), darkBlue, darkBlue, lightBlue, lightBlue);
+        shapeRenderer.rect((int) (660 * scaleConstant), (int) (100 * scaleConstant), (int) (60 * scaleConstant), (int) (150 * scaleConstant), darkBlue, darkBlue, lightBlue, lightBlue);
 
         shapeRenderer.end();
 
         spriteBatch.begin();
 
         // Draw description text
-        descriptionFont.draw(spriteBatch, text[139], 9 * scaleConstant, 90 * scaleConstant);
-        descriptionFont.draw(spriteBatch, text[139], (695 - 5 * text[139].length()) * scaleConstant, 90 * scaleConstant);
+        GlyphLayout scoreLayout = new GlyphLayout(descriptionFont, text[139]);
+        descriptionFont.draw(spriteBatch, text[139], (int) (9 * scaleConstant), (int) (90 * scaleConstant));
+        descriptionFont.draw(spriteBatch, scoreLayout, (int) ((715) * scaleConstant) - scoreLayout.width, (int) (90 * scaleConstant));
 
         // Draw user names
         switch (gameClass.scoreSystem.currentPlayer) {
 
             case 0:
-                currentPlayerFont.draw(spriteBatch, gameClass.playerNames[0], 100 * scaleConstant, 150 * scaleConstant);
-                playerFont.draw(spriteBatch, gameClass.playerNames[1], (575 - gameClass.playerNames[1].length() * 10) * scaleConstant, 150 * scaleConstant);
+                currentPlayerFont.draw(spriteBatch, gameClass.playerNames[0], (int) (100 * scaleConstant), (int) (150 * scaleConstant));
+                GlyphLayout playerGlyph = new GlyphLayout(playerFont, gameClass.playerNames[1]);
+                playerFont.draw(spriteBatch, playerGlyph, (int) ((635) * scaleConstant) - playerGlyph.width, (int) (150 * scaleConstant));
                 break;
 
             case 1:
-                playerFont.draw(spriteBatch, gameClass.playerNames[0], 100 * scaleConstant, 150 * scaleConstant);
-                currentPlayerFont.draw(spriteBatch, gameClass.playerNames[1], (580 - gameClass.playerNames[1].length() * 10) * scaleConstant, 150 * scaleConstant);
+                playerFont.draw(spriteBatch, gameClass.playerNames[0], (int) (100 * scaleConstant), (int) (150 * scaleConstant));
+                GlyphLayout playerGlyph1 = new GlyphLayout(currentPlayerFont, gameClass.playerNames[1]);
+                currentPlayerFont.draw(spriteBatch, playerGlyph1, (int) ((635) * scaleConstant) - playerGlyph1.width, (int) (150 * scaleConstant));
                 break;
 
         }
 
         // Draw score text
-        scoreFont.draw(spriteBatch, "" + gameClass.scoreSystem.getScore()[0], (75 + 14 * (3 - String.valueOf(gameClass.scoreSystem.getScore()[0]).length())) * scaleConstant, 70 * scaleConstant);
-        scoreFont.draw(spriteBatch, "" + gameClass.scoreSystem.getScore()[1], (570 + 14 * (3 - String.valueOf(gameClass.scoreSystem.getScore()[1]).length())) * scaleConstant, 70 * scaleConstant);
+        scoreFont.draw(spriteBatch, "" + gameClass.scoreSystem.getScore()[0], (int) ((75 + 14 * (3 - String.valueOf(gameClass.scoreSystem.getScore()[0]).length())) * scaleConstant), (int) (70 * scaleConstant));
+        scoreFont.draw(spriteBatch, "" + gameClass.scoreSystem.getScore()[1], (int) ((570 + 14 * (3 - String.valueOf(gameClass.scoreSystem.getScore()[1]).length())) * scaleConstant), (int) (70 * scaleConstant));
 
         // Draw dart score
         int turn = (gameClass.scoreSystem.dartsThrown == 0 && gameClass.scoreSystem.currentPlayer == gameClass.scoreSystem.firstPlayer && gameClass.scoreSystem.turn > 0) ? gameClass.scoreSystem.turn - 1 : gameClass.scoreSystem.turn;
 
         for(int i = 0; i < 3; i++) {
             if(gameClass.scoreSystem.dartNature[turn][0][i] > 0) {
-                scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][0][i], 10 * scaleConstant, (140 + 45 * i) * scaleConstant);
+                scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][0][i], (int) (10 * scaleConstant), (int) ((140 + 45 * i) * scaleConstant));
             }
         }
 
         for(int i = 0; i < 3; i++) {
             if(gameClass.scoreSystem.dartNature[turn][1][i] > 0) {
-                scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][1][i], (710 - 13 * String.valueOf(gameClass.scoreSystem.dartScore[turn][1][i]).length()) * scaleConstant, (140 + 45 * i) * scaleConstant);
+                scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][1][i], (int) ((710 - 13 * String.valueOf(gameClass.scoreSystem.dartScore[turn][1][i]).length()) * scaleConstant), (int) ((140 + 45 * i) * scaleConstant));
             }
         }
 
         // Draw back button chevron
-        scoreFont.draw(spriteBatch, "<", 48 * scaleConstant, 1268 * scaleConstant);
+        scoreFont.draw(spriteBatch, "<", (int) (48 * scaleConstant), (int) (1268 * scaleConstant));
 
         spriteBatch.end();
 
@@ -991,64 +1253,67 @@ public class GameScreen extends ScreenAdapter {
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
-        shapeRenderer.rect(0, 0, 200 * scaleConstant, 100 * scaleConstant, darkBlue, darkBlue, lightBlue, lightBlue);
-        shapeRenderer.triangle(200 * scaleConstant, 0, 200 * scaleConstant, 100 * scaleConstant, 250 * scaleConstant, 0, darkBlue, lightBlue, darkBlue);
+        shapeRenderer.rect(0, 0, (int) (200 * scaleConstant), (int) (100 * scaleConstant), darkBlue, darkBlue, lightBlue, lightBlue);
+        shapeRenderer.triangle((int) (200 * scaleConstant), 0, (int) (200 * scaleConstant), (int) (100 * scaleConstant), (int) (250 * scaleConstant), 0, darkBlue, lightBlue, darkBlue);
 
-        shapeRenderer.rect(520 * scaleConstant, 0, 200 * scaleConstant, 100 * scaleConstant, darkBlue, darkBlue, lightBlue, lightBlue);
-        shapeRenderer.triangle(470 * scaleConstant, 0, 520 * scaleConstant, 100 * scaleConstant, 520 * scaleConstant, 0, darkBlue, lightBlue, darkBlue);
+        shapeRenderer.rect((int) (520 * scaleConstant), 0, (int) (200 * scaleConstant), (int) (100 * scaleConstant), darkBlue, darkBlue, lightBlue, lightBlue);
+        shapeRenderer.triangle((int) (470 * scaleConstant), 0, (int) (520 * scaleConstant), (int) (100 * scaleConstant), (int) (520 * scaleConstant), 0, darkBlue, lightBlue, darkBlue);
 
         // Back button
-        shapeRenderer.rect(0, 1205 * scaleConstant, 100 * scaleConstant, 75 * scaleConstant, lightBlue, lightBlue, darkBlue, darkBlue);
-        shapeRenderer.triangle(100 * scaleConstant, 1205 * scaleConstant, 100 * scaleConstant, 1280 * scaleConstant, 156 * scaleConstant, 1280 * scaleConstant, lightBlue, darkBlue, darkBlue);
+        shapeRenderer.rect(0, (int) (1205 * scaleConstant), (int) (100 * scaleConstant), (int) (75 * scaleConstant), lightBlue, lightBlue, darkBlue, darkBlue);
+        shapeRenderer.triangle((int) (100 * scaleConstant), (int) (1205 * scaleConstant), (int) (100 * scaleConstant), (int) (1280 * scaleConstant), (int) (156 * scaleConstant), (int) (1280 * scaleConstant), lightBlue, darkBlue, darkBlue);
 
         // Dart score blocks
-        shapeRenderer.rect(0, 100 * scaleConstant, 60 * scaleConstant, 150 * scaleConstant, darkBlue, darkBlue, lightBlue, lightBlue);
-        shapeRenderer.rect(660 * scaleConstant, 100 * scaleConstant, 60 * scaleConstant, 150 * scaleConstant, darkBlue, darkBlue, lightBlue, lightBlue);
+        shapeRenderer.rect(0, (int) (100 * scaleConstant), (int) (60 * scaleConstant), (int) (150 * scaleConstant), darkBlue, darkBlue, lightBlue, lightBlue);
+        shapeRenderer.rect((int) (660 * scaleConstant), (int) (100 * scaleConstant), (int) (60 * scaleConstant), (int) (150 * scaleConstant), darkBlue, darkBlue, lightBlue, lightBlue);
 
         shapeRenderer.end();
 
         spriteBatch.begin();
 
         // Draw description text
-        descriptionFont.draw(spriteBatch, text[154], 9 * scaleConstant, 90 * scaleConstant);
-        descriptionFont.draw(spriteBatch, text[154], (695 - 5 * text[154].length()) * scaleConstant, 90 * scaleConstant);
+        GlyphLayout scoreLayout = new GlyphLayout(descriptionFont, text[154]);
+        descriptionFont.draw(spriteBatch, text[154], (int) (9 * scaleConstant), (int) (90 * scaleConstant));
+        descriptionFont.draw(spriteBatch, scoreLayout, (int) ((715) * scaleConstant) - scoreLayout.width, (int) (90 * scaleConstant));
 
         // Draw user names
         switch (gameClass.scoreSystem.currentPlayer) {
 
             case 0:
-                currentPlayerFont.draw(spriteBatch, gameClass.playerNames[0], 100 * scaleConstant, 150 * scaleConstant);
-                playerFont.draw(spriteBatch, gameClass.playerNames[1], (575 - gameClass.playerNames[1].length() * 10) * scaleConstant, 150 * scaleConstant);
+                currentPlayerFont.draw(spriteBatch, gameClass.playerNames[0], (int) (100 * scaleConstant), (int) (150 * scaleConstant));
+                GlyphLayout playerGlyph = new GlyphLayout(playerFont, gameClass.playerNames[1]);
+                playerFont.draw(spriteBatch, playerGlyph, (int) ((635) * scaleConstant) - playerGlyph.width, (int) (150 * scaleConstant));
                 break;
 
             case 1:
-                playerFont.draw(spriteBatch, gameClass.playerNames[0], 100 * scaleConstant, 150 * scaleConstant);
-                currentPlayerFont.draw(spriteBatch, gameClass.playerNames[1], (580 - gameClass.playerNames[1].length() * 10) * scaleConstant, 150 * scaleConstant);
+                playerFont.draw(spriteBatch, gameClass.playerNames[0], (int) (100 * scaleConstant), (int) (150 * scaleConstant));
+                GlyphLayout playerGlyph1 = new GlyphLayout(currentPlayerFont, gameClass.playerNames[1]);
+                currentPlayerFont.draw(spriteBatch, playerGlyph1, (int) ((635) * scaleConstant) - playerGlyph1.width, (int) (150 * scaleConstant));
                 break;
 
         }
 
         // Draw score text
-        scoreFont.draw(spriteBatch, "" + gameClass.scoreSystem.getScore()[0], (75 + 14 * (3 - String.valueOf(gameClass.scoreSystem.getScore()[0]).length())) * scaleConstant, 70 * scaleConstant);
-        scoreFont.draw(spriteBatch, "" + gameClass.scoreSystem.getScore()[1], (570 + 14 * (3 - String.valueOf(gameClass.scoreSystem.getScore()[1]).length())) * scaleConstant, 70 * scaleConstant);
+        scoreFont.draw(spriteBatch, "" + gameClass.scoreSystem.getScore()[0], (int) ((75 + 14 * (3 - String.valueOf(gameClass.scoreSystem.getScore()[0]).length())) * scaleConstant), (int) (70 * scaleConstant));
+        scoreFont.draw(spriteBatch, "" + gameClass.scoreSystem.getScore()[1], (int) ((570 + 14 * (3 - String.valueOf(gameClass.scoreSystem.getScore()[1]).length())) * scaleConstant), (int) (70 * scaleConstant));
 
         // Draw dart score
         int turn = (gameClass.scoreSystem.dartsThrown == 0 && gameClass.scoreSystem.currentPlayer == gameClass.scoreSystem.firstPlayer && gameClass.scoreSystem.turn > 0) ? gameClass.scoreSystem.turn - 1 : gameClass.scoreSystem.turn;
 
         for(int i = 0; i < 3; i++) {
             if(gameClass.scoreSystem.dartNature[turn][0][i] > 0) {
-                scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][0][i], 10 * scaleConstant, (140 + 45 * i) * scaleConstant);
+                scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][0][i], (int) (10 * scaleConstant), (int) ((140 + 45 * i) * scaleConstant));
             }
         }
 
         for(int i = 0; i < 3; i++) {
             if(gameClass.scoreSystem.dartNature[turn][1][i] > 0) {
-                scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][1][i], (710 - 13 * String.valueOf(gameClass.scoreSystem.dartScore[turn][1][i]).length()) * scaleConstant, (140 + 45 * i) * scaleConstant);
+                scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][1][i], (int) ((710 - 13 * String.valueOf(gameClass.scoreSystem.dartScore[turn][1][i]).length()) * scaleConstant), (int) ((140 + 45 * i) * scaleConstant));
             }
         }
 
         // Draw back button chevron
-        scoreFont.draw(spriteBatch, "<", 48 * scaleConstant, 1268 * scaleConstant);
+        scoreFont.draw(spriteBatch, "<", (int) (48 * scaleConstant), (int) (1268 * scaleConstant));
 
         spriteBatch.end();
 
@@ -1058,66 +1323,69 @@ public class GameScreen extends ScreenAdapter {
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
-        shapeRenderer.rect(0, 0, 200 * scaleConstant, 100 * scaleConstant, darkBlue, darkBlue, lightBlue, lightBlue);
-        shapeRenderer.triangle(200 * scaleConstant, 0, 200 * scaleConstant, 100 * scaleConstant, 250 * scaleConstant, 0, darkBlue, lightBlue, darkBlue);
+        shapeRenderer.rect(0, 0, (int) (200 * scaleConstant), (int) (100 * scaleConstant), darkBlue, darkBlue, lightBlue, lightBlue);
+        shapeRenderer.triangle((int) (200 * scaleConstant), 0, (int) (200 * scaleConstant), (int) (100 * scaleConstant), (int) (250 * scaleConstant), 0, darkBlue, lightBlue, darkBlue);
 
-        shapeRenderer.rect(520 * scaleConstant, 0, 200 * scaleConstant, 100 * scaleConstant, darkBlue, darkBlue, lightBlue, lightBlue);
-        shapeRenderer.triangle(470 * scaleConstant, 0, 520 * scaleConstant, 100 * scaleConstant, 520 * scaleConstant, 0, darkBlue, lightBlue, darkBlue);
+        shapeRenderer.rect((int) (520 * scaleConstant), 0, (int) (200 * scaleConstant), (int) (100 * scaleConstant), darkBlue, darkBlue, lightBlue, lightBlue);
+        shapeRenderer.triangle((int) (470 * scaleConstant), 0, (int) (520 * scaleConstant), (int) (100 * scaleConstant), (int) (520 * scaleConstant), 0, darkBlue, lightBlue, darkBlue);
 
         // Back button
-        shapeRenderer.rect(0, 1205 * scaleConstant, 100 * scaleConstant, 75 * scaleConstant, lightBlue, lightBlue, darkBlue, darkBlue);
-        shapeRenderer.triangle(100 * scaleConstant, 1205 * scaleConstant, 100 * scaleConstant, 1280 * scaleConstant, 156 * scaleConstant, 1280 * scaleConstant, lightBlue, darkBlue, darkBlue);
+        shapeRenderer.rect(0, (int) (1205 * scaleConstant), (int) (100 * scaleConstant), (int) (75 * scaleConstant), lightBlue, lightBlue, darkBlue, darkBlue);
+        shapeRenderer.triangle((int) (100 * scaleConstant), (int) (1205 * scaleConstant), (int) (100 * scaleConstant), (int) (1280 * scaleConstant), (int) (156 * scaleConstant), (int) (1280 * scaleConstant), lightBlue, darkBlue, darkBlue);
 
         // Dart score blocks
-        shapeRenderer.rect(75 * scaleConstant, 100 * scaleConstant, 60 * scaleConstant, 150 * scaleConstant, darkBlue, darkBlue, lightBlue, lightBlue);
-        shapeRenderer.rect(585 * scaleConstant, 100 * scaleConstant, 60 * scaleConstant, 150 * scaleConstant, darkBlue, darkBlue, lightBlue, lightBlue);
+        shapeRenderer.rect((int) (75 * scaleConstant), (int) (100 * scaleConstant), (int) (60 * scaleConstant), (int) (150 * scaleConstant), darkBlue, darkBlue, lightBlue, lightBlue);
+        shapeRenderer.rect((int) (585 * scaleConstant), (int) (100 * scaleConstant), (int) (60 * scaleConstant), (int) (150 * scaleConstant), darkBlue, darkBlue, lightBlue, lightBlue);
 
         // Cricket Scoreboard
-        shapeRenderer.rect(0, 100 * scaleConstant, 75 * scaleConstant, 200 * scaleConstant, darkBlue, darkBlue, lightBlue, lightBlue);
-        shapeRenderer.rect(645 * scaleConstant, 100 * scaleConstant, 75 * scaleConstant, 200 * scaleConstant, darkBlue, darkBlue, lightBlue, lightBlue);
+        shapeRenderer.rect(0, (int) (100 * scaleConstant), (int) (75 * scaleConstant), (int) (200 * scaleConstant), darkBlue, darkBlue, lightBlue, lightBlue);
+        shapeRenderer.rect((int) (645 * scaleConstant), (int) (100 * scaleConstant), (int) (75 * scaleConstant), (int) (200 * scaleConstant), darkBlue, darkBlue, lightBlue, lightBlue);
 
-        shapeRenderer.rect(40 * scaleConstant, 103 * scaleConstant, 32 * scaleConstant, 194 * scaleConstant, new Color(0, 0, 0, 0.7f), new Color(0, 0, 0, 0.7f), new Color(0, 0, 0, 0.7f), new Color(0, 0, 0, 0.7f));
-        shapeRenderer.rect(647 * scaleConstant, 103 * scaleConstant, 32 * scaleConstant, 194 * scaleConstant, new Color(0, 0, 0, 0.7f), new Color(0, 0, 0, 0.7f), new Color(0, 0, 0, 0.7f), new Color(0, 0, 0, 0.7f));
+        shapeRenderer.rect((int) (40 * scaleConstant), (int) (103 * scaleConstant), (int) (32 * scaleConstant), (int) (194 * scaleConstant), new Color(0, 0, 0, 0.7f), new Color(0, 0, 0, 0.7f), new Color(0, 0, 0, 0.7f), new Color(0, 0, 0, 0.7f));
+        shapeRenderer.rect((int) (647 * scaleConstant), (int) (103 * scaleConstant), (int) (32 * scaleConstant), (int) (194 * scaleConstant), new Color(0, 0, 0, 0.7f), new Color(0, 0, 0, 0.7f), new Color(0, 0, 0, 0.7f), new Color(0, 0, 0, 0.7f));
 
         shapeRenderer.end();
 
         spriteBatch.begin();
 
         // Draw description text
-        descriptionFont.draw(spriteBatch, text[139], 9 * scaleConstant, 90 * scaleConstant);
-        descriptionFont.draw(spriteBatch, text[139], (695 - 5 * text[139].length()) * scaleConstant, 90 * scaleConstant);
+        GlyphLayout scoreLayout = new GlyphLayout(descriptionFont, text[139]);
+        descriptionFont.draw(spriteBatch, text[139], (int) (9 * scaleConstant), (int) (90 * scaleConstant));
+        descriptionFont.draw(spriteBatch, scoreLayout, (int) ((715) * scaleConstant) - scoreLayout.width, (int) (90 * scaleConstant));
 
         // Draw user names
         switch (gameClass.scoreSystem.currentPlayer) {
 
             case 0:
-                currentPlayerFont.draw(spriteBatch, gameClass.playerNames[0], 150 * scaleConstant, 150 * scaleConstant);
-                playerFont.draw(spriteBatch, gameClass.playerNames[1], (525 - gameClass.playerNames[1].length() * 10) * scaleConstant, 150 * scaleConstant);
+                currentPlayerFont.draw(spriteBatch, gameClass.playerNames[0], (int) (150 * scaleConstant), (int) (150 * scaleConstant));
+                GlyphLayout playerGlyph = new GlyphLayout(playerFont, gameClass.playerNames[1]);
+                playerFont.draw(spriteBatch, playerGlyph, (int) ((570) * scaleConstant) - playerGlyph.width, (int) (150 * scaleConstant));
                 break;
 
             case 1:
-                playerFont.draw(spriteBatch, gameClass.playerNames[0], 150 * scaleConstant, 150 * scaleConstant);
-                currentPlayerFont.draw(spriteBatch, gameClass.playerNames[1], (525 - gameClass.playerNames[1].length() * 12) * scaleConstant, 150 * scaleConstant);
+                playerFont.draw(spriteBatch, gameClass.playerNames[0], (int) (150 * scaleConstant), (int) (150 * scaleConstant));
+                GlyphLayout playerGlyph1 = new GlyphLayout(currentPlayerFont, gameClass.playerNames[1]);
+                currentPlayerFont.draw(spriteBatch, playerGlyph1, (int) ((570) * scaleConstant) - playerGlyph1.width, (int) (150 * scaleConstant));
                 break;
 
         }
 
         // Draw score text
-        scoreFont.draw(spriteBatch, "" + gameClass.scoreSystem.getScore()[0], (75 + 14 * (3 - String.valueOf(gameClass.scoreSystem.getScore()[0]).length())) * scaleConstant, 70 * scaleConstant);
-        scoreFont.draw(spriteBatch, "" + gameClass.scoreSystem.getScore()[1], (570 + 14 * (3 - String.valueOf(gameClass.scoreSystem.getScore()[1]).length())) * scaleConstant, 70 * scaleConstant);
+        scoreFont.draw(spriteBatch, "" + gameClass.scoreSystem.getScore()[0], (int) ((75 + 14 * (3 - String.valueOf(gameClass.scoreSystem.getScore()[0]).length())) * scaleConstant), (int) (70 * scaleConstant));
+        scoreFont.draw(spriteBatch, "" + gameClass.scoreSystem.getScore()[1], (int) ((570 + 14 * (3 - String.valueOf(gameClass.scoreSystem.getScore()[1]).length())) * scaleConstant), (int) (70 * scaleConstant));
 
         // Draw dart score
         int turn = (gameClass.scoreSystem.dartsThrown == 0 && gameClass.scoreSystem.currentPlayer == gameClass.scoreSystem.firstPlayer && gameClass.scoreSystem.turn > 0) ? gameClass.scoreSystem.turn - 1 : gameClass.scoreSystem.turn;
 
         for(int i = 0; i < 3; i++) {
             if(gameClass.scoreSystem.dartNature[turn][0][i] > 0) {
-                scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][0][i], 85 * scaleConstant, (140 + 45 * i) * scaleConstant);
+                scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][0][i], (int) (85 * scaleConstant), (int) ((140 + 45 * i) * scaleConstant));
             }
         }
 
         for(int i = 0; i < 3; i++) {
             if(gameClass.scoreSystem.dartNature[turn][1][i] > 0) {
-                scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][1][i], (635 - 13 * String.valueOf(gameClass.scoreSystem.dartScore[turn][1][i]).length()) * scaleConstant, (140 + 45 * i) * scaleConstant);
+                scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][1][i], (int) ((635 - 13 * String.valueOf(gameClass.scoreSystem.dartScore[turn][1][i]).length()) * scaleConstant), (int) ((140 + 45 * i) * scaleConstant));
             }
         }
 
@@ -1129,23 +1397,23 @@ public class GameScreen extends ScreenAdapter {
             for(int j = 0; j < 2; j++) {
 
                 if(gameClass.scoreSystem.getInnings()[j][i] >= 3 && gameClass.scoreSystem.getInnings()[1-j][i] < 3) {
-                    scoreFontCricketOpen.draw(spriteBatch, tempOpeningsTexts[i], (10 + 680 * j) * scaleConstant, (287 - 27 * i) * scaleConstant);
+                    scoreFontCricketOpen.draw(spriteBatch, tempOpeningsTexts[i], (int) ((10 + 680 * j) * scaleConstant), (int) ((287 - 27 * i) * scaleConstant));
                 } else if(gameClass.scoreSystem.getInnings()[j][i] >= 3 && gameClass.scoreSystem.getInnings()[1-j][i] >= 3) {
-                    scoreFontCricketClosed.draw(spriteBatch, tempOpeningsTexts[i], (10 + 680 * j) * scaleConstant, (287 - 27 * i) * scaleConstant);
+                    scoreFontCricketClosed.draw(spriteBatch, tempOpeningsTexts[i], (int) ((10 + 680 * j) * scaleConstant), (int) ((287 - 27 * i) * scaleConstant));
                 } else{
-                    scoreFontCricket.draw(spriteBatch, tempOpeningsTexts[i], (10 + 680 * j) * scaleConstant, (287 - 27 * i) * scaleConstant);
+                    scoreFontCricket.draw(spriteBatch, tempOpeningsTexts[i], (int) ((10 + 680 * j) * scaleConstant), (int) ((287 - 27 * i) * scaleConstant));
                 }
 
                 if(gameClass.scoreSystem.getInnings()[j][i] >= 1) {
-                    scoreFontCricketMarks.draw(spriteBatch, "/", (50 + 607 * j) * scaleConstant, (287 - 27 * i) * scaleConstant);
+                    scoreFontCricketMarks.draw(spriteBatch, "/", (int) ((50 + 607 * j) * scaleConstant), (int) ((287 - 27 * i) * scaleConstant));
                 }
 
                 if(gameClass.scoreSystem.getInnings()[j][i] >= 2) {
-                    scoreFontCricketMarks.draw(spriteBatch, "\\", (50 + 607 * j) * scaleConstant, (287 - 27 * i) * scaleConstant);
+                    scoreFontCricketMarks.draw(spriteBatch, "\\", (int) ((50 + 607 * j) * scaleConstant), (int) ((287 - 27 * i) * scaleConstant));
                 }
 
                 if(gameClass.scoreSystem.getInnings()[j][i] >= 3) {
-                    scoreFontCricketMarks.draw(spriteBatch, "0", (50 + 607 * j) * scaleConstant, (287 - 27 * i) * scaleConstant);
+                    scoreFontCricketMarks.draw(spriteBatch, "0", (int) ((50 + 607 * j) * scaleConstant), (int) ((287 - 27 * i) * scaleConstant));
                 }
 
             }
@@ -1153,7 +1421,7 @@ public class GameScreen extends ScreenAdapter {
         }
 
         // Draw back button chevron
-        scoreFont.draw(spriteBatch, "<", 48 * scaleConstant, 1268 * scaleConstant);
+        scoreFont.draw(spriteBatch, "<", (int) (48 * scaleConstant), (int) (1268 * scaleConstant));
 
         spriteBatch.end();
 
@@ -1163,73 +1431,81 @@ public class GameScreen extends ScreenAdapter {
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
-        shapeRenderer.rect(0, 0, 200 * scaleConstant, 100 * scaleConstant, darkBlue, darkBlue, lightBlue, lightBlue);
-        shapeRenderer.triangle(200 * scaleConstant, 0, 200 * scaleConstant, 100 * scaleConstant, 250 * scaleConstant, 0, darkBlue, lightBlue, darkBlue);
+        shapeRenderer.rect(0, 0, (int) (200 * scaleConstant), (int) (100 * scaleConstant), darkBlue, darkBlue, lightBlue, lightBlue);
+        shapeRenderer.triangle((int) (200 * scaleConstant), 0, (int) (200 * scaleConstant), (int) (100 * scaleConstant), (int) (250 * scaleConstant), 0, darkBlue, lightBlue, darkBlue);
 
-        shapeRenderer.rect(570 * scaleConstant, 0, 200 * scaleConstant, 100 * scaleConstant, darkBlue, darkBlue, lightBlue, lightBlue);
+        shapeRenderer.rect((int) (570 * scaleConstant), 0, (int) (200 * scaleConstant), (int) (100 * scaleConstant), darkBlue, darkBlue, lightBlue, lightBlue);
 
         // Back button
-        shapeRenderer.rect(0, 1205 * scaleConstant, 100 * scaleConstant, 75 * scaleConstant, lightBlue, lightBlue, darkBlue, darkBlue);
-        shapeRenderer.triangle(100 * scaleConstant, 1205 * scaleConstant, 100 * scaleConstant, 1280 * scaleConstant, 156 * scaleConstant, 1280 * scaleConstant, lightBlue, darkBlue, darkBlue);
+        shapeRenderer.rect(0, (int) (1205 * scaleConstant), (int) (100 * scaleConstant), (int) (75 * scaleConstant), lightBlue, lightBlue, darkBlue, darkBlue);
+        shapeRenderer.triangle((int) (100 * scaleConstant), (int) (1205 * scaleConstant), (int) (100 * scaleConstant), (int) (1280 * scaleConstant), (int) (156 * scaleConstant), (int) (1280 * scaleConstant), lightBlue, darkBlue, darkBlue);
 
         // Dart score blocks
-        shapeRenderer.rect(0, 100 * scaleConstant, 60 * scaleConstant, 150 * scaleConstant, darkBlue, darkBlue, lightBlue, lightBlue);
+        shapeRenderer.rect(0, (int) (100 * scaleConstant), (int) (60 * scaleConstant), (int) (150 * scaleConstant), darkBlue, darkBlue, lightBlue, lightBlue);
 
         shapeRenderer.end();
 
         spriteBatch.begin();
 
         // Draw description text
-        descriptionFont.draw(spriteBatch, text[139], 9 * scaleConstant, 90 * scaleConstant);
-        descriptionFont.draw(spriteBatch, text[155], (695 - 6 * text[155].length()) * scaleConstant, 90 * scaleConstant);
+        GlyphLayout scoreLayout = new GlyphLayout(descriptionFont, text[155]);
+        descriptionFont.draw(spriteBatch, text[139], (int) (9 * scaleConstant), (int) (90 * scaleConstant));
+        descriptionFont.draw(spriteBatch, scoreLayout, (int) ((715) * scaleConstant) - scoreLayout.width, (int) (90 * scaleConstant));
 
         // Draw user names
         if(gameClass.scoreSystem.getPlayerBatting() == 0) {
+            // Draw user names
             switch (gameClass.scoreSystem.currentPlayer) {
 
                 case 0:
-                    currentPlayerFont.draw(spriteBatch, gameClass.playerNames[gameClass.scoreSystem.getPlayerBatting()], 100 * scaleConstant, 150 * scaleConstant);
-                    playerFont.draw(spriteBatch, gameClass.playerNames[1 - gameClass.scoreSystem.getPlayerBatting()], (575 - gameClass.playerNames[1 - gameClass.scoreSystem.getPlayerBatting()].length() * 10) * scaleConstant, 150 * scaleConstant);
+                    currentPlayerFont.draw(spriteBatch, gameClass.playerNames[0], (int) (100 * scaleConstant), (int) (150 * scaleConstant));
+                    GlyphLayout playerGlyph = new GlyphLayout(playerFont, gameClass.playerNames[1]);
+                    playerFont.draw(spriteBatch, playerGlyph, (int) ((635) * scaleConstant) - playerGlyph.width, (int) (150 * scaleConstant));
                     break;
 
                 case 1:
-                    playerFont.draw(spriteBatch, gameClass.playerNames[gameClass.scoreSystem.getPlayerBatting()], 100 * scaleConstant, 150 * scaleConstant);
-                    currentPlayerFont.draw(spriteBatch, gameClass.playerNames[1 - gameClass.scoreSystem.getPlayerBatting()], (580 - gameClass.playerNames[1 - gameClass.scoreSystem.getPlayerBatting()].length() * 10) * scaleConstant, 150 * scaleConstant);
+                    playerFont.draw(spriteBatch, gameClass.playerNames[0], (int) (100 * scaleConstant), (int) (150 * scaleConstant));
+                    GlyphLayout playerGlyph1 = new GlyphLayout(currentPlayerFont, gameClass.playerNames[1]);
+                    currentPlayerFont.draw(spriteBatch, playerGlyph1, (int) ((635) * scaleConstant) - playerGlyph1.width, (int) (150 * scaleConstant));
                     break;
 
             }
         } else{
+
+            // Draw user names
             switch (gameClass.scoreSystem.currentPlayer) {
 
                 case 0:
-                    playerFont.draw(spriteBatch, gameClass.playerNames[gameClass.scoreSystem.getPlayerBatting()], 100 * scaleConstant, 150 * scaleConstant);
-                    currentPlayerFont.draw(spriteBatch, gameClass.playerNames[1 - gameClass.scoreSystem.getPlayerBatting()], (575 - gameClass.playerNames[1 - gameClass.scoreSystem.getPlayerBatting()].length() * 10) * scaleConstant, 150 * scaleConstant);
+                    playerFont.draw(spriteBatch, gameClass.playerNames[1], (int) (100 * scaleConstant), (int) (150 * scaleConstant));
+                    GlyphLayout playerGlyph = new GlyphLayout(currentPlayerFont, gameClass.playerNames[0]);
+                    currentPlayerFont.draw(spriteBatch, playerGlyph, (int) ((635) * scaleConstant) - playerGlyph.width, (int) (150 * scaleConstant));
                     break;
 
                 case 1:
-                    currentPlayerFont.draw(spriteBatch, gameClass.playerNames[gameClass.scoreSystem.getPlayerBatting()], 100 * scaleConstant, 150 * scaleConstant);
-                    playerFont.draw(spriteBatch, gameClass.playerNames[1 - gameClass.scoreSystem.getPlayerBatting()], (580 - gameClass.playerNames[1 - gameClass.scoreSystem.getPlayerBatting()].length() * 10) * scaleConstant, 150 * scaleConstant);
+                    currentPlayerFont.draw(spriteBatch, gameClass.playerNames[1], (int) (100 * scaleConstant), (int) (150 * scaleConstant));
+                    GlyphLayout playerGlyph1 = new GlyphLayout(playerFont, gameClass.playerNames[0]);
+                    playerFont.draw(spriteBatch, playerGlyph1, (int) ((635) * scaleConstant) - playerGlyph1.width, (int) (150 * scaleConstant));
                     break;
 
             }
         }
-        scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.getScore()[1 - gameClass.scoreSystem.getPlayerBatting()], (540 - String.valueOf(gameClass.scoreSystem.getScore()[1 - gameClass.scoreSystem.getPlayerBatting()]).length() * 6) * scaleConstant, 35 * scaleConstant);
+        scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.getScore()[1 - gameClass.scoreSystem.getPlayerBatting()], (int) ((540 - String.valueOf(gameClass.scoreSystem.getScore()[1 - gameClass.scoreSystem.getPlayerBatting()]).length() * 6) * scaleConstant), (int) (35 * scaleConstant));
 
         // Draw score text
-        scoreFont.draw(spriteBatch, "" + gameClass.scoreSystem.getScore()[gameClass.scoreSystem.getPlayerBatting()], (75 + 14 * (3 - String.valueOf(gameClass.scoreSystem.getScore()[gameClass.scoreSystem.getPlayerBatting()]).length())) * scaleConstant, 70 * scaleConstant);
-        scoreFont.draw(spriteBatch, "" + gameClass.scoreSystem.getWickets(), (614) * scaleConstant, 60 * scaleConstant);
+        scoreFont.draw(spriteBatch, "" + gameClass.scoreSystem.getScore()[gameClass.scoreSystem.getPlayerBatting()], (int) ((75 + 14 * (3 - String.valueOf(gameClass.scoreSystem.getScore()[gameClass.scoreSystem.getPlayerBatting()]).length())) * scaleConstant), (int) (70 * scaleConstant));
+        scoreFont.draw(spriteBatch, "" + gameClass.scoreSystem.getWickets(), (int) ((614) * scaleConstant), (int) (60 * scaleConstant));
 
         // Draw dart score
         int turn = (gameClass.scoreSystem.dartsThrown == 0 && gameClass.scoreSystem.currentPlayer == gameClass.scoreSystem.getPlayerBatting() && gameClass.scoreSystem.turn > 0) ? gameClass.scoreSystem.turn - 1 : gameClass.scoreSystem.turn - ((gameClass.scoreSystem.currentPlayer == gameClass.scoreSystem.getPlayerBatting()) ? 0 : gameClass.scoreSystem.getPlayerBatting());
 
         for(int i = 0; i < 3; i++) {
             if(gameClass.scoreSystem.dartNature[turn][gameClass.scoreSystem.getPlayerBatting()][i] > 0) {
-                scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][gameClass.scoreSystem.getPlayerBatting()][i], 10 * scaleConstant, (140 + 45 * i) * scaleConstant);
+                scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[turn][gameClass.scoreSystem.getPlayerBatting()][i], (int) (10 * scaleConstant), (int) ((140 + 45 * i) * scaleConstant));
             }
         }
 
         // Draw back button chevron
-        scoreFont.draw(spriteBatch, "<", 48 * scaleConstant, 1268 * scaleConstant);
+        scoreFont.draw(spriteBatch, "<", (int) (48 * scaleConstant), (int) (1268 * scaleConstant));
 
         spriteBatch.end();
 
@@ -1240,11 +1516,11 @@ public class GameScreen extends ScreenAdapter {
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
         // Back button
-        shapeRenderer.rect(0, 1205 * scaleConstant, 100 * scaleConstant, 75 * scaleConstant, lightBlue, lightBlue, darkBlue, darkBlue);
-        shapeRenderer.triangle(100 * scaleConstant, 1205 * scaleConstant, 100 * scaleConstant, 1280 * scaleConstant, 156 * scaleConstant, 1280 * scaleConstant, lightBlue, darkBlue, darkBlue);
+        shapeRenderer.rect(0, (int) (1205 * scaleConstant), (int) (100 * scaleConstant), (int) (75 * scaleConstant), lightBlue, lightBlue, darkBlue, darkBlue);
+        shapeRenderer.triangle((int) (100 * scaleConstant), (int) (1205 * scaleConstant), (int) (100 * scaleConstant), (int) (1280 * scaleConstant), (int) (156 * scaleConstant), (int) (1280 * scaleConstant), lightBlue, darkBlue, darkBlue);
 
         // Dart score blocks
-        shapeRenderer.rect(0, 0, 60 * scaleConstant, 150 * scaleConstant, darkBlue, darkBlue, lightBlue, lightBlue);
+        shapeRenderer.rect(0, 0, (int) (60 * scaleConstant), (int) (150 * scaleConstant), darkBlue, darkBlue, lightBlue, lightBlue);
 
         shapeRenderer.end();
 
@@ -1252,11 +1528,11 @@ public class GameScreen extends ScreenAdapter {
 
         // Draw dart score
         for(int i = 0; i < 3; i++) {
-            scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[0][0][i], 10 * scaleConstant, (40 + 45 * i) * scaleConstant);
+            scoreFontSmall.draw(spriteBatch, "" + gameClass.scoreSystem.dartScore[0][0][i], (int) (10 * scaleConstant), (int) ((40 + 45 * i) * scaleConstant));
         }
 
         // Draw back button chevron
-        scoreFont.draw(spriteBatch, "<", 48 * scaleConstant, 1268 * scaleConstant);
+        scoreFont.draw(spriteBatch, "<", (int) (48 * scaleConstant), (int) (1268 * scaleConstant));
 
         spriteBatch.end();
     }

@@ -90,6 +90,10 @@ public class GameClass {
         scoreSystem.handleScore(scoreSystem.landZone(landX, landY));
         scoreSystem.calculateStatistics();
 
+        if(scoreSystem.dartScore[scoreSystem.turn][scoreSystem.currentPlayer][scoreSystem.dartsThrown] == 60) {
+            GameScreen.wow = true;
+        }
+
         scoreSystem.dartsThrown++;
 
         if(scoreSystem.dartsThrown == 3 || scoreSystem.bust) {
@@ -135,6 +139,10 @@ public class GameClass {
         }
 
         scoreSystem.bust = false;
+
+        if(scoreSystem.landZone(landX, landY) != 0) {
+            GameScreen.dartboardHit = true;
+        }
     }
 
     void firstThrow(float landX, float landY) {
@@ -144,6 +152,12 @@ public class GameClass {
             distToBull = (float) Math.sqrt(landX * landX + landY * landY);
 
             scoreSystem.currentPlayer = 1 - scoreSystem.currentPlayer;
+
+            GameScreen.dartsReset = false;
+
+            if(scoreSystem.landZone(landX, landY) != 0) {
+                GameScreen.dartboardHit = true;
+            }
 
             if(competitionType <= 3) {  // AI
                 aiTurn = true;
@@ -160,6 +174,12 @@ public class GameClass {
             // Calculate linear distance from bullseye, and compare to first player's landing
             scoreSystem.currentPlayer = (distToBull < (float) Math.sqrt(landX * landX + landY * landY)) ? startPlayer : 1 - startPlayer;
             scoreSystem.firstPlayer = scoreSystem.currentPlayer;
+
+            GameScreen.dartsReset = false;
+
+            if(scoreSystem.landZone(landX, landY) != 0) {
+                GameScreen.dartboardHit = true;
+            }
 
             if(competitionType == 5 && !oppTurn) {
                 ServerComms.sendToServer("" + ((startPlayer == 1) ? 1 - scoreSystem.currentPlayer : scoreSystem.currentPlayer));

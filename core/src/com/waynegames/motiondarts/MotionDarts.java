@@ -24,6 +24,14 @@ public class MotionDarts extends Game {
 
     static AssetManager assetManager;
 
+    static boolean FREE_VERSION = false;
+
+    public static AdInterface adInterface;
+
+    public MotionDarts(AdInterface adInterface) {
+        this.adInterface = adInterface;
+    }
+
     /**
      * LibGdx default class, called when application is opened.
      * Immediately sets the screen to MenuScreen.
@@ -103,11 +111,13 @@ public class MotionDarts extends Game {
         // Load assets from assets folder
         assetManager = new AssetManager();
         // Asset file names
-        String[] modelAssets = {"dart_01", "dartboard_01", "environment_01", "menu_spacesurround"};
+        String[] modelAssets = {"dart_01", "dart_02", "dart_03", "dart_04", "dart_05", "dart_06", "dartboard_01", "dartboard_02", "environment_01", "environment_02", "environment_03", "environment_ComingSoon", "menu_spacesurround"};
         String[] textureAssets = {"defaultButton", "settingsButton", "languageButton", "backButton", "exitButton", "title", "submenu_background", "tickButton",
                 "connectButton", "helpButton", "selectedLanguage", "selectedButton", "selectedSmallButton", "langImage", "sliderBar", "sliderBit", "sliderBitSelected",
                 "leftButton", "rightButton", "menuPopup", "upButton", "downButton", "flag1", "flag2", "flag3", "flag4", "flag5", "flag6", "flag7", "flag8", "flag9",
-                "flag10", "customisationOption", "customisationOptionSelected"};
+                "flag10", "customisationOption", "customisationOptionSelected", "dart1_icon", "dart2_icon", "dart3_icon", "dart4_icon", "dart5_icon", "dart6_icon",
+                "env1_icon", "env2_icon", "env3_icon", "comingsoon_icon", "anim1_01", "anim1_02", "anim1_03", "anim1_04", "anim1_05", "anim1_06", "anim2_01", "anim2_02",
+                "anim2_03", "anim2_04", "anim2_05", "supportButton", "locked"};
 
         // Models
         for(String i : modelAssets) {
@@ -128,8 +138,8 @@ public class MotionDarts extends Game {
      */
     static void loadLanguage(int language) {
 
-        FileHandle[] langFiles = {Gdx.files.internal("languages/english.txt"), Gdx.files.internal("languages/bulgarian.txt"), Gdx.files.internal("languages/russian.txt")};
-        FileHandle[] indentFiles = {Gdx.files.internal("text_indent_values/englishTextIndents.txt"), Gdx.files.internal("text_indent_values/bulgarianTextIndents.txt"), Gdx.files.internal("text_indent_values/russianTextIndents.txt")};
+        FileHandle[] langFiles = {Gdx.files.internal("languages/english.txt"), Gdx.files.internal("languages/bulgarian.txt"), Gdx.files.internal("languages/russian.txt"), Gdx.files.internal("languages/spanish.txt"), Gdx.files.internal("languages/german.txt"), Gdx.files.internal("languages/french.txt"), Gdx.files.internal("languages/chinese.txt"), Gdx.files.internal("languages/japanese.txt"), Gdx.files.internal("languages/hindi.txt"), Gdx.files.internal("languages/portuguese.txt")};
+        FileHandle[] indentFiles = {Gdx.files.internal("text_indent_values/englishTextIndents.txt"), Gdx.files.internal("text_indent_values/bulgarianTextIndents.txt"), Gdx.files.internal("text_indent_values/russianTextIndents.txt"), Gdx.files.internal("text_indent_values/spanishTextIndents.txt"), Gdx.files.internal("text_indent_values/germanTextIndents.txt"), Gdx.files.internal("text_indent_values/frenchTextIndents.txt"), Gdx.files.internal("text_indent_values/chineseTextIndents.txt"), Gdx.files.internal("text_indent_values/japaneseTextIndents.txt"), Gdx.files.internal("text_indent_values/hindiTextIndents.txt"), Gdx.files.internal("text_indent_values/portugueseTextIndents.txt")};
 
         MenuScreen.text = new String[200];
         MenuScreen.textIndent = new int[200];

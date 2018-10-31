@@ -1,0 +1,182 @@
+UN JOUEUR
+PLUSIEURS
+PERSONNAL
+NOUVEAU JEU
+DIFFICULTÉ DE L'OPPOSANT
+TYPE DE JEU
+JOUER
+FACILE
+MOYEN
+DIFFICILE
+501
+AUTOUR
+L'HORLOGE
+CRIQUET
+BRITANIQUE
+CRIQUET
+ENTRAINE TOI
+PLUSIEURS JOUEURS
+BEAUCOUP DE JOUEURS TYPE DE JEU
+MÊME DISPOSITIF
+SERVEUR GLOBAL
+PASSER LE TÉLÉPHONE ENTRE 2 JOUEURS
+JOUER CONTRE UN ÉTRANGER (WI-FI)
+RELIER
+CONNECTER AU JOUEUR
+CONNECTEZ À QUELQU'UN QUE VOUS SAVEZ (WI-FI)
+NOM TEMPORAIRE
+NOM DU JOUEUR AVOCAT
+Nom temporaire
+Entrez un nom
+Nom de l'adversaire
+Entrez le nom de l'opposant
+Le nom est disponible
+Quelqu'un d'autre utilise ce nom, choisissez un autre
+Le nom de l'opposant existe
+L'adversaire n'existe pas
+1. Créez un nom et tapez-le dans le top name
+boîte
+2. Tapez le nom de votre ami dans la zone de texte inférieure
+
+3. Votre ami doit également taper votre nom dans leur
+zone de texte
+4. Tous les deux vous devez ensuite appuyer sur 'connecter' pour démarrer
+Jeu
+ATTENDRE...
+OPTIONS
+DARTS
+EMPLACEMENT
+PARAMÈTRES
+LANGUES
+COMMENT JOUER
+TYPES DE JEUX
+SENSIBILITÉ DES CAPTEURS
+Le jeu standard de fléchettes.
+
+Les points sont marqués en fonction de l'endroit où la fléchette atterrit. Si ça
+atterrit dans l'anneau extérieur mince, le score de la fléchette est
+doublé. Si elle atterrit dans l'anneau mince plus près du centre,
+le score de la fléchette est triplé. Le centre de la
+Dartboard, le bullseye, marque 50 points alors que le
+l'anneau qui l'entoure, le taureau extérieur, marque 25.
+
+Chaque joueur à tour de rôle lance 3 fléchettes. Au bout du
+à leur tour, le score total de ces 3 fléchettes est pris
+loin du score global du joueur, qui commence
+à partir de 501. L'objectif du jeu est de faire votre
+score égal à 0. Cela doit être fait en frappant un
+double avec la fléchette que vous voulez marquer 0. Pour
+Par exemple, si vous étiez parti avec 20, vous auriez besoin de frapper
+10 dans l'anneau du double pour gagner.
+
+
+
+
+
+Chaque joueur doit débarquer des fléchettes dans chaque nombre sur le tableau,
+de 1 à 20, dans l'ordre. Dès qu'un joueur pose une fléchette
+dans le numéro cible, ce joueur peut alors cibler
+numéro suivant. Le premier joueur à finir gagne.
+
+
+
+
+
+L'objectif du cricket est d '«ouvrir» certains numéros sur le
+conseil d'administration, pour atteindre le meilleur score. Pour ouvrir un numéro, vous
+doit atterrir 3 fléchettes dans ce nombre (les doubles comptent pour 2
+fléchettes, et les triples comptent pour 3). Une fois qu'un nombre est ouvert,
+tout autre coup porté à ce nombre rapportera des points au joueur
+comme d'habitude, jusqu'à ce que l'autre joueur atterrisse 3 fléchettes dans ce
+nombre, qui ferme alors ce nombre, ce qui en fait plus
+gagner des points. Le joueur avec le plus de points et qui ouvre
+tous les nombres premiers gagne, ou si les deux joueurs sont liés
+points, le joueur qui ouvre tous les numéros en premier gagnera.
+
+Les nombres impliqués sont les 20, 19, 18, 17, 16, 15 et le
+Bullseye.
+
+
+
+
+Au début du jeu, un joueur est un «batteur» et le
+l'autre est un «melon». Le frappeur gagne des points pour chaque tour
+qu'ils marquent plus de 40. Par exemple, si les scores du frappeur
+39, ils vont gagner 0 point. s'ils marquent 50, ils
+gagner 10 points. Pour arrêter les points de gains, la
+quilleur doit gagner 10 points, en frappant soit l'extérieur
+taureau, qui vaut 1 point, ou le bullseye, qui est
+vaut 2 points. Une fois que le quilleur a gagné 10 points, le
+les joueurs échangent des rôles et rejouent. Le frappeur qui gagne
+le meilleur score gagne.
+
+
+
+
+
+1. Pour viser une fléchette, maintenez votre doigt appuyé sur
+l'écran du téléphone.
+
+2. Déplacez votre doigt sur l'écran jusqu'à ce que la fléchette
+soit alignée à votre cible. Ne lève pas ton doigt de l'écran.
+
+3. Pour lancer la fléchette, faites glisser votre poignet en
+arrière puis avance dans un mouvement rapide, en libérant votre
+doigt de l'écran comme votre poignet avance, ou déplacez votre
+bras en arrière puis avance dans un mouvement rapide, libérant
+votre doigt comme votre bras va de l'avant.
+
+Ces contrôles peuvent prendre un certain temps pour s’habituer.
+Vous pouvez pratiquez sans souci en MODE PRATIQUE, auquel vous
+pouvez accéder dans le menu du jeu SINGLE PLAYER.
+
+Prendre plaisir!
+
+
+RETOUR AU
+MENU PRINCIPAL?
+OUI
+NON
+SCORE DE JEU
+SOMMAIRE DU JEU
+SCORES DE JEUX
+STATISTIQUES
+MENU PRINCIPAL
+REJOUER
+LE JEU A TERMINÉ DANS UN TIRAGE
+SUCCÈS
+TAP SCREEN POUR CONTINUER
+MOYENNE D'UNE DART
+MOYENNE DE LA 1ère DART
+MOYENNE DE LA 2ème DART
+MOYENNE DE LA 3ème DART
+Score le plus élevé du jeu
+MOYENNE ÉLEVÉE DU JOUEUR (501)
+CIBLE
+WICKETS
+PRÉCISION
+DARTS MOYENS QUI ATTAQUENT CIBLE
+SCORE MOYEN DE LA BATTERIE
+EXACTITUDE DE BOWLER
+BATTRE
+BOWLER
+SCORE MOYEN DE LA DART
+JETER UN DART AU CENTRE DE LA CIBLE
+LA CONNEXION A ÉCHOUÉ
+Impossible de trouver le serveur
+SERVEUR COMPLET
+CONNEXION RÉUSSIE
+ADVERSAIRE DECONNECTE
+CHARGEMENT...
+ROUGE
+VERT
+BLEU
+OBSIDIENNE
+LUXE
+PRIME
+PUB
+BAR SPORTIF
+ÉTAPE
+PLUS À VENIR
+DU SON
+LA MUSIQUE

@@ -14,7 +14,7 @@ import java.util.TimerTask;
 
 class ServerComms {
 
-    private static final String SERVER_IP = "192.168.0.10";
+    private static final String SERVER_IP = "18.191.102.50";
 
     private static boolean inGame = false;
 
@@ -73,6 +73,8 @@ class ServerComms {
                                     MenuScreen.onlinePlayer = Integer.parseInt(bufferedReader.readLine());
                                     MenuScreen.selectedGameMode = Integer.parseInt(bufferedReader.readLine());
                                     MenuScreen.opponentName = bufferedReader.readLine();
+                                    GameScreen.opponentSelectedDart = Integer.parseInt(bufferedReader.readLine());
+                                    GameScreen.selectedLocation = Integer.parseInt(bufferedReader.readLine());
 
                                     MenuScreen.selectedOpposition = 5;
                                     MenuScreen.startGame = true;
@@ -121,8 +123,8 @@ class ServerComms {
                                     }
                                 } else{
 
-                                    if(!GameScreen.endGame) {
-                                        GameScreen.gameClass.scoreSystem.winner = 1;
+                                    if(!GameScreen.endGame && (GameScreen.gameClass.scoreSystem.getScore()[0] > 0 && GameScreen.gameClass.scoreSystem.getScore()[0] > 0)) {
+                                        GameScreen.gameClass.scoreSystem.winner = (2 - GameScreen.gameClass.scoreSystem.currentPlayer);
                                         disconnection = true;
                                     }
 
@@ -131,7 +133,7 @@ class ServerComms {
                                     newThrow = false;
                                 }
                             }
-                        } catch (IOException e) {
+                        } catch (Exception e) {
                             e.printStackTrace();
                             socket.dispose();
                             break;
@@ -159,7 +161,7 @@ class ServerComms {
                     turnTimer--;
                 } else{
                     if(!GameScreen.endGame) {
-                        GameScreen.gameClass.scoreSystem.winner = (1 - GameScreen.gameClass.scoreSystem.currentPlayer) + 1;
+                        GameScreen.gameClass.scoreSystem.winner = (2 - GameScreen.gameClass.scoreSystem.currentPlayer);
                         outOfTime = true;
                     }
 

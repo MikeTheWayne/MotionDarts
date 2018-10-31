@@ -38,7 +38,7 @@ public class ScoreSystem {
     ScoreSystem() {
         // Get dartboard measurements
         dartboardBox = new BoundingBox();
-        GameScreen.dartboardModelInst1.calculateBoundingBox(dartboardBox);
+        GameScreen.dartboardBaseModelInst.calculateBoundingBox(dartboardBox);
     }
 
     /**
@@ -156,7 +156,7 @@ public class ScoreSystem {
         }
 
         if(hits > 0) {
-            return hitArray[new Random().nextInt(hits)];
+            return hitArray[0/*new Random().nextInt(hits)*/];
         } else{
             return wireHit(xPix, yPix, searchRadius + 1);
         }

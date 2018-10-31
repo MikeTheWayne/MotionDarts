@@ -34,7 +34,7 @@ public class Score_UKCricket extends ScoreSystem {
                 wicketAccuracy++;
             }
 
-            if(dartsThrown == 2) {
+            if(dartsThrown == 2 || wickets <= 0) {
                 turnsBowling[currentPlayer]++;
             }
         }

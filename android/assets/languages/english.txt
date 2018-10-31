@@ -114,22 +114,22 @@ the highest score wins.
 
 
 
-To aim a dart, hold your finger on the screen, and align
-it with your target on the dartboard. To throw the dart,
-move your phone rapidly away from you, as if you were
-throwing an actual dart, but WITHOUT RELEASING YOUR
-PHONE. Lift your finger from the screen before stopping
-the motion of your phone to get the maximum effect from
-your throw.
+1. To aim a dart, press and hold your finger on the phone screen.
 
-To get used to these mechanics, try PRACTICE MODE. Go to
-SINGLE PLAYER, press on the white square named
-PRACTICE MODE, then press PLAY.
+2. Slide your finger across the screen until the dart is lined up
+to your target. Don't lift your finger from the screen.
 
-If your darts seem to be flying unnaturally, your device
-might have sensor issues. Try restarting the device.
+3. To throw the dart, either flick your wrist backwards then
+forwards in a fast motion, releasing your finger from the screen
+as your wrist moves forward, or move your arm backwards then
+forwards in a fast motion, releasing your finger as your arm
+moves forward.
 
+These controls can take some time to get accustomed to. You can
+practice without worry in PRACTICE MODE, which you can access
+in the SINGLE PLAYER game menu.
 
+Have fun!
 
 
 
@@ -167,19 +167,19 @@ TIME OUT
 SERVER FULL
 CONNECTION SUCCESSFUL
 OPPONENT DISCONNECTED
-
-
-
-
-
-
-
-
-
-
-
-
-
+LOADING...
+RED
+GREEN
+BLUE
+OBSIDIAN
+LUXURY
+PREMIUM
+PUB
+SPORTS BAR
+STAGE
+MORE SOON
+SOUND
+MUSIC
 
 
 

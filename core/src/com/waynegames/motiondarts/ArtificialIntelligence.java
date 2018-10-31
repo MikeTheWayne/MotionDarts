@@ -34,10 +34,10 @@ public class ArtificialIntelligence {
                 hitRadius = 150;
                 break;
             case 2:     // Medium
-                hitRadius = 65;
+                hitRadius = 85;
                 break;
             case 3:     // Pro
-                hitRadius = 35;
+                hitRadius = 45;
                 break;
         }
 

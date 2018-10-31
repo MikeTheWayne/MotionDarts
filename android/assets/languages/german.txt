@@ -1,0 +1,182 @@
+EIN SPIELER
+VIELE SPIELER
+ANPASSEN
+NEUES SPIEL
+GEGENWÄRTIGE SCHWIERIGKEIT
+SPIEL TYP
+ABSPIELEN
+EINFACH
+MITTEL
+SCHWER
+501
+UM
+DIE UHR
+KRICKET
+BRITISCH
+KRICKET
+TRAINIEREN
+VIELE SPIELER
+VIELE SPIELER SPIELART
+GLEICHES GERÄT
+GLOBALER SERVER
+GEBEN SIE DAS TELEFON ZWISCHEN 2 SPIELERN
+SPIELEN GEGEN EINEN FREMDEN (WI-FI)
+VERBINDEN
+VERBINDEN SIE MIT DEM SPIELER
+VERBINDEN SIE SICH MIT JEMANDEM, DAS SIE WISSEN (WI-FI)
+VORÜBERGEHENDER NAME
+Gegenspieler-Name
+Temporärer Name
+Geben Sie einen Namen ein
+Name des Gegners
+Gib den Namen des Gegners ein
+Name ist verfügbar
+Jemand anderes benutzt diesen Namen, wähle einen anderen
+Der Name des Gegners existiert
+Gegner existiert nicht
+1. Erstellen Sie einen Namen und geben Sie ihn in den obersten Namen ein
+Box
+2. Geben Sie den Namen Ihres Freundes in das untere Textfeld ein
+
+3. Ihr Freund muss auch Ihren Namen in ihre eingeben
+Textfeld
+4. Beide müssen dann 'connect' drücken, um das zu starten
+SPIEL
+WARTEN...
+OPTIONEN
+DARTS
+LAGE
+DIE EINSTELLUNGEN
+SPRACHEN
+SPIELANLEITUNG
+SPIELTYPEN
+EMPFINDLICHKEIT DER SENSOREN
+Das Standardspiel der Darts.
+
+Je nachdem, wo der Pfeil landet, werden Punkte erzielt.
+Wenn es landet im dünnen äußeren Ring, ist die Punktzahl
+des Pfeils verdoppelt. Wenn es in dem dünnen Ring näher
+an der Mitte landet, der Punktestand des Pfeils wird
+verdreifacht. Das Zentrum der Dartscheibe, das Bullseye,
+erzielt 50 Punkte, während die Ring, der es umgibt, der
+äußere Stier, erzielt 25 Punkte.
+
+Jeder Spieler wirft abwechselnd 3 Pfeile. Am Ende von
+an der Reihe, ist die Gesamtpunktzahl dieser 3 Darts
+genommen weg von der Gesamtpunktzahl des Spielers, die
+beginnt von 501. Das Ziel des Spiels ist es, Ihre
+Punktzahl gleich 0. Dies muss durch Drücken von a erfolgen
+verdoppeln Sie mit dem Pfeil, den Sie erzielen möchten 0.
+Für Wenn du zum Beispiel 20 übrig hättest, müsstest du
+treffen 10 im Doppelring zu gewinnen.
+
+
+
+
+Jeder Spieler muss Darts in jeder Zahl auf dem Brett
+landen, von 1 bis 20, in der Reihenfolge. Sobald ein
+Spieler einen Pfeil landet In der Zielnummer kann dieser
+Spieler dann auf die Zielscheibe zielen nächste Nummer.
+Der erste Spieler, der das Ziel erreicht, gewinnt.
+
+
+
+
+Das Ziel von Cricket ist das "Öffnen" bestimmter Zahlen
+auf der Board, um die höchste Punktzahl zu erreichen. Um
+eine Nummer zu öffnen, musst du muss 3 Darts in dieser
+Zahl landen (Doppel zählt für 2 Darts und Tripel zählen
+für 3). Sobald eine Nummer geöffnet ist, Jeder weitere
+Treffer zu dieser Zahl wird die Spielerpunkte verdienen
+wie üblich, bis der andere Spieler 3 Darts landet
+Nummer, die dann diese Nummer schließt, so dass es nicht
+mehr verdiene Punkte. Der Spieler mit den meisten Punkten
+und wer öffnet alle Zahlen gewinnen zuerst, oder wenn beide
+Spieler gebunden sind Punkte, der Spieler, der zuerst alle
+Zahlen öffnet, gewinnt.
+
+Die beteiligten Zahlen sind die 20, 19, 18, 17, 16, 15 und die
+Bullauge.
+
+
+Zu Beginn des Spiels ist ein Spieler ein 'Teig' und der
+andere ist ein "Bowler". Der Batter erhält für jede Runde
+Punkte dass sie mehr als 40 Punkte erreichen. Zum Beispiel,
+wenn der Teig trifft 39, erhalten sie 0 Punkte. Wenn sie 50
+Punkte erzielen, werden sie es tun Verdiene 10 Punkte. Um
+den Batter zu stoppen, Punkte zu verdienen, die Bowler muss
+10 Punkte verdienen, indem er entweder den äußeren trifft
+Bulle, der 1 Punkt wert ist, oder das Bullseye, das ist
+Wert 2 Punkte. Sobald der Werfer 10 Punkte verdient hat,
+erhält der Spieler tauschen Rollen und spielen erneut. Der
+Teig, der verdient die höchste Punktzahl gewinnt.
+
+
+
+
+1. Um einen Pfeil zu zielen, drücken und halten Sie Ihren
+Finger auf dem Telefonbildschirm.
+
+2. Bewegen Sie Ihren Finger über den Bildschirm, bis der
+Pfeil ausgerichtet ist zu deinem Ziel. Heben Sie Ihren
+Finger nicht vom Bildschirm.
+
+3. Um den Pfeil zu werfen, streichen Sie entweder mit dem
+Handgelenk nach hinten vorwärts in einer schnellen Bewegung
+und lassen Sie Ihren Finger vom Bildschirm wenn sich Ihr
+Handgelenk nach vorne bewegt, oder bewegen Sie den Arm dann
+nach hinten vorwärts in einer schnellen Bewegung und geben
+Sie Ihren Finger als Ihr Arm frei bewegt sich vorwärts.
+
+Diese Steuerung kann einige Zeit brauchen, um sich daran
+zu gewöhnen. Sie können Übe unbesorgt im PRAXISMODUS, auf
+den du zugreifen kannst im SINGLE PLAYER Spielmenü.
+
+Genießen!
+GEHE ZURÜCK ZUM
+HAUPTMENÜ?
+JA
+NEIN
+SPIELSUCHE
+ZUSAMMENFASSUNG
+SPIEL-SPIELE
+STATISTIKEN
+HAUPTMENÜ
+SPIEL NOCHMAL
+DAS SPIEL ENDET DRAUSSEN
+ERFOLGE
+TAP SCREEN WEITER
+DURCHSCHNITT EINES DART
+DURCHSCHNITT DES 1. DART
+DURCHSCHNITT DES 2. DART
+DURCHSCHNITT DES 3. DART
+HÖCHSTE GAME SCORE
+SPIELERHOHER DURCHSCHNITT (501)
+ZIEL
+WICKETS
+RICHTIGKEIT
+DURCHSCHNITTLICHE ZIELE, DIE ZIELEN
+DURCHSCHNITTLICHE BEWERTUNG DER BATTERIE
+GENAUIGKEIT VON BOWLER
+TEIG
+BOWLER
+DURCHSCHNITTLICHE BEWERTUNG DES DART
+EINEN WURF IN DIE MITTE DES ZIELS WERFEN
+VERBINDUNG FEHLGESCHLAGEN
+KANN SERVER NICHT FINDEN
+SERVER VOLL
+VERBINDUNG ERFOLGREICH
+OPPONENT HAT DISKONNECTED
+WIRD GELADEN...
+ROT
+GRÜN
+BLAU
+OBSIDIAN
+LUXUS
+PREMIUM
+KNEIPE
+SPORT-BAR
+BÜHNE
+MEHR BALD
+KLINGEN
+MUSIK

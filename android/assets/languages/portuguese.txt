@@ -1,0 +1,182 @@
+UM JOGADOR
+MUITOS
+CUSTOMIZAR
+NOVO JOGO
+DIFICULDADE OPONENTE
+TIPO DE JOGO
+TOQUE
+FÁCIL
+MÉDIO
+DIFÍCIL
+501
+POR AÍ
+O RELÓGIO
+GRILO
+BRITÂNICO
+GRILO
+PRÁTICA
+MUITOS JOGADORES
+TIPO DE JOGO DE MUITOS JOGADORES
+MESMO DISPOSITIVO
+SERVIDOR GLOBAL
+PASSE O TELEFONE ENTRE 2 JOGADORES
+JOGUE CONTRA UM ESTRANHO (WI-FI)
+CONECTAR
+CONECTE AO JOGADOR
+CONECTE A ALGUÉM QUE VOCÊ SABE (WI-FI)
+NOME TEMPORÁRIO
+NOME DO OPONENTE
+Nome temporário
+Insira o nome
+Nome do Adversário
+Digite o nome do oponente
+Nome está disponível
+Alguém está usando esse nome, escolha outro
+O nome do oponente existe
+Oponente não existe
+1. Crie um nome e digite-o no nome do topo
+caixa
+2. Digite o nome do seu amigo na caixa de texto inferior
+
+3. Seu amigo também deve digitar seu nome no
+caixa de texto
+4. Ambos devem então pressionar 'conectar' para iniciar o
+jogos
+ESPERANDO...
+OPÇÕES
+DARDOS
+LOCALIZAÇÃO
+CONFIGURAÇÕES
+LÍNGUAS
+COMO JOGAR
+TIPOS DE JOGO
+SENSIBILIDADE DOS SENSORES
+O jogo padrão de dardos.
+
+Pontos são marcados com base em onde o dardo pousa. Se
+isso terras no anel externo fino, a pontuação do dardo é
+duplicou. Se ele cair no anel fino mais perto do centro,
+a pontuação do dardo é triplicada. O centro do
+alvo de dardos, o bullseye, marca 50 pontos, enquanto o
+anel em torno dele, o touro exterior, marca 25.
+
+Cada jogador se reveza para lançar 3 dardos. No fim de
+sua vez, a pontuação total desses 3 dardos é tomada
+longe da pontuação geral do jogador, que começa
+de 501. O objetivo do jogo é fazer com que o seu
+pontuação igual a 0. Isso tem que ser feito por bater um
+dobrar com o dardo que você quer marcar 0. Para
+Por exemplo, se você tivesse 20, precisaria acertar
+10 no anel do dobro para ganhar.
+
+
+
+
+
+Cada jogador deve colocar dardos em todos os números
+do tabuleiro, de 1 a 20, em ordem. Assim que um jogador
+acerta um dardo no número alvo, esse jogador pode, então,
+segmentar próximo número. O primeiro jogador a terminar
+vence.
+
+
+
+
+O objetivo do críquete é "abrir" certos números no
+bordo, para alcançar a maior pontuação. Para abrir um
+número, você deve aterrar 3 dardos nesse número (os
+duplos contam para 2 dardos e triplos contam para 3).
+Quando um número é aberto, quaisquer novos hits para
+esse número irão ganhar os pontos do jogador como normal,
+até que o outro jogador tenha 3 dardos naquele número,
+que então fecha esse número, tornando-o não mais ganhar
+pontos. O jogador com mais pontos e quem abre todos os
+números primeiro ganham, ou se ambos os jogadores estão
+empatados pontos, o jogador que abrir todos os números
+primeiro ganhará.
+
+Os números envolvidos são os 20, 19, 18, 17, 16, 15 e os
+alvo.
+
+
+No início do jogo, um jogador é um 'batedor' eo
+outro é um 'bowler'. O batedor ganha pontos por cada
+turno que eles pontuam mais de 40. Por exemplo, se o
+batedor 39, eles vão ganhar 0 pontos. se eles marcarem
+50, eles vão ganhe 10 pontos. Para parar a massa ganhando
+pontos, o jogador deve ganhar 10 pontos, acertando o
+touro, que vale 1 ponto, ou o bullseye, que é
+vale 2 pontos. Uma vez que o jogador ganhou 10 pontos, o
+os jogadores trocam de papéis e jogam novamente. O
+batedor que ganha a maior pontuação ganha.
+
+
+
+
+
+1. Para mirar um dardo, pressione e segure seu dedo na tela
+do telefone.
+
+2. Mova o dedo pela tela até que o dardo esteja alinhado
+para o seu alvo. Não levante o dedo da tela.
+
+3. Para lançar o dardo, movimente o pulso para trás
+para frente em um movimento rápido, liberando o dedo da tela
+como seu pulso se move para frente, ou mova o braço para trás,
+então para a frente em um movimento rápido, soltando seu dedo
+como seu braço Avança.
+
+Esses controles podem levar algum tempo para se acostumar. Você
+pode praticar sem se preocupar em MODO PRÁTICA, que você pode
+acessar no menu do jogo SINGLE PLAYER.
+
+Apreciar!
+
+
+RETORNE PARA
+MENU PRINCIPAL?
+SIM
+NÃO
+CONTAGEM DE JOGOS
+RESUMO DO JOGO
+JOGOS
+ESTATISTICAS
+MENU PRINCIPAL
+JOGAR DE NOVO
+O JOGO TERMINOU EM UM DESENHO
+SUCESSOS
+TAP TELA PARA CONTINUAR
+MÉDIA DE UM DARDO
+MÉDIA DO 1º DARDO
+MÉDIA DO 2 ° DARDO
+MÉDIA DO TERCEIRO DARDO
+MAIOR CONTAGEM DE JOGOS
+ALTA MÉDIA DO JOGADOR (501)
+ALVO
+GUINCHOS DE CRÍQUETE
+PRECISÃO
+CARACTERÍSTICAS MÉDIAS QUE HIT ALVO
+PONTUAÇÃO MÉDIA DA BATTER
+PRECISÃO DO JOGADOR DE BOLICHE
+MASSA DE CRÍQUETE
+JOGADOR DE BOLICHE
+PONTUAÇÃO MÉDIA DO DARDO
+JOGUE UM DARDO NO CENTRO DO ALVO
+CONEXÃO FALHA
+NÃO PODE ENCONTRAR SERVIDOR
+SERVIDOR CHEIO
+CONEXÃO BEM SUCEDIDA
+OPONENTE DESCONECTADO
+CARREGANDO...
+VERMELHO
+VERDE
+AZUL
+OBSIDIANA
+LUXO
+PRÊMIO
+BAR
+BAR DE ESPORTES
+ETAPA
+MAIS EM BREVE
+SOM
+MÚSICA
